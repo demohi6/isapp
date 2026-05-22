@@ -13,243 +13,187 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700&family=Mulish:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <style>
-:root {
-  --bg: #0D0F14;
-  --bg2: #13161C;
-  --bg3: #1A1E27;
-  --border: rgba(255,255,255,0.07);
-  --border2: rgba(255,255,255,0.12);
-  --text: #EAE6DE;
-  --text2: rgba(234,230,222,0.55);
-  --text3: rgba(234,230,222,0.28);
-  --gold: #C9AA7C;
-  --blue: #7BB8CC;
-  --green: #80C89A;
-  --red: #CC7B7B;
-  --purple: #9E8ED4;
-  --safe: env(safe-area-inset-bottom, 0px);
+:root{
+  --bg:#0D0F14;--bg2:#13161C;--bg3:#1A1E27;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.12);
+  --text:#EAE6DE;--text2:rgba(234,230,222,0.55);--text3:rgba(234,230,222,0.28);
+  --gold:#C9AA7C;--blue:#7BB8CC;--green:#80C89A;--red:#CC7B7B;--purple:#9E8ED4;
+  --safe:env(safe-area-inset-bottom,0px);
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Mulish',sans-serif;overflow:hidden}
 #app{height:100%;display:flex;flex-direction:column;max-width:600px;margin:0 auto;position:relative}
 
-/* ─── HEADER ─── */
-.header{
-  padding:max(env(safe-area-inset-top,16px),16px) 16px 12px;
-  background:var(--bg);
-  border-bottom:1px solid var(--border);
-  flex-shrink:0;
-}
+/* HEADER */
+.header{padding:max(env(safe-area-inset-top,16px),16px) 16px 12px;background:var(--bg);border-bottom:1px solid var(--border);flex-shrink:0}
 .header-row{display:flex;align-items:center;justify-content:space-between}
-.logo{font-family:'Unbounded',sans-serif;font-size:16px;font-weight:700;letter-spacing:-0.5px}
+.logo{font-family:'Unbounded',sans-serif;font-size:16px;font-weight:700;letter-spacing:-.5px}
 .logo span{color:var(--gold)}
 .header-actions{display:flex;gap:8px}
 
-/* ─── TABS ─── */
-.tabs{
-  display:flex;gap:0;background:var(--bg2);
-  border-bottom:1px solid var(--border);
-  flex-shrink:0;overflow-x:auto;scrollbar-width:none;
-}
-.tabs::-webkit-scrollbar{display:none}
+/* TABS */
+.tabs{display:flex;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0}
 .tab-btn{
-  flex:1;min-width:80px;padding:12px 8px;font-family:'Mulish',sans-serif;font-size:12px;font-weight:600;
-  letter-spacing:0.3px;color:var(--text3);background:none;border:none;cursor:pointer;
-  border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap;
+  flex:1;padding:12px 8px;font-family:'Mulish',sans-serif;font-size:12px;font-weight:600;
+  letter-spacing:.3px;color:var(--text3);background:none;border:none;cursor:pointer;
+  border-bottom:2px solid transparent;transition:color .25s,border-color .25s;white-space:nowrap;
 }
 .tab-btn.active{color:var(--gold);border-bottom-color:var(--gold)}
 
-/* ─── SCROLL AREA ─── */
+/* SWIPE CONTAINER */
+#swipeWrap{flex:1;overflow:hidden;position:relative}
+.views-track{
+  display:flex;width:300%;height:100%;
+  transition:transform .32s cubic-bezier(.4,0,.2,1);
+  will-change:transform;
+}
+.view-panel{width:calc(100%/3);height:100%;overflow:hidden;display:flex;flex-direction:column}
+
+/* SCROLL */
 .scroll{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding:16px 16px calc(80px + var(--safe))}
 .scroll::-webkit-scrollbar{display:none}
 
-/* ─── BOTTOM NAV ─── */
-.bottom-nav{
-  position:fixed;bottom:0;left:50%;transform:translateX(-50%);
-  width:100%;max-width:600px;
-  padding:10px 20px calc(10px + var(--safe));
-  background:linear-gradient(to top, var(--bg) 70%, transparent);
-  display:flex;gap:10px;z-index:50;
-}
-
-/* ─── CARDS ─── */
-.card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:12px;position:relative;overflow:hidden}
+/* CARDS */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:12px;position:relative;overflow:hidden;
+  animation:cardIn .3s ease both}
+@keyframes cardIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 .card-accent{position:absolute;top:0;left:0;right:0;height:3px}
 
-/* ─── SUMMARY STRIP ─── */
+/* SUMMARY */
 .summary-strip{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px}
-.sum-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:12px 10px;text-align:center}
+.sum-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:12px 10px;text-align:center;
+  animation:cardIn .3s ease both}
 .sum-label{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px}
 .sum-val{font-family:'DM Mono',monospace;font-size:13px;font-weight:500;line-height:1.2}
 
-/* ─── STAGE CARD ─── */
-.stage-list-card{
-  background:var(--bg2);border:1px solid var(--border);border-radius:14px;
-  margin-bottom:10px;overflow:hidden;transition:transform .15s;
-  cursor:pointer;
-}
-.stage-list-card:active{transform:scale(.98)}
+/* STAGE LIST CARD */
+.stage-list-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;margin-bottom:10px;overflow:hidden;
+  cursor:pointer;transition:transform .15s,box-shadow .15s;animation:cardIn .3s ease both}
+.stage-list-card:active{transform:scale(.97)}
 .slc-head{display:flex;align-items:center;gap:12px;padding:14px 16px}
 .slc-icon{font-size:22px;flex-shrink:0}
 .slc-info{flex:1;min-width:0}
 .slc-name{font-weight:600;font-size:14px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .slc-sub{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace}
 .slc-ring{flex-shrink:0}
-.slc-bar{height:3px;background:rgba(255,255,255,0.05);margin:0 16px 12px;border-radius:2px;overflow:hidden}
-.slc-bar-fill{height:100%;border-radius:2px;transition:width .5s ease}
+.slc-bar{height:3px;background:rgba(255,255,255,.05);margin:0 16px 12px;border-radius:2px;overflow:hidden}
+.slc-bar-fill{height:100%;border-radius:2px;transition:width .6s ease}
 
-/* ─── PROGRESS BAR ─── */
+/* PROGRESS */
 .prog-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:14px}
 .prog-head{display:flex;justify-content:space-between;margin-bottom:10px;font-size:12px;color:var(--text2)}
-.prog-bar{height:8px;background:rgba(255,255,255,0.06);border-radius:4px;overflow:hidden}
-.prog-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--gold),var(--green));transition:width .6s ease}
+.prog-bar{height:8px;background:rgba(255,255,255,.06);border-radius:4px;overflow:hidden}
+.prog-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--gold),var(--green));transition:width .7s ease}
 
-/* ─── STAGE DETAIL ─── */
-.stage-detail-header{
-  display:flex;align-items:flex-start;justify-content:space-between;gap:10px;
-  padding:14px 16px 12px;
-  background:var(--bg2);border-bottom:1px solid var(--border);
-  flex-shrink:0;
-}
-.sdh-left{min-width:0}
+/* DETAIL HEADER */
+.stage-detail-header{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:14px 16px 12px;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0}
+.sdh-left{min-width:0;flex:1}
 .sdh-title{font-family:'Unbounded',sans-serif;font-size:15px;font-weight:600;display:flex;align-items:center;gap:8px;margin-bottom:2px}
 .sdh-budget{font-family:'DM Mono',monospace;font-size:12px;color:var(--text3);margin-bottom:8px}
-.sdh-prog{height:4px;background:rgba(255,255,255,0.07);border-radius:2px;overflow:hidden;width:100%}
-.sdh-prog-fill{height:100%;border-radius:2px;transition:width .4s}
+.sdh-prog{height:4px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden;width:100%}
+.sdh-prog-fill{height:100%;border-radius:2px;transition:width .5s}
 
-/* ─── ITEM LIST ─── */
+/* ITEMS */
 .items-list{padding:8px 0}
-.item-row{
-  display:grid;grid-template-columns:36px 1fr auto 32px;
-  align-items:center;gap:8px;
-  padding:10px 16px;border-bottom:1px solid var(--border);
-  transition:background .15s;
-}
+.item-row{display:grid;grid-template-columns:36px 1fr auto 32px;align-items:center;gap:8px;padding:10px 16px;border-bottom:1px solid var(--border);
+  animation:itemIn .25s ease both;transition:background .15s}
+@keyframes itemIn{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:none}}
 .item-row:last-child{border-bottom:none}
-.item-check{
-  width:22px;height:22px;border-radius:6px;border:1.5px solid rgba(255,255,255,0.2);
-  background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;
-  flex-shrink:0;transition:all .2s;
-}
+.item-check{width:22px;height:22px;border-radius:6px;border:1.5px solid rgba(255,255,255,.2);background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
 .item-check.done{border-color:transparent}
-.item-name{font-size:13px;font-weight:500;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item-name{font-size:13px;font-weight:500;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;transition:color .2s}
 .item-name.done{text-decoration:line-through;color:var(--text3)}
 .item-cost{font-family:'DM Mono',monospace;font-size:12px;white-space:nowrap;color:var(--text2)}
-.item-del{background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:6px;transition:all .2s;flex-shrink:0}
+.item-del{background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:6px;transition:all .2s}
 .item-del:active{background:rgba(204,123,123,.2);color:var(--red)}
 
-/* ─── ADD ITEM FORM ─── */
+/* ADD FORM */
 .add-item-form{padding:12px 16px;background:var(--bg3);border-top:1px solid var(--border);display:flex;flex-direction:column;gap:8px}
 .add-item-row{display:flex;gap:8px}
 
-/* ─── INPUTS ─── */
+/* INPUTS */
 input[type=text],input[type=number],select{
-  background:rgba(255,255,255,0.05);border:1px solid var(--border2);
-  color:var(--text);border-radius:10px;padding:10px 12px;
-  font-family:'Mulish',sans-serif;font-size:14px;outline:none;
-  width:100%;transition:border-color .2s;
-  -webkit-appearance:none;
+  background:rgba(255,255,255,.05);border:1px solid var(--border2);color:var(--text);border-radius:10px;padding:10px 12px;
+  font-family:'Mulish',sans-serif;font-size:14px;outline:none;width:100%;transition:border-color .2s;-webkit-appearance:none;
 }
-input:focus,select:focus{border-color:rgba(255,255,255,0.3)}
+input:focus,select:focus{border-color:rgba(255,255,255,.3)}
 
-/* ─── BUTTONS ─── */
-.btn{
-  cursor:pointer;border:none;border-radius:12px;
-  font-family:'Mulish',sans-serif;font-weight:600;
-  font-size:14px;padding:12px 16px;transition:all .15s;
-  display:flex;align-items:center;justify-content:center;gap:6px;
-  -webkit-user-select:none;user-select:none;
-}
-.btn:active{transform:scale(.97)}
+/* BUTTONS */
+.btn{cursor:pointer;border:none;border-radius:12px;font-family:'Mulish',sans-serif;font-weight:600;font-size:14px;padding:12px 16px;
+  transition:transform .15s,opacity .15s;display:flex;align-items:center;justify-content:center;gap:6px;-webkit-user-select:none;user-select:none}
+.btn:active{transform:scale(.96)}
 .btn-primary{background:var(--gold);color:#0D0F14;width:100%}
-.btn-secondary{background:rgba(255,255,255,0.07);color:var(--text2);flex:1}
+.btn-secondary{background:rgba(255,255,255,.07);color:var(--text2);flex:1}
 .btn-danger{background:rgba(204,123,123,.15);color:var(--red)}
 .btn-ghost{background:none;border:1px solid var(--border2);color:var(--text2)}
 .btn-sm{padding:8px 12px;font-size:13px;border-radius:10px}
-.btn-icon{padding:10px;border-radius:10px;background:rgba(255,255,255,0.06);border:1px solid var(--border)}
+.btn-icon{padding:10px;border-radius:10px;background:rgba(255,255,255,.06);border:1px solid var(--border)}
 
-/* ─── MODAL ─── */
-.modal-backdrop{
-  position:fixed;inset:0;background:rgba(0,0,0,.75);
-  backdrop-filter:blur(8px);z-index:200;
-  display:flex;align-items:flex-end;justify-content:center;
-  animation:fadeIn .2s ease;
-}
+/* MODAL */
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(8px);z-index:200;display:flex;align-items:flex-end;justify-content:center;animation:fadeIn .2s ease}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-.modal{
-  background:var(--bg2);border:1px solid var(--border);
-  border-radius:24px 24px 0 0;width:100%;max-width:600px;
-  padding:24px 20px calc(24px + var(--safe));
-  max-height:90vh;overflow-y:auto;
-  animation:slideUp .25s ease;
-}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:24px 24px 0 0;width:100%;max-width:600px;padding:24px 20px calc(24px + var(--safe));max-height:90vh;overflow-y:auto;animation:slideUp .28s cubic-bezier(.4,0,.2,1)}
 @keyframes slideUp{from{transform:translateY(60px);opacity:0}to{transform:translateY(0);opacity:1}}
-.modal-handle{width:40px;height:4px;background:rgba(255,255,255,0.15);border-radius:2px;margin:0 auto 20px}
+.modal-handle{width:40px;height:4px;background:rgba(255,255,255,.15);border-radius:2px;margin:0 auto 20px}
 .modal-title{font-family:'Unbounded',sans-serif;font-size:16px;font-weight:600;margin-bottom:20px}
 .form-group{margin-bottom:14px}
 .form-label{display:block;font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px}
 .icon-grid{display:flex;flex-wrap:wrap;gap:6px}
-.icon-opt{
-  width:42px;height:42px;border-radius:10px;border:1.5px solid transparent;
-  background:rgba(255,255,255,0.05);font-size:20px;
-  display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;
-}
+.icon-opt{width:42px;height:42px;border-radius:10px;border:1.5px solid transparent;background:rgba(255,255,255,.05);font-size:20px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s}
 .icon-opt.sel{border-color:rgba(255,255,255,.4);background:rgba(255,255,255,.1)}
 .color-grid{display:flex;gap:8px;flex-wrap:wrap}
 .color-opt{width:28px;height:28px;border-radius:50%;cursor:pointer;transition:transform .15s;border:2px solid transparent}
 .color-opt.sel{border-color:white;transform:scale(1.15)}
 
-/* ─── BREAKDOWN ─── */
+/* BREAKDOWN */
 .breakdown-bar{display:flex;height:10px;border-radius:5px;overflow:hidden;gap:1px;margin-bottom:10px}
-.breakdown-item{height:100%;transition:flex .4s ease;min-width:3px}
+.breakdown-item{height:100%;transition:flex .5s ease;min-width:3px}
 .breakdown-legend{display:flex;flex-wrap:wrap;gap:8px}
 .bl-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3)}
 .bl-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
 
-/* ─── STAT GRID ─── */
+/* STAT GRID */
 .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
 .stat-box{background:var(--bg3);border-radius:10px;padding:10px 12px}
 .stat-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px}
 .stat-val{font-family:'DM Mono',monospace;font-size:14px;font-weight:500}
 
-/* ─── EMPTY STATE ─── */
+/* EMPTY */
 .empty{text-align:center;padding:48px 20px;color:var(--text3)}
 .empty-icon{font-size:48px;margin-bottom:12px;opacity:.4}
 .empty-text{font-size:14px}
 
-/* ─── COLORS ─── */
-.c-gold{color:var(--gold)} .c-blue{color:var(--blue)} .c-green{color:var(--green)} .c-red{color:var(--red)}
+/* COLORS */
+.c-gold{color:var(--gold)}.c-blue{color:var(--blue)}.c-green{color:var(--green)}.c-red{color:var(--red)}
 
-/* ─── SCROLLABLE DETAIL VIEW ─── */
+/* DETAIL VIEW */
 #view-detail{display:flex;flex-direction:column;height:100%;overflow:hidden}
 .detail-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:calc(16px + var(--safe))}
 .detail-scroll::-webkit-scrollbar{display:none}
 
-/* ─── TOAST ─── */
-.toast{
-  position:fixed;top:max(env(safe-area-inset-top,16px),16px);left:50%;
-  transform:translateX(-50%) translateY(-80px);
-  background:var(--bg3);border:1px solid var(--border2);border-radius:12px;
-  padding:10px 18px;font-size:13px;font-weight:600;
-  z-index:300;transition:transform .3s ease;white-space:nowrap;
-  box-shadow:0 8px 32px rgba(0,0,0,.5);
-}
+/* TOAST */
+.toast{position:fixed;top:max(env(safe-area-inset-top,16px),16px);left:50%;transform:translateX(-50%) translateY(-80px);
+  background:var(--bg3);border:1px solid var(--border2);border-radius:12px;padding:10px 18px;font-size:13px;font-weight:600;
+  z-index:300;transition:transform .3s ease;white-space:nowrap;box-shadow:0 8px 32px rgba(0,0,0,.5)}
 .toast.show{transform:translateX(-50%) translateY(0)}
 
-/* ─── PWA INSTALL BANNER ─── */
-.install-banner{
-  background:linear-gradient(135deg,rgba(201,170,124,.15),rgba(127,184,204,.1));
-  border:1px solid rgba(201,170,124,.3);border-radius:12px;
-  padding:12px 14px;margin-bottom:12px;
-  display:flex;align-items:center;gap:10px;
-}
+/* INSTALL BANNER */
+.install-banner{background:linear-gradient(135deg,rgba(201,170,124,.15),rgba(127,184,204,.1));border:1px solid rgba(201,170,124,.3);border-radius:12px;padding:12px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px}
 .install-banner-text{flex:1;font-size:12px;color:var(--text2);line-height:1.4}
 .install-banner-text strong{color:var(--gold);display:block;font-size:13px;margin-bottom:2px}
 
-@media(min-width:480px){
-  .summary-strip{grid-template-columns:1fr 1fr 1fr}
-  .stat-grid{grid-template-columns:1fr 1fr 1fr}
-}
+/* CURRENCY PILL */
+.currency-pill{display:flex;background:var(--bg3);border:1px solid var(--border);border-radius:20px;overflow:hidden;padding:3px}
+.cp-btn{flex:1;padding:5px 10px;border:none;border-radius:16px;font-size:11px;font-weight:700;font-family:'DM Mono',monospace;
+  cursor:pointer;color:var(--text3);background:none;transition:all .2s;white-space:nowrap}
+.cp-btn.active{background:var(--gold);color:#0D0F14}
+
+/* SWIPE HINT */
+.swipe-dots{display:flex;justify-content:center;gap:5px;padding:6px 0;flex-shrink:0;background:var(--bg2)}
+.swipe-dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.15);transition:all .25s}
+.swipe-dot.active{width:18px;border-radius:3px;background:var(--gold)}
+
+@media(min-width:480px){.summary-strip{grid-template-columns:1fr 1fr 1fr}.stat-grid{grid-template-columns:1fr 1fr 1fr}}
 </style>
 </head>
 <body>
@@ -258,56 +202,102 @@ input:focus,select:focus{border-color:rgba(255,255,255,0.3)}
     <div class="header-row">
       <div class="logo">Строим <span>Дом</span> 🏡</div>
       <div class="header-actions">
-        <button class="btn btn-icon" id="btnExport" title="Экспорт">💾</button>
-        <button class="btn btn-icon" id="btnAddStage" title="Добавить этап">＋</button>
+        <div class="currency-pill" id="currencyPill"></div>
+        <button class="btn btn-icon" id="btnExport" title="Экспорт" style="font-size:16px">💾</button>
+        <button class="btn btn-icon" id="btnAddStage" title="Добавить этап" style="font-size:18px">＋</button>
       </div>
     </div>
   </div>
   <div class="tabs" id="tabBar"></div>
-  <div id="mainContent" style="flex:1;overflow:hidden;display:flex;flex-direction:column"></div>
+  <div class="swipe-dots" id="swipeDots"></div>
+  <div id="swipeWrap">
+    <div class="views-track" id="viewsTrack">
+      <div class="view-panel" id="panel0"></div>
+      <div class="view-panel" id="panel1"></div>
+      <div class="view-panel" id="panel2"></div>
+    </div>
+  </div>
 </div>
 <div class="toast" id="toast"></div>
 
 <script>
-// ═══════════════════════════════════════
-//  DATA LAYER — localStorage persistence
-// ═══════════════════════════════════════
-const STORE_KEY = 'isapp_v2';
+// ═══════════════════════════
+//  CURRENCY
+// ═══════════════════════════
+const CURRENCIES = [
+  { code:'AZN', symbol:'₼', label:'₼', name:'Манат',  locale:'az-AZ' },
+  { code:'RUB', symbol:'₽', label:'₽', name:'Рубль',  locale:'ru-RU' },
+  { code:'USD', symbol:'$', label:'$', name:'Доллар', locale:'en-US' },
+];
+let currencyIdx = parseInt(localStorage.getItem('isapp_currency')||'0');
+const curCurrency = () => CURRENCIES[currencyIdx];
 
+function fmt(n) {
+  const c = curCurrency();
+  try {
+    return new Intl.NumberFormat(c.locale,{style:'currency',currency:c.code,maximumFractionDigits:0}).format(n);
+  } catch { return c.symbol + Math.round(n).toLocaleString(); }
+}
+function fmtShort(n) {
+  const c = curCurrency();
+  const abs = Math.abs(n), s = n<0?'−':'';
+  if(abs>=1e6) return s+(abs/1e6).toFixed(1).replace('.0','')+' млн '+c.symbol;
+  if(abs>=1e3) return s+(abs/1e3).toFixed(0)+' тыс '+c.symbol;
+  return fmt(n);
+}
+
+function setCurrency(idx) {
+  currencyIdx = idx;
+  localStorage.setItem('isapp_currency', idx);
+  renderCurrencyPill();
+  renderAllPanels();
+}
+
+function renderCurrencyPill() {
+  const el = document.getElementById('currencyPill');
+  el.innerHTML = CURRENCIES.map((c,i)=>`
+    <button class="cp-btn ${i===currencyIdx?'active':''}" onclick="setCurrency(${i})">${c.label}</button>
+  `).join('');
+}
+
+// ═══════════════════════════
+//  DATA
+// ═══════════════════════════
+const STORE_KEY = 'isapp_v2';
 const DEFAULT_STAGES = [
-  { id:1, name:"Фундамент", icon:"⬛", color:"#C9AA7C", budget:850000, items:[
+  {id:1,name:"Фундамент",icon:"⬛",color:"#C9AA7C",budget:850000,items:[
     {id:1,name:"Земляные работы",cost:120000,done:true},
     {id:2,name:"Арматура и опалубка",cost:180000,done:true},
     {id:3,name:"Бетон",cost:220000,done:true},
     {id:4,name:"Гидроизоляция",cost:100000,done:false},
     {id:5,name:"Засыпка пазух",cost:80000,done:false},
   ]},
-  { id:2, name:"Коробка дома", icon:"🏗", color:"#7BB8CC", budget:2400000, items:[
+  {id:2,name:"Коробка дома",icon:"🏗",color:"#7BB8CC",budget:2400000,items:[
     {id:1,name:"Кладка 1 этаж",cost:480000,done:true},
     {id:2,name:"Перекрытие",cost:320000,done:true},
     {id:3,name:"Кладка 2 этаж",cost:480000,done:false},
     {id:4,name:"Фронтоны",cost:120000,done:false},
     {id:5,name:"Стропила",cost:280000,done:false},
   ]},
-  { id:3, name:"Кровля", icon:"🏠", color:"#CC7B7B", budget:680000, items:[
+  {id:3,name:"Кровля",icon:"🏠",color:"#CC7B7B",budget:680000,items:[
     {id:1,name:"Утеплитель",cost:120000,done:false},
     {id:2,name:"Кровельный материал",cost:320000,done:false},
     {id:3,name:"Водосток",cost:85000,done:false},
     {id:4,name:"Доборные элементы",cost:55000,done:false},
   ]},
-  { id:4, name:"Окна и двери", icon:"🪟", color:"#9E8ED4", budget:520000, items:[
+  {id:4,name:"Окна и двери",icon:"🪟",color:"#9E8ED4",budget:520000,items:[
     {id:1,name:"Окна ПВХ",cost:280000,done:false},
     {id:2,name:"Входная дверь",cost:85000,done:false},
     {id:3,name:"Межкомнатные двери",cost:120000,done:false},
     {id:4,name:"Монтаж",cost:35000,done:false},
   ]},
-  { id:5, name:"Инженерия", icon:"⚙️", color:"#80C89A", budget:980000, items:[
+  {id:5,name:"Инженерия",icon:"⚙️",color:"#80C89A",budget:980000,items:[
     {id:1,name:"Электрика",cost:280000,done:false},
     {id:2,name:"Водоснабжение",cost:180000,done:false},
     {id:3,name:"Канализация",cost:150000,done:false},
     {id:4,name:"Отопление",cost:320000,done:false},
   ]},
-  { id:6, name:"Отделка", icon:"🎨", color:"#C8C07E", budget:1200000, items:[
+  {id:6,name:"Отделка",icon:"🎨",color:"#C8C07E",budget:1200000,items:[
     {id:1,name:"Стяжка полов",cost:180000,done:false},
     {id:2,name:"Штукатурка",cost:240000,done:false},
     {id:3,name:"Плитка",cost:120000,done:false},
@@ -316,166 +306,167 @@ const DEFAULT_STAGES = [
   ]},
 ];
 
-function load() {
-  try { return JSON.parse(localStorage.getItem(STORE_KEY)) || DEFAULT_STAGES; }
-  catch { return DEFAULT_STAGES; }
-}
-function save(stages) {
-  localStorage.setItem(STORE_KEY, JSON.stringify(stages));
-}
+function load(){try{return JSON.parse(localStorage.getItem(STORE_KEY))||DEFAULT_STAGES}catch{return DEFAULT_STAGES}}
+function save(s){localStorage.setItem(STORE_KEY,JSON.stringify(s))}
 
 let stages = load();
-let activeTab = 'overview';
-let activeStageId = stages[0]?.id || null;
+let activeTab = 0; // 0=overview 1=stages 2=detail
+let activeStageId = stages[0]?.id||null;
 
-// ═══════════════════════════════
-//  HELPERS
-// ═══════════════════════════════
-const fmt = n => new Intl.NumberFormat('ru-RU',{style:'currency',currency:'RUB',maximumFractionDigits:0}).format(n);
-const fmtShort = n => {
-  const abs = Math.abs(n);
-  const s = n < 0 ? '−' : '';
-  if (abs >= 1e6) return s + (abs/1e6).toFixed(1).replace('.0','') + ' млн ₽';
-  if (abs >= 1e3) return s + (abs/1e3).toFixed(0) + ' тыс ₽';
-  return fmt(n);
-};
-const stageSpent = s => s.items.filter(i=>i.done).reduce((a,b)=>a+b.cost,0);
-const stagePlanned = s => s.items.reduce((a,b)=>a+b.cost,0);
+const stageSpent  = s => s.items.filter(i=>i.done).reduce((a,b)=>a+b.cost,0);
+const stagePlanned= s => s.items.reduce((a,b)=>a+b.cost,0);
 const totalBudget = () => stages.reduce((a,s)=>a+s.budget,0);
-const totalSpent = () => stages.reduce((a,s)=>a+stageSpent(s),0);
-const newId = () => Date.now() + Math.floor(Math.random()*1000);
+const totalSpent  = () => stages.reduce((a,s)=>a+stageSpent(s),0);
+const newId = () => Date.now()+Math.floor(Math.random()*1000);
+const ICONS=['🏠','🏗','⬛','🪟','⚙️','🎨','🌿','🧱','🔧','💡','🚿','🛠','🏡','🌲','🪣','🔑','🏊','🌳'];
+const COLORS=['#C9AA7C','#7BB8CC','#CC7B7B','#9E8ED4','#80C89A','#C8C07E','#CC9B7B','#7BC4CC','#B87BB8','#7BA8CC'];
 
-const ICONS = ['🏠','🏗','⬛','🪟','⚙️','🎨','🌿','🧱','🔧','💡','🚿','🛠','🏡','🌲','🪣','🔑','🏊','🌳'];
-const COLORS = ['#C9AA7C','#7BB8CC','#CC7B7B','#9E8ED4','#80C89A','#C8C07E','#CC9B7B','#7BC4CC','#B87BB8','#7BA8CC'];
-
-function showToast(msg, type='ok') {
-  const t = document.getElementById('toast');
-  t.textContent = (type==='ok'?'✓ ':type==='err'?'✕ ':'') + msg;
-  t.className = 'toast show';
-  clearTimeout(t._to);
-  t._to = setTimeout(()=>{ t.className='toast'; }, 2200);
+function showToast(msg,type='ok'){
+  const t=document.getElementById('toast');
+  t.textContent=(type==='ok'?'✓ ':type==='err'?'✕ ':'')+msg;
+  t.className='toast show';clearTimeout(t._to);
+  t._to=setTimeout(()=>{t.className='toast'},2200);
 }
 
-// ═══════════════════════════════
-//  RENDER ENGINE
-// ═══════════════════════════════
-function render() {
+// ═══════════════════════════
+//  SWIPE + TABS
+// ═══════════════════════════
+const TABS=[{label:'Обзор'},{label:'Этапы'},{label:'Детали'}];
+
+function renderTabs(){
+  document.getElementById('tabBar').innerHTML=TABS.map((t,i)=>
+    `<button class="tab-btn ${activeTab===i?'active':''}" onclick="switchTab(${i})">${t.label}</button>`
+  ).join('');
+  document.getElementById('swipeDots').innerHTML=TABS.map((_,i)=>
+    `<div class="swipe-dot ${activeTab===i?'active':''}"></div>`
+  ).join('');
+}
+
+function switchTab(idx, animate=true){
+  activeTab=idx;
+  const track=document.getElementById('viewsTrack');
+  if(!animate) track.style.transition='none';
+  track.style.transform=`translateX(${-idx*100/3}%)`;
+  if(!animate) requestAnimationFrame(()=>{ track.style.transition=''; });
   renderTabs();
-  renderContent();
+  renderAllPanels();
 }
 
-function renderTabs() {
-  const bar = document.getElementById('tabBar');
-  const tabs = [
-    {id:'overview', label:'Обзор'},
-    {id:'stages',   label:'Этапы'},
-    {id:'detail',   label:'Детали'},
-  ];
-  bar.innerHTML = tabs.map(t=>`
-    <button class="tab-btn ${activeTab===t.id?'active':''}" onclick="switchTab('${t.id}')">${t.label}</button>
-  `).join('');
+// Touch swipe
+let touchStartX=0, touchStartY=0, swiping=false, swipeDir=null;
+function initSwipe(){
+  const wrap=document.getElementById('swipeWrap');
+  wrap.addEventListener('touchstart',e=>{
+    touchStartX=e.touches[0].clientX;
+    touchStartY=e.touches[0].clientY;
+    swiping=false; swipeDir=null;
+  },{passive:true});
+  wrap.addEventListener('touchmove',e=>{
+    const dx=e.touches[0].clientX-touchStartX;
+    const dy=e.touches[0].clientY-touchStartY;
+    if(!swipeDir) swipeDir=Math.abs(dx)>Math.abs(dy)?'h':'v';
+    if(swipeDir==='h'){
+      swiping=true;
+      const track=document.getElementById('viewsTrack');
+      const base=-activeTab*100/3;
+      const offset=dx/window.innerWidth*100/3;
+      track.style.transition='none';
+      track.style.transform=`translateX(calc(${base}% + ${offset}%))`;
+    }
+  },{passive:true});
+  wrap.addEventListener('touchend',e=>{
+    if(!swiping){
+      const track=document.getElementById('viewsTrack');
+      track.style.transition='';
+      track.style.transform=`translateX(${-activeTab*100/3}%)`;
+      return;
+    }
+    const dx=e.changedTouches[0].clientX-touchStartX;
+    const track=document.getElementById('viewsTrack');
+    track.style.transition='';
+    if(dx<-50 && activeTab<2) switchTab(activeTab+1);
+    else if(dx>50 && activeTab>0) switchTab(activeTab-1);
+    else track.style.transform=`translateX(${-activeTab*100/3}%)`;
+  },{passive:true});
 }
 
-function renderContent() {
-  const el = document.getElementById('mainContent');
-  if (activeTab === 'overview') el.innerHTML = renderOverview();
-  else if (activeTab === 'stages') el.innerHTML = renderStages();
-  else el.innerHTML = renderDetail();
+// ═══════════════════════════
+//  RENDER
+// ═══════════════════════════
+function renderAllPanels(){
+  document.getElementById('panel0').innerHTML=renderOverview();
+  document.getElementById('panel1').innerHTML=renderStages();
+  document.getElementById('panel2').innerHTML=renderDetail();
 }
 
-// ── OVERVIEW ──
-function renderOverview() {
-  const tb = totalBudget(), ts = totalSpent(), rem = tb - ts;
-  const pct = tb>0 ? Math.min(ts/tb*100,100) : 0;
-  const doneStages = stages.filter(s=>stagePlanned(s)>0 && stageSpent(s)===stagePlanned(s)).length;
+function ringHTML(pct,color,size){
+  const r=(size-7)/2,circ=2*Math.PI*r,dash=pct/100*circ;
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+    <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="3.5"/>
+    <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${color}" stroke-width="3.5"
+      stroke-dasharray="${dash} ${circ-dash}" stroke-dashoffset="${circ/4}" stroke-linecap="round"/>
+    <text x="${size/2}" y="${size/2+4}" text-anchor="middle" fill="white" font-size="9" font-family="'DM Mono',monospace" font-weight="600">${Math.round(pct)}%</text>
+  </svg>`;
+}
 
-  const hasInstallPrompt = !!window._installPrompt;
-  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-  const showInstall = (hasInstallPrompt || isIOS) && !isStandalone;
-
-  const installBanner = showInstall ? `
-    <div class="install-banner">
+// OVERVIEW
+function renderOverview(){
+  const tb=totalBudget(),ts=totalSpent(),rem=tb-ts;
+  const pct=tb>0?Math.min(ts/tb*100,100):0;
+  const doneS=stages.filter(s=>stagePlanned(s)>0&&stageSpent(s)===stagePlanned(s)).length;
+  const hasPrompt=!!window._installPrompt;
+  const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isStandalone=window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone;
+  const showInstall=(hasPrompt||isIOS)&&!isStandalone;
+  return `<div class="scroll">
+    ${showInstall?`<div class="install-banner">
       <div style="font-size:28px">📲</div>
       <div class="install-banner-text">
         <strong>Установить на рабочий стол</strong>
-        ${isIOS
-          ? 'Нажмите <b>Поделиться</b> → <b>На экран "Домой"</b>'
-          : '<button class="btn btn-sm" style="background:rgba(201,170,124,.2);color:#C9AA7C;border:1px solid rgba(201,170,124,.3);margin-top:6px" onclick="installApp()">Установить</button>'
-        }
-      </div>
-    </div>` : '';
-
-  return `<div class="scroll">
-    ${installBanner}
+        ${isIOS?'Safari → Поделиться → «На экран "Домой"»'
+          :'<button class="btn btn-sm" style="background:rgba(201,170,124,.2);color:#C9AA7C;border:1px solid rgba(201,170,124,.3);margin-top:6px" onclick="installApp()">Установить</button>'}
+      </div></div>`:''}
     <div class="summary-strip">
-      <div class="sum-card">
-        <div class="sum-label">Бюджет</div>
-        <div class="sum-val c-gold">${fmtShort(tb)}</div>
-      </div>
-      <div class="sum-card">
-        <div class="sum-label">Потрачено</div>
-        <div class="sum-val c-green">${fmtShort(ts)}</div>
-      </div>
-      <div class="sum-card">
-        <div class="sum-label">Остаток</div>
-        <div class="sum-val ${rem<0?'c-red':'c-blue'}">${fmtShort(rem)}</div>
-      </div>
+      <div class="sum-card" style="animation-delay:.05s"><div class="sum-label">Бюджет</div><div class="sum-val c-gold">${fmtShort(tb)}</div></div>
+      <div class="sum-card" style="animation-delay:.1s"><div class="sum-label">Потрачено</div><div class="sum-val c-green">${fmtShort(ts)}</div></div>
+      <div class="sum-card" style="animation-delay:.15s"><div class="sum-label">Остаток</div><div class="sum-val ${rem<0?'c-red':'c-blue'}">${fmtShort(rem)}</div></div>
     </div>
-
     <div class="prog-wrap">
-      <div class="prog-head">
-        <span>Общий прогресс</span>
-        <span style="font-family:'DM Mono',monospace;color:var(--gold)">${Math.round(pct)}%</span>
-      </div>
+      <div class="prog-head"><span>Общий прогресс</span><span style="font-family:'DM Mono',monospace;color:var(--gold)">${Math.round(pct)}%</span></div>
       <div class="prog-bar"><div class="prog-fill" style="width:${pct}%"></div></div>
       <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:11px;color:var(--text3)">
-        <span>${doneStages} из ${stages.length} этапов завершено</span>
+        <span>${doneS} из ${stages.length} этапов</span>
         <span>${stages.reduce((a,s)=>a+s.items.filter(i=>i.done).length,0)} / ${stages.reduce((a,s)=>a+s.items.length,0)} позиций</span>
       </div>
     </div>
-
-    ${tb>0?`
-    <div class="card" style="margin-bottom:14px">
+    ${tb>0?`<div class="card" style="margin-bottom:14px">
       <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px">Бюджет по этапам</div>
-      <div class="breakdown-bar">
-        ${stages.map(s=>`<div class="breakdown-item" style="flex:${s.budget/tb};background:${s.color}cc"></div>`).join('')}
-      </div>
-      <div class="breakdown-legend">
-        ${stages.map(s=>`<div class="bl-item"><div class="bl-dot" style="background:${s.color}"></div>${s.name}</div>`).join('')}
-      </div>
+      <div class="breakdown-bar">${stages.map(s=>`<div class="breakdown-item" style="flex:${s.budget/tb};background:${s.color}cc"></div>`).join('')}</div>
+      <div class="breakdown-legend">${stages.map(s=>`<div class="bl-item"><div class="bl-dot" style="background:${s.color}"></div>${s.name}</div>`).join('')}</div>
     </div>`:''}
-
-    ${stages.map(s=>{
-      const sp=stageSpent(s), pct=s.budget>0?Math.min(sp/s.budget*100,100):0;
+    ${stages.map((s,i)=>{
+      const sp=stageSpent(s),pct=s.budget>0?Math.min(sp/s.budget*100,100):0;
       const done=s.items.filter(i=>i.done).length;
-      return `
-      <div class="stage-list-card" onclick="openStage(${s.id})">
+      return `<div class="stage-list-card" style="animation-delay:${.05+i*.06}s" onclick="openStage(${s.id})">
         <div class="slc-head">
           <div class="slc-icon">${s.icon}</div>
-          <div class="slc-info">
-            <div class="slc-name">${s.name}</div>
-            <div class="slc-sub">${fmt(sp)} / ${fmt(s.budget)}</div>
-          </div>
+          <div class="slc-info"><div class="slc-name">${s.name}</div><div class="slc-sub">${fmt(sp)} / ${fmt(s.budget)}</div></div>
           <div class="slc-ring">${ringHTML(pct,s.color,48)}</div>
         </div>
         <div class="slc-bar"><div class="slc-bar-fill" style="width:${pct}%;background:${s.color}"></div></div>
       </div>`;
     }).join('')}
-    <div style="height:8px"></div>
   </div>`;
 }
 
-// ── STAGES LIST ──
-function renderStages() {
+// STAGES
+function renderStages(){
   return `<div class="scroll">
     ${stages.length===0?`<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">Нет этапов.<br>Нажмите + чтобы добавить</div></div>`:''}
     ${stages.map((s,i)=>{
-      const sp=stageSpent(s), pl=stagePlanned(s);
-      const pct=s.budget>0?Math.min(sp/s.budget*100,100):0;
+      const sp=stageSpent(s),pl=stagePlanned(s),pct=s.budget>0?Math.min(sp/s.budget*100,100):0;
       const done=s.items.filter(i=>i.done).length;
-      return `
-      <div class="card">
+      return `<div class="card" style="animation-delay:${i*.07}s">
         <div class="card-accent" style="background:linear-gradient(90deg,${s.color},transparent)"></div>
         <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:12px">
           <div style="display:flex;align-items:center;gap:10px;min-width:0;flex:1">
@@ -497,47 +488,38 @@ function renderStages() {
           <div class="stat-box"><div class="stat-lbl">${s.budget-pl<0?'Перерасход':'Запас'}</div>
             <div class="stat-val ${s.budget-pl<0?'c-red':'c-blue'}">${fmtShort(Math.abs(s.budget-pl))}</div></div>
         </div>
-        <div style="height:6px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;margin-bottom:10px">
-          <div style="height:100%;width:${pct}%;background:${s.color};border-radius:3px;transition:width .5s"></div>
+        <div style="height:6px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;margin-bottom:10px">
+          <div style="height:100%;width:${pct}%;background:${s.color};border-radius:3px;transition:width .6s"></div>
         </div>
-        <button class="btn btn-secondary" onclick="openStage(${s.id})" style="width:100%;font-size:13px">
-          Открыть позиции →
-        </button>
+        <button class="btn btn-secondary" onclick="openStage(${s.id})" style="width:100%;font-size:13px">Открыть позиции →</button>
       </div>`;
     }).join('')}
   </div>`;
 }
 
-// ── DETAIL ──
-function renderDetail() {
-  const s = stages.find(st=>st.id===activeStageId);
-  if (!s) return `<div class="empty" style="margin-top:60px"><div class="empty-icon">👆</div><div class="empty-text">Выберите этап<br>на вкладке «Этапы»</div></div>`;
-
-  const sp=stageSpent(s), pct=s.budget>0?Math.min(sp/s.budget*100,100):0;
+// DETAIL
+function renderDetail(){
+  const s=stages.find(st=>st.id===activeStageId);
+  if(!s) return `<div class="empty" style="margin-top:60px"><div class="empty-icon">👈</div><div class="empty-text">Выберите этап<br>на вкладке «Этапы»</div></div>`;
+  const sp=stageSpent(s),pct=s.budget>0?Math.min(sp/s.budget*100,100):0;
   return `<div id="view-detail">
     <div class="stage-detail-header">
-      <div class="sdh-left" style="flex:1;min-width:0">
-        <div class="sdh-title">
-          <span>${s.icon}</span>
-          <span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.name}</span>
-        </div>
-        <div class="sdh-budget">${fmt(sp)} потрачено из ${fmt(s.budget)}</div>
+      <div class="sdh-left">
+        <div class="sdh-title"><span>${s.icon}</span><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.name}</span></div>
+        <div class="sdh-budget">${fmt(sp)} из ${fmt(s.budget)}</div>
         <div class="sdh-prog"><div class="sdh-prog-fill" style="width:${pct}%;background:${s.color}"></div></div>
       </div>
-      <div style="display:flex;gap:6px;flex-shrink:0;margin-left:10px">
-        <button class="btn btn-icon btn-sm" onclick="editStage(${s.id})">✏️</button>
-      </div>
+      <button class="btn btn-icon btn-sm" onclick="editStage(${s.id})" style="flex-shrink:0;margin-left:10px">✏️</button>
     </div>
-
     <div class="detail-scroll">
-      <div style="padding:0 0 4px">
+      <div>
         <div style="padding:6px 16px;font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;background:var(--bg2);border-bottom:1px solid var(--border);display:grid;grid-template-columns:36px 1fr auto 32px;gap:8px;align-items:center">
           <span></span><span>Позиция</span><span>Сумма</span><span></span>
         </div>
         <div class="items-list">
           ${s.items.length===0?`<div class="empty" style="padding:32px 16px"><div style="font-size:32px;opacity:.3;margin-bottom:8px">📋</div><div class="empty-text">Добавьте первую позицию</div></div>`:''}
-          ${s.items.map(item=>`
-          <div class="item-row">
+          ${s.items.map((item,i)=>`
+          <div class="item-row" style="animation-delay:${i*.04}s">
             <div class="item-check ${item.done?'done':''}" style="${item.done?'background:'+s.color+';border-color:'+s.color:''}" onclick="toggleItem(${s.id},${item.id})">
               ${item.done?'<svg width="12" height="12" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" fill="none" stroke="#0D0F14" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>':''}
             </div>
@@ -546,17 +528,15 @@ function renderDetail() {
             <button class="item-del" onclick="deleteItem(${s.id},${item.id})">×</button>
           </div>`).join('')}
         </div>
-
         <div class="add-item-form">
           <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px">Добавить позицию</div>
-          <input type="text" id="newItemName" placeholder="Название работы / материала" style="margin-bottom:0"/>
+          <input type="text" id="newItemName" placeholder="Название работы / материала"/>
           <div class="add-item-row">
-            <input type="number" id="newItemCost" placeholder="Сумма, ₽" style="flex:1"/>
+            <input type="number" id="newItemCost" placeholder="Сумма, ${curCurrency().symbol}" style="flex:1"/>
             <button class="btn btn-sm" style="background:${s.color}22;color:${s.color};border:1px solid ${s.color}44;flex-shrink:0" onclick="addItem(${s.id})">＋ Добавить</button>
           </div>
         </div>
       </div>
-
       <div style="padding:12px 16px 8px">
         <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">Итого по этапу</div>
         <div class="stat-grid">
@@ -567,7 +547,6 @@ function renderDetail() {
             <div class="stat-val ${s.budget-stagePlanned(s)<0?'c-red':'c-blue'}">${fmtShort(Math.abs(s.budget-stagePlanned(s)))}</div></div>
         </div>
       </div>
-
       <div style="padding:0 16px 8px">
         <button class="btn btn-danger btn-sm" onclick="confirmDeleteStage(${s.id})" style="width:100%">🗑 Удалить этап</button>
       </div>
@@ -575,221 +554,149 @@ function renderDetail() {
   </div>`;
 }
 
-// SVG ring
-function ringHTML(pct, color, size) {
-  const r=(size-7)/2, circ=2*Math.PI*r, dash=pct/100*circ;
-  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
-    <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="3.5"/>
-    <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${color}" stroke-width="3.5"
-      stroke-dasharray="${dash} ${circ-dash}" stroke-dashoffset="${circ/4}" stroke-linecap="round"/>
-    <text x="${size/2}" y="${size/2+4}" text-anchor="middle" fill="white" font-size="9" font-family="'DM Mono',monospace" font-weight="600">${Math.round(pct)}%</text>
-  </svg>`;
-}
-
-// ═══════════════════════════════
+// ═══════════════════════════
 //  ACTIONS
-// ═══════════════════════════════
-function switchTab(tab) {
-  activeTab = tab;
-  render();
+// ═══════════════════════════
+function openStage(id){
+  activeStageId=id;
+  switchTab(2);
 }
 
-function openStage(id) {
-  activeStageId = id;
-  activeTab = 'detail';
-  render();
-}
-
-function toggleItem(stageId, itemId) {
-  stages = stages.map(s=>{
-    if(s.id!==stageId) return s;
-    return {...s, items: s.items.map(i=>i.id===itemId?{...i,done:!i.done}:i)};
-  });
+function toggleItem(stageId,itemId){
+  stages=stages.map(s=>s.id!==stageId?s:{...s,items:s.items.map(i=>i.id===itemId?{...i,done:!i.done}:i)});
   save(stages);
-  renderContent();
+  document.getElementById('panel2').innerHTML=renderDetail();
+  document.getElementById('panel0').innerHTML=renderOverview();
 }
 
-function deleteItem(stageId, itemId) {
-  stages = stages.map(s=>{
-    if(s.id!==stageId) return s;
-    return {...s, items: s.items.filter(i=>i.id!==itemId)};
-  });
+function deleteItem(stageId,itemId){
+  stages=stages.map(s=>s.id!==stageId?s:{...s,items:s.items.filter(i=>i.id!==itemId)});
   save(stages);
-  renderContent();
+  document.getElementById('panel2').innerHTML=renderDetail();
+  document.getElementById('panel0').innerHTML=renderOverview();
   showToast('Позиция удалена');
 }
 
-function addItem(stageId) {
-  const nameEl = document.getElementById('newItemName');
-  const costEl = document.getElementById('newItemCost');
-  const name = nameEl?.value.trim();
-  const cost = parseInt(costEl?.value);
+function addItem(stageId){
+  const nameEl=document.getElementById('newItemName');
+  const costEl=document.getElementById('newItemCost');
+  const name=nameEl?.value.trim(),cost=parseInt(costEl?.value);
   if(!name){showToast('Введите название','err');return;}
   if(!cost||cost<=0){showToast('Введите сумму','err');return;}
-  stages = stages.map(s=>{
-    if(s.id!==stageId) return s;
-    return {...s, items:[...s.items,{id:newId(),name,cost,done:false}]};
-  });
+  stages=stages.map(s=>s.id!==stageId?s:{...s,items:[...s.items,{id:newId(),name,cost,done:false}]});
   save(stages);
-  renderContent();
+  document.getElementById('panel2').innerHTML=renderDetail();
+  document.getElementById('panel0').innerHTML=renderOverview();
   showToast('Позиция добавлена');
 }
 
-function confirmDeleteStage(id) {
-  const s = stages.find(st=>st.id===id);
-  if(!s) return;
-  showModal(`
-    <div class="modal-handle"></div>
+function confirmDeleteStage(id){
+  const s=stages.find(st=>st.id===id);if(!s)return;
+  showModal(`<div class="modal-handle"></div>
     <div class="modal-title">Удалить «${s.name}»?</div>
     <p style="color:var(--text2);font-size:14px;margin-bottom:20px">Этап и все его позиции будут удалены навсегда.</p>
     <div style="display:flex;gap:10px">
       <button class="btn btn-secondary" onclick="closeModal()">Отмена</button>
       <button class="btn btn-danger" style="flex:1" onclick="deleteStage(${id})">Удалить</button>
-    </div>
-  `);
+    </div>`);
 }
 
-function deleteStage(id) {
-  stages = stages.filter(s=>s.id!==id);
-  if(activeStageId===id) activeStageId = stages[0]?.id||null;
-  save(stages);
-  closeModal();
-  if(activeTab==='detail') activeTab='stages';
-  render();
+function deleteStage(id){
+  stages=stages.filter(s=>s.id!==id);
+  if(activeStageId===id) activeStageId=stages[0]?.id||null;
+  save(stages);closeModal();
+  if(activeTab===2) switchTab(1);
+  else renderAllPanels();
   showToast('Этап удалён');
 }
 
-// ── ADD / EDIT STAGE MODAL ──
-function showStageModal(existing) {
-  const isEdit = !!existing;
-  const data = existing || {name:'',budget:'',icon:'🏠',color:'#7BB8CC'};
-
-  showModal(`
-    <div class="modal-handle"></div>
+function showStageModal(existing){
+  const isEdit=!!existing;
+  const data=existing||{name:'',budget:'',icon:'🏠',color:'#7BB8CC'};
+  window._stageFormData={...data};
+  showModal(`<div class="modal-handle"></div>
     <div class="modal-title">${isEdit?'Редактировать этап':'Новый этап'}</div>
-    <div class="form-group">
-      <label class="form-label">Название</label>
-      <input type="text" id="sName" placeholder="Например: Благоустройство" value="${data.name}"/>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Бюджет (₽)</label>
-      <input type="number" id="sBudget" placeholder="500000" value="${data.budget||''}"/>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Иконка</label>
-      <div class="icon-grid" id="iconGrid">
-        ${ICONS.map(ic=>`<div class="icon-opt ${ic===data.icon?'sel':''}" onclick="selectIcon('${ic}')">${ic}</div>`).join('')}
-      </div>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Цвет</label>
-      <div class="color-grid" id="colorGrid">
-        ${COLORS.map(c=>`<div class="color-opt ${c===data.color?'sel':''}" style="background:${c}" onclick="selectColor('${c}')"></div>`).join('')}
-      </div>
-    </div>
+    <div class="form-group"><label class="form-label">Название</label>
+      <input type="text" id="sName" placeholder="Например: Благоустройство" value="${data.name}"/></div>
+    <div class="form-group"><label class="form-label">Бюджет (${curCurrency().symbol})</label>
+      <input type="number" id="sBudget" placeholder="500000" value="${data.budget||''}"/></div>
+    <div class="form-group"><label class="form-label">Иконка</label>
+      <div class="icon-grid">${ICONS.map(ic=>`<div class="icon-opt ${ic===data.icon?'sel':''}" onclick="selectIcon('${ic}')">${ic}</div>`).join('')}</div></div>
+    <div class="form-group"><label class="form-label">Цвет</label>
+      <div class="color-grid">${COLORS.map(c=>`<div class="color-opt ${c===data.color?'sel':''}" style="background:${c}" onclick="selectColor('${c}')"></div>`).join('')}</div></div>
     <div style="display:flex;gap:10px;margin-top:4px">
       <button class="btn btn-secondary" onclick="closeModal()">Отмена</button>
-      <button class="btn btn-primary" onclick="saveStage('${isEdit?data.id:''}')">
-        ${isEdit?'Сохранить':'Создать'}
-      </button>
-    </div>
-  `);
-  window._stageFormData = {...data};
+      <button class="btn btn-primary" onclick="saveStage('${isEdit?data.id:''}')">${isEdit?'Сохранить':'Создать'}</button>
+    </div>`);
 }
 
-let _selectedIcon = null, _selectedColor = null;
-function selectIcon(ic) {
-  window._stageFormData.icon = ic;
-  document.querySelectorAll('.icon-opt').forEach(el=>{
-    el.classList.toggle('sel', el.textContent===ic);
-  });
+function selectIcon(ic){
+  window._stageFormData.icon=ic;
+  document.querySelectorAll('.icon-opt').forEach(el=>el.classList.toggle('sel',el.textContent===ic));
 }
-function selectColor(c) {
-  window._stageFormData.color = c;
-  document.querySelectorAll('.color-opt').forEach(el=>{
-    el.classList.toggle('sel', el.style.background===c || el.getAttribute('onclick')===`selectColor('${c}')`);
-  });
+function selectColor(c){
+  window._stageFormData.color=c;
+  document.querySelectorAll('.color-opt').forEach(el=>el.classList.toggle('sel',el.getAttribute('onclick')===`selectColor('${c}')`));
 }
 
-function saveStage(editId) {
-  const name = document.getElementById('sName')?.value.trim();
-  const budget = parseInt(document.getElementById('sBudget')?.value);
-  const icon = window._stageFormData?.icon || '🏠';
-  const color = window._stageFormData?.color || '#7BB8CC';
+function saveStage(editId){
+  const name=document.getElementById('sName')?.value.trim();
+  const budget=parseInt(document.getElementById('sBudget')?.value);
+  const icon=window._stageFormData?.icon||'🏠';
+  const color=window._stageFormData?.color||'#7BB8CC';
   if(!name){showToast('Введите название','err');return;}
   if(!budget||budget<=0){showToast('Введите бюджет','err');return;}
-
-  if(editId) {
-    const id = parseInt(editId);
-    stages = stages.map(s=>s.id===id?{...s,name,budget,icon,color}:s);
+  if(editId){
+    const id=parseInt(editId);
+    stages=stages.map(s=>s.id===id?{...s,name,budget,icon,color}:s);
     showToast('Этап обновлён');
   } else {
-    const id = newId();
-    stages = [...stages, {id,name,icon,color,budget,items:[]}];
-    activeStageId = id;
+    const id=newId();
+    stages=[...stages,{id,name,icon,color,budget,items:[]}];
+    activeStageId=id;
     showToast('Этап добавлен');
   }
-  save(stages);
-  closeModal();
-  render();
+  save(stages);closeModal();renderAllPanels();
 }
 
-function editStage(id) {
-  const s = stages.find(st=>st.id===id);
-  if(s) showStageModal(s);
-}
+function editStage(id){const s=stages.find(st=>st.id===id);if(s)showStageModal(s);}
 
-// ── MODAL SYSTEM ──
-function showModal(html) {
+function showModal(html){
   closeModal();
-  const bd = document.createElement('div');
-  bd.className = 'modal-backdrop';
-  bd.id = 'modalBackdrop';
-  bd.innerHTML = `<div class="modal">${html}</div>`;
-  bd.addEventListener('click', e=>{ if(e.target===bd) closeModal(); });
+  const bd=document.createElement('div');
+  bd.className='modal-backdrop';bd.id='modalBackdrop';
+  bd.innerHTML=`<div class="modal">${html}</div>`;
+  bd.addEventListener('click',e=>{if(e.target===bd)closeModal();});
   document.body.appendChild(bd);
 }
-function closeModal() {
-  document.getElementById('modalBackdrop')?.remove();
-}
+function closeModal(){document.getElementById('modalBackdrop')?.remove();}
 
-// ── EXPORT ──
-function exportData() {
-  const data = JSON.stringify(stages, null, 2);
-  const blob = new Blob([data], {type:'application/json'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `isapp-backup-${new Date().toISOString().split('T')[0]}.json`;
-  a.click();
-  URL.revokeObjectURL(url);
+function exportData(){
+  const blob=new Blob([JSON.stringify(stages,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;
+  a.download=`isapp-backup-${new Date().toISOString().split('T')[0]}.json`;
+  a.click();URL.revokeObjectURL(url);
   showToast('Данные сохранены');
 }
 
-// ── INSTALL ──
-window._installPrompt = null;
-window.addEventListener('beforeinstallprompt', e => {
-  e.preventDefault();
-  window._installPrompt = e;
-  render(); // show banner
-});
-function installApp() {
-  if(!window._installPrompt) return;
+window._installPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();window._installPrompt=e;renderAllPanels();});
+function installApp(){
+  if(!window._installPrompt)return;
   window._installPrompt.prompt();
-  window._installPrompt.userChoice.then(()=>{ window._installPrompt=null; render(); });
+  window._installPrompt.userChoice.then(()=>{window._installPrompt=null;renderAllPanels();});
 }
 
-// ── WIRING ──
-document.getElementById('btnAddStage').onclick = () => showStageModal(null);
-document.getElementById('btnExport').onclick = exportData;
+// ─ INIT ─
+document.getElementById('btnAddStage').onclick=()=>showStageModal(null);
+document.getElementById('btnExport').onclick=exportData;
 
-// ── SERVICE WORKER ──
-if('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js').catch(()=>{});
-}
+if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
 
-// ── INIT ──
-render();
+renderCurrencyPill();
+switchTab(0, false);
+initSwipe();
 </script>
 </body>
 </html>
