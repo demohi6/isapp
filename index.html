@@ -17,122 +17,164 @@
   --bg:#0D0F14;--bg2:#13161C;--bg3:#1A1E27;
   --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.12);
   --text:#EAE6DE;--text2:rgba(234,230,222,0.55);--text3:rgba(234,230,222,0.28);
-  --gold:#C9AA7C;--blue:#7BB8CC;--green:#80C89A;--red:#CC7B7B;--purple:#9E8ED4;
+  --gold:#C9AA7C;--blue:#7BB8CC;--green:#80C89A;--red:#CC7B7B;
   --safe:env(safe-area-inset-bottom,0px);
+  --top:env(safe-area-inset-top,0px);
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Mulish',sans-serif;overflow:hidden}
-#app{height:100%;display:flex;flex-direction:column;max-width:600px;margin:0 auto;position:relative}
 
-/* HEADER */
-.header{padding:max(env(safe-area-inset-top,16px),16px) 16px 12px;background:var(--bg);border-bottom:1px solid var(--border);flex-shrink:0}
-.header-row{display:flex;align-items:center;justify-content:space-between}
-.logo{font-family:'Unbounded',sans-serif;font-size:16px;font-weight:700;letter-spacing:-.5px}
-.logo span{color:var(--gold)}
-.header-actions{display:flex;gap:8px}
+/* ── APP SHELL ── */
+#app{position:fixed;inset:0;overflow:hidden}
 
-/* TABS */
-.tabs{display:flex;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0}
-.tab-btn{
-  flex:1;padding:12px 8px;font-family:'Mulish',sans-serif;font-size:12px;font-weight:600;
-  letter-spacing:.3px;color:var(--text3);background:none;border:none;cursor:pointer;
-  border-bottom:2px solid transparent;transition:color .25s,border-color .25s;white-space:nowrap;
-}
-.tab-btn.active{color:var(--gold);border-bottom-color:var(--gold)}
-
-/* SWIPE CONTAINER */
-#swipeWrap{flex:1;overflow:hidden;position:relative}
-.views-track{
-  display:flex;width:300%;height:100%;
-  transition:transform .32s cubic-bezier(.4,0,.2,1);
+/* ── PAGES ── */
+.page{
+  position:absolute;inset:0;
+  background:var(--bg);
+  overflow-y:auto;overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+  transition:transform .35s cubic-bezier(.4,0,.2,1),opacity .35s ease;
   will-change:transform;
 }
-.view-panel{width:calc(100%/3);height:100%;overflow:hidden;display:flex;flex-direction:column}
+.page::-webkit-scrollbar{display:none}
+.page.page-hidden-right{transform:translateX(100%);opacity:0;pointer-events:none}
+.page.page-hidden-left{transform:translateX(-30%);opacity:0;pointer-events:none}
 
-/* SCROLL */
-.scroll{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding:16px 16px calc(80px + var(--safe))}
-.scroll::-webkit-scrollbar{display:none}
+/* ── HEADER ── */
+.header{
+  padding:calc(var(--top) + 16px) 16px 14px;
+  background:var(--bg);
+  position:sticky;top:0;z-index:10;
+}
+.header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:var(--border)}
+.header-row{display:flex;align-items:center;justify-content:space-between}
+.logo{font-family:'Unbounded',sans-serif;font-size:17px;font-weight:700;letter-spacing:-.5px}
+.logo span{color:var(--gold)}
+.back-btn{
+  display:flex;align-items:center;gap:8px;
+  font-size:14px;font-weight:600;color:var(--gold);
+  background:none;border:none;cursor:pointer;padding:4px 0;
+  font-family:'Mulish',sans-serif;
+}
+.back-btn svg{transition:transform .2s}
+.back-btn:active svg{transform:translateX(-3px)}
 
-/* CARDS */
-.card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:12px;position:relative;overflow:hidden;
-  animation:cardIn .3s ease both}
-@keyframes cardIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
-.card-accent{position:absolute;top:0;left:0;right:0;height:3px}
+/* ── SCROLL CONTENT ── */
+.content{padding:16px 16px calc(32px + var(--safe))}
 
-/* SUMMARY */
-.summary-strip{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px}
-.sum-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:12px 10px;text-align:center;
-  animation:cardIn .3s ease both}
-.sum-label{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px}
-.sum-val{font-family:'DM Mono',monospace;font-size:13px;font-weight:500;line-height:1.2}
+/* ── SUMMARY STRIP ── */
+.summary-strip{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.sum-card{
+  background:var(--bg2);border:1px solid var(--border);border-radius:14px;
+  padding:14px 14px;
+  animation:fadeUp .4s ease both;
+}
+.sum-card.full{grid-column:1/-1}
+.sum-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px}
+.sum-val{font-family:'DM Mono',monospace;font-size:20px;font-weight:600;line-height:1}
+.sum-sub{font-size:11px;color:var(--text3);margin-top:4px}
 
-/* STAGE LIST CARD */
-.stage-list-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;margin-bottom:10px;overflow:hidden;
-  cursor:pointer;transition:transform .15s,box-shadow .15s;animation:cardIn .3s ease both}
-.stage-list-card:active{transform:scale(.97)}
-.slc-head{display:flex;align-items:center;gap:12px;padding:14px 16px}
-.slc-icon{font-size:22px;flex-shrink:0}
-.slc-info{flex:1;min-width:0}
-.slc-name{font-weight:600;font-size:14px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.slc-sub{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace}
-.slc-ring{flex-shrink:0}
-.slc-bar{height:3px;background:rgba(255,255,255,.05);margin:0 16px 12px;border-radius:2px;overflow:hidden}
-.slc-bar-fill{height:100%;border-radius:2px;transition:width .6s ease}
+/* ── PROGRESS ── */
+.prog-bar-wrap{height:6px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;margin-top:10px}
+.prog-bar-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--gold),var(--green));transition:width .8s cubic-bezier(.4,0,.2,1)}
 
-/* PROGRESS */
-.prog-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:14px}
-.prog-head{display:flex;justify-content:space-between;margin-bottom:10px;font-size:12px;color:var(--text2)}
-.prog-bar{height:8px;background:rgba(255,255,255,.06);border-radius:4px;overflow:hidden}
-.prog-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--gold),var(--green));transition:width .7s ease}
+/* ── SECTION TITLE ── */
+.section-title{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.9px;margin-bottom:10px;margin-top:4px}
 
-/* DETAIL HEADER */
-.stage-detail-header{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:14px 16px 12px;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0}
-.sdh-left{min-width:0;flex:1}
-.sdh-title{font-family:'Unbounded',sans-serif;font-size:15px;font-weight:600;display:flex;align-items:center;gap:8px;margin-bottom:2px}
-.sdh-budget{font-family:'DM Mono',monospace;font-size:12px;color:var(--text3);margin-bottom:8px}
-.sdh-prog{height:4px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden;width:100%}
-.sdh-prog-fill{height:100%;border-radius:2px;transition:width .5s}
+/* ── STAGE CARD ── */
+.stage-card{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:18px;margin-bottom:10px;overflow:hidden;
+  cursor:pointer;
+  transition:transform .18s,box-shadow .18s;
+  animation:fadeUp .4s ease both;
+  position:relative;
+}
+.stage-card:active{transform:scale(.97)}
+.stage-card-accent{position:absolute;top:0;left:0;right:0;height:3px}
+.stage-card-body{padding:16px 16px 14px;display:flex;align-items:center;gap:14px}
+.stage-card-icon{font-size:28px;flex-shrink:0}
+.stage-card-info{flex:1;min-width:0}
+.stage-card-name{font-weight:700;font-size:15px;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stage-card-meta{font-size:12px;color:var(--text3);font-family:'DM Mono',monospace}
+.stage-card-ring{flex-shrink:0}
+.stage-card-bar{height:3px;background:rgba(255,255,255,.05);margin:0 16px 14px;border-radius:2px;overflow:hidden}
+.stage-card-bar-fill{height:100%;border-radius:2px;transition:width .6s ease}
+.stage-card-stats{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);border-top:1px solid var(--border)}
+.scs-item{background:var(--bg2);padding:10px 14px}
+.scs-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
+.scs-val{font-family:'DM Mono',monospace;font-size:13px;font-weight:500}
 
-/* ITEMS */
-.items-list{padding:8px 0}
-.item-row{display:grid;grid-template-columns:36px 1fr auto 32px;align-items:center;gap:8px;padding:10px 16px;border-bottom:1px solid var(--border);
-  animation:itemIn .25s ease both;transition:background .15s}
-@keyframes itemIn{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:none}}
+/* ── STAGE DETAIL PAGE ── */
+.detail-hero{
+  padding:calc(var(--top) + 16px) 16px 0;
+  background:var(--bg2);
+  border-bottom:1px solid var(--border);
+  position:sticky;top:0;z-index:10;
+}
+.detail-hero-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px}
+.detail-hero-left{flex:1;min-width:0}
+.detail-hero-icon{font-size:32px;margin-bottom:6px}
+.detail-hero-name{font-family:'Unbounded',sans-serif;font-size:18px;font-weight:700;margin-bottom:4px}
+.detail-hero-budget{font-family:'DM Mono',monospace;font-size:13px;color:var(--text3)}
+.detail-hero-prog{height:4px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden;margin:10px 0 0}
+.detail-hero-prog-fill{height:100%;border-radius:2px;transition:width .6s}
+
+/* ── ITEMS ── */
+.items-section{background:var(--bg2);border:1px solid var(--border);border-radius:18px;overflow:hidden;margin-bottom:12px}
+.items-header{padding:10px 16px;font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;border-bottom:1px solid var(--border);display:grid;grid-template-columns:32px 1fr auto 32px;gap:8px;align-items:center}
+.item-row{
+  display:grid;grid-template-columns:32px 1fr auto 32px;
+  align-items:center;gap:8px;padding:11px 16px;
+  border-bottom:1px solid var(--border);
+  transition:background .15s;
+  animation:itemIn .25s ease both;
+}
 .item-row:last-child{border-bottom:none}
+@keyframes itemIn{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:none}}
 .item-check{width:22px;height:22px;border-radius:6px;border:1.5px solid rgba(255,255,255,.2);background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
 .item-check.done{border-color:transparent}
-.item-name{font-size:13px;font-weight:500;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;transition:color .2s}
+.item-name{font-size:13px;font-weight:500;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;transition:color .2s,text-decoration .2s}
 .item-name.done{text-decoration:line-through;color:var(--text3)}
 .item-cost{font-family:'DM Mono',monospace;font-size:12px;white-space:nowrap;color:var(--text2)}
-.item-del{background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:6px;transition:all .2s}
+.item-del{background:none;border:none;color:var(--text3);cursor:pointer;font-size:20px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:6px;transition:all .2s}
 .item-del:active{background:rgba(204,123,123,.2);color:var(--red)}
 
-/* ADD FORM */
-.add-item-form{padding:12px 16px;background:var(--bg3);border-top:1px solid var(--border);display:flex;flex-direction:column;gap:8px}
-.add-item-row{display:flex;gap:8px}
+/* ── ADD FORM ── */
+.add-form{background:var(--bg2);border:1px solid var(--border);border-radius:18px;padding:14px 16px;margin-bottom:12px}
+.add-form-title{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px}
+.add-form-row{display:flex;gap:8px;margin-top:8px}
 
-/* INPUTS */
-input[type=text],input[type=number],select{
-  background:rgba(255,255,255,.05);border:1px solid var(--border2);color:var(--text);border-radius:10px;padding:10px 12px;
-  font-family:'Mulish',sans-serif;font-size:14px;outline:none;width:100%;transition:border-color .2s;-webkit-appearance:none;
+/* ── STAT GRID ── */
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.stat-box{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:12px 14px}
+.stat-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.stat-val{font-family:'DM Mono',monospace;font-size:14px;font-weight:500}
+
+/* ── INPUTS ── */
+input[type=text],input[type=number]{
+  background:rgba(255,255,255,.05);border:1px solid var(--border2);color:var(--text);
+  border-radius:10px;padding:10px 12px;font-family:'Mulish',sans-serif;font-size:14px;
+  outline:none;width:100%;transition:border-color .2s;-webkit-appearance:none;
 }
-input:focus,select:focus{border-color:rgba(255,255,255,.3)}
+input:focus{border-color:rgba(255,255,255,.3)}
 
-/* BUTTONS */
-.btn{cursor:pointer;border:none;border-radius:12px;font-family:'Mulish',sans-serif;font-weight:600;font-size:14px;padding:12px 16px;
-  transition:transform .15s,opacity .15s;display:flex;align-items:center;justify-content:center;gap:6px;-webkit-user-select:none;user-select:none}
+/* ── BUTTONS ── */
+.btn{cursor:pointer;border:none;border-radius:12px;font-family:'Mulish',sans-serif;font-weight:600;
+  font-size:14px;padding:12px 16px;transition:transform .15s,opacity .15s;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  -webkit-user-select:none;user-select:none}
 .btn:active{transform:scale(.96)}
 .btn-primary{background:var(--gold);color:#0D0F14;width:100%}
 .btn-secondary{background:rgba(255,255,255,.07);color:var(--text2);flex:1}
 .btn-danger{background:rgba(204,123,123,.15);color:var(--red)}
-.btn-ghost{background:none;border:1px solid var(--border2);color:var(--text2)}
 .btn-sm{padding:8px 12px;font-size:13px;border-radius:10px}
 .btn-icon{padding:10px;border-radius:10px;background:rgba(255,255,255,.06);border:1px solid var(--border)}
 
-/* MODAL */
+/* ── MODAL ── */
 .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(8px);z-index:200;display:flex;align-items:flex-end;justify-content:center;animation:fadeIn .2s ease}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-.modal{background:var(--bg2);border:1px solid var(--border);border-radius:24px 24px 0 0;width:100%;max-width:600px;padding:24px 20px calc(24px + var(--safe));max-height:90vh;overflow-y:auto;animation:slideUp .28s cubic-bezier(.4,0,.2,1)}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:24px 24px 0 0;width:100%;max-width:600px;padding:24px 20px calc(24px + var(--safe));max-height:92vh;overflow-y:auto;animation:slideUp .28s cubic-bezier(.4,0,.2,1)}
 @keyframes slideUp{from{transform:translateY(60px);opacity:0}to{transform:translateY(0);opacity:1}}
 .modal-handle{width:40px;height:4px;background:rgba(255,255,255,.15);border-radius:2px;margin:0 auto 20px}
 .modal-title{font-family:'Unbounded',sans-serif;font-size:16px;font-weight:600;margin-bottom:20px}
@@ -145,126 +187,68 @@ input:focus,select:focus{border-color:rgba(255,255,255,.3)}
 .color-opt{width:28px;height:28px;border-radius:50%;cursor:pointer;transition:transform .15s;border:2px solid transparent}
 .color-opt.sel{border-color:white;transform:scale(1.15)}
 
-/* BREAKDOWN */
-.breakdown-bar{display:flex;height:10px;border-radius:5px;overflow:hidden;gap:1px;margin-bottom:10px}
-.breakdown-item{height:100%;transition:flex .5s ease;min-width:3px}
-.breakdown-legend{display:flex;flex-wrap:wrap;gap:8px}
-.bl-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3)}
-.bl-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
-
-/* STAT GRID */
-.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
-.stat-box{background:var(--bg3);border-radius:10px;padding:10px 12px}
-.stat-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px}
-.stat-val{font-family:'DM Mono',monospace;font-size:14px;font-weight:500}
-
-/* EMPTY */
-.empty{text-align:center;padding:48px 20px;color:var(--text3)}
-.empty-icon{font-size:48px;margin-bottom:12px;opacity:.4}
-.empty-text{font-size:14px}
-
-/* COLORS */
-.c-gold{color:var(--gold)}.c-blue{color:var(--blue)}.c-green{color:var(--green)}.c-red{color:var(--red)}
-
-/* DETAIL VIEW */
-#view-detail{display:flex;flex-direction:column;height:100%;overflow:hidden}
-.detail-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:calc(16px + var(--safe))}
-.detail-scroll::-webkit-scrollbar{display:none}
-
-/* TOAST */
-.toast{position:fixed;top:max(env(safe-area-inset-top,16px),16px);left:50%;transform:translateX(-50%) translateY(-80px);
-  background:var(--bg3);border:1px solid var(--border2);border-radius:12px;padding:10px 18px;font-size:13px;font-weight:600;
-  z-index:300;transition:transform .3s ease;white-space:nowrap;box-shadow:0 8px 32px rgba(0,0,0,.5)}
+/* ── TOAST ── */
+.toast{position:fixed;top:calc(var(--top) + 12px);left:50%;transform:translateX(-50%) translateY(-80px);
+  background:var(--bg3);border:1px solid var(--border2);border-radius:12px;
+  padding:10px 18px;font-size:13px;font-weight:600;z-index:300;
+  transition:transform .3s ease;white-space:nowrap;box-shadow:0 8px 32px rgba(0,0,0,.5)}
 .toast.show{transform:translateX(-50%) translateY(0)}
 
-/* INSTALL BANNER */
-.install-banner{background:linear-gradient(135deg,rgba(201,170,124,.15),rgba(127,184,204,.1));border:1px solid rgba(201,170,124,.3);border-radius:12px;padding:12px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px}
+/* ── EMPTY ── */
+.empty{text-align:center;padding:48px 20px;color:var(--text3)}
+.empty-icon{font-size:48px;margin-bottom:12px;opacity:.4}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.c-gold{color:var(--gold)}.c-blue{color:var(--blue)}.c-green{color:var(--green)}.c-red{color:var(--red)}
+
+/* ── INSTALL ── */
+.install-banner{background:linear-gradient(135deg,rgba(201,170,124,.12),rgba(127,184,204,.08));border:1px solid rgba(201,170,124,.25);border-radius:14px;padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px}
 .install-banner-text{flex:1;font-size:12px;color:var(--text2);line-height:1.4}
 .install-banner-text strong{color:var(--gold);display:block;font-size:13px;margin-bottom:2px}
-
-/* CURRENCY PILL */
-.currency-pill{display:flex;background:var(--bg3);border:1px solid var(--border);border-radius:20px;overflow:hidden;padding:3px}
-.cp-btn{flex:1;padding:5px 10px;border:none;border-radius:16px;font-size:11px;font-weight:700;font-family:'DM Mono',monospace;
-  cursor:pointer;color:var(--text3);background:none;transition:all .2s;white-space:nowrap}
-.cp-btn.active{background:var(--gold);color:#0D0F14}
-
-/* SWIPE HINT */
-.swipe-dots{display:flex;justify-content:center;gap:5px;padding:6px 0;flex-shrink:0;background:var(--bg2)}
-.swipe-dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.15);transition:all .25s}
-.swipe-dot.active{width:18px;border-radius:3px;background:var(--gold)}
-
-@media(min-width:480px){.summary-strip{grid-template-columns:1fr 1fr 1fr}.stat-grid{grid-template-columns:1fr 1fr 1fr}}
 </style>
 </head>
 <body>
 <div id="app">
-  <div class="header">
-    <div class="header-row">
-      <div class="logo">Строим <span>Дом</span> 🏡</div>
-      <div class="header-actions">
-        <div class="currency-pill" id="currencyPill"></div>
-        <button class="btn btn-icon" id="btnExport" title="Экспорт" style="font-size:16px">💾</button>
-        <button class="btn btn-icon" id="btnAddStage" title="Добавить этап" style="font-size:18px">＋</button>
+  <!-- DASHBOARD PAGE -->
+  <div class="page" id="pageDash">
+    <div class="header">
+      <div class="header-row">
+        <div class="logo">Строим <span>Дом</span> 🏡</div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-icon" id="btnExport" style="font-size:16px">💾</button>
+          <button class="btn btn-icon" id="btnAdd" style="font-size:18px">＋</button>
+        </div>
       </div>
     </div>
+    <div class="content" id="dashContent"></div>
   </div>
-  <div class="tabs" id="tabBar"></div>
-  <div class="swipe-dots" id="swipeDots"></div>
-  <div id="swipeWrap">
-    <div class="views-track" id="viewsTrack">
-      <div class="view-panel" id="panel0"></div>
-      <div class="view-panel" id="panel1"></div>
-      <div class="view-panel" id="panel2"></div>
-    </div>
+
+  <!-- STAGE DETAIL PAGE -->
+  <div class="page page-hidden-right" id="pageDetail">
+    <div class="detail-hero" id="detailHero"></div>
+    <div class="content" id="detailContent"></div>
   </div>
 </div>
 <div class="toast" id="toast"></div>
 
 <script>
-// ═══════════════════════════
-//  CURRENCY
-// ═══════════════════════════
-const CURRENCIES = [
-  { code:'AZN', symbol:'₼', label:'₼', name:'Манат',  locale:'az-AZ' },
-  { code:'RUB', symbol:'₽', label:'₽', name:'Рубль',  locale:'ru-RU' },
-  { code:'USD', symbol:'$', label:'$', name:'Доллар', locale:'en-US' },
-];
-let currencyIdx = parseInt(localStorage.getItem('isapp_currency')||'0');
-const curCurrency = () => CURRENCIES[currencyIdx];
-
-function fmt(n) {
-  const c = curCurrency();
-  try {
-    return new Intl.NumberFormat(c.locale,{style:'currency',currency:c.code,maximumFractionDigits:0}).format(n);
-  } catch { return c.symbol + Math.round(n).toLocaleString(); }
-}
-function fmtShort(n) {
-  const c = curCurrency();
-  const abs = Math.abs(n), s = n<0?'−':'';
-  if(abs>=1e6) return s+(abs/1e6).toFixed(1).replace('.0','')+' млн '+c.symbol;
-  if(abs>=1e3) return s+(abs/1e3).toFixed(0)+' тыс '+c.symbol;
+// ══════════════════════════
+//  FORMAT — Манат
+// ══════════════════════════
+const fmt = n => new Intl.NumberFormat('az-AZ',{style:'currency',currency:'AZN',maximumFractionDigits:0}).format(n);
+const fmtShort = n => {
+  const abs=Math.abs(n), s=n<0?'−':'';
+  if(abs>=1e6) return s+(abs/1e6).toFixed(1).replace('.0','')+' млн ₼';
+  if(abs>=1e3) return s+(abs/1e3).toFixed(0)+' тыс ₼';
   return fmt(n);
-}
+};
 
-function setCurrency(idx) {
-  currencyIdx = idx;
-  localStorage.setItem('isapp_currency', idx);
-  renderCurrencyPill();
-  renderAllPanels();
-}
-
-function renderCurrencyPill() {
-  const el = document.getElementById('currencyPill');
-  el.innerHTML = CURRENCIES.map((c,i)=>`
-    <button class="cp-btn ${i===currencyIdx?'active':''}" onclick="setCurrency(${i})">${c.label}</button>
-  `).join('');
-}
-
-// ═══════════════════════════
+// ══════════════════════════
 //  DATA
-// ═══════════════════════════
-const STORE_KEY = 'isapp_v2';
-const DEFAULT_STAGES = [
+// ══════════════════════════
+const STORE_KEY='isapp_v3';
+const DEFAULT_STAGES=[
   {id:1,name:"Фундамент",icon:"⬛",color:"#C9AA7C",budget:850000,items:[
     {id:1,name:"Земляные работы",cost:120000,done:true},
     {id:2,name:"Арматура и опалубка",cost:180000,done:true},
@@ -309,15 +293,14 @@ const DEFAULT_STAGES = [
 function load(){try{return JSON.parse(localStorage.getItem(STORE_KEY))||DEFAULT_STAGES}catch{return DEFAULT_STAGES}}
 function save(s){localStorage.setItem(STORE_KEY,JSON.stringify(s))}
 
-let stages = load();
-let activeTab = 0; // 0=overview 1=stages 2=detail
-let activeStageId = stages[0]?.id||null;
+let stages=load();
+let activeStageId=null;
 
-const stageSpent  = s => s.items.filter(i=>i.done).reduce((a,b)=>a+b.cost,0);
-const stagePlanned= s => s.items.reduce((a,b)=>a+b.cost,0);
-const totalBudget = () => stages.reduce((a,s)=>a+s.budget,0);
-const totalSpent  = () => stages.reduce((a,s)=>a+stageSpent(s),0);
-const newId = () => Date.now()+Math.floor(Math.random()*1000);
+const stageSpent  =s=>s.items.filter(i=>i.done).reduce((a,b)=>a+b.cost,0);
+const stagePlanned=s=>s.items.reduce((a,b)=>a+b.cost,0);
+const totalBudget =()=>stages.reduce((a,s)=>a+s.budget,0);
+const totalSpent  =()=>stages.reduce((a,s)=>a+stageSpent(s),0);
+const newId=()=>Date.now()+Math.floor(Math.random()*999);
 const ICONS=['🏠','🏗','⬛','🪟','⚙️','🎨','🌿','🧱','🔧','💡','🚿','🛠','🏡','🌲','🪣','🔑','🏊','🌳'];
 const COLORS=['#C9AA7C','#7BB8CC','#CC7B7B','#9E8ED4','#80C89A','#C8C07E','#CC9B7B','#7BC4CC','#B87BB8','#7BA8CC'];
 
@@ -328,322 +311,260 @@ function showToast(msg,type='ok'){
   t._to=setTimeout(()=>{t.className='toast'},2200);
 }
 
-// ═══════════════════════════
-//  SWIPE + TABS
-// ═══════════════════════════
-const TABS=[{label:'Обзор'},{label:'Этапы'},{label:'Детали'}];
-
-function renderTabs(){
-  document.getElementById('tabBar').innerHTML=TABS.map((t,i)=>
-    `<button class="tab-btn ${activeTab===i?'active':''}" onclick="switchTab(${i})">${t.label}</button>`
-  ).join('');
-  document.getElementById('swipeDots').innerHTML=TABS.map((_,i)=>
-    `<div class="swipe-dot ${activeTab===i?'active':''}"></div>`
-  ).join('');
+// ══════════════════════════
+//  NAVIGATION
+// ══════════════════════════
+function goDetail(id){
+  activeStageId=id;
+  renderDetail();
+  const dash=document.getElementById('pageDash');
+  const detail=document.getElementById('pageDetail');
+  detail.classList.remove('page-hidden-right');
+  dash.classList.add('page-hidden-left');
+  detail.scrollTop=0;
 }
 
-function switchTab(idx, animate=true){
-  activeTab=idx;
-  const track=document.getElementById('viewsTrack');
-  if(!animate) track.style.transition='none';
-  track.style.transform=`translateX(${-idx*100/3}%)`;
-  if(!animate) requestAnimationFrame(()=>{ track.style.transition=''; });
-  renderTabs();
-  renderAllPanels();
+function goBack(){
+  const dash=document.getElementById('pageDash');
+  const detail=document.getElementById('pageDetail');
+  dash.classList.remove('page-hidden-left');
+  detail.classList.add('page-hidden-right');
+  renderDash(); // refresh counts
 }
 
-// Touch swipe
-let touchStartX=0, touchStartY=0, swiping=false, swipeDir=null;
-function initSwipe(){
-  const wrap=document.getElementById('swipeWrap');
-  wrap.addEventListener('touchstart',e=>{
-    touchStartX=e.touches[0].clientX;
-    touchStartY=e.touches[0].clientY;
-    swiping=false; swipeDir=null;
-  },{passive:true});
-  wrap.addEventListener('touchmove',e=>{
-    const dx=e.touches[0].clientX-touchStartX;
-    const dy=e.touches[0].clientY-touchStartY;
-    if(!swipeDir) swipeDir=Math.abs(dx)>Math.abs(dy)?'h':'v';
-    if(swipeDir==='h'){
-      swiping=true;
-      const track=document.getElementById('viewsTrack');
-      const base=-activeTab*100/3;
-      const offset=dx/window.innerWidth*100/3;
-      track.style.transition='none';
-      track.style.transform=`translateX(calc(${base}% + ${offset}%))`;
-    }
-  },{passive:true});
-  wrap.addEventListener('touchend',e=>{
-    if(!swiping){
-      const track=document.getElementById('viewsTrack');
-      track.style.transition='';
-      track.style.transform=`translateX(${-activeTab*100/3}%)`;
-      return;
-    }
-    const dx=e.changedTouches[0].clientX-touchStartX;
-    const track=document.getElementById('viewsTrack');
-    track.style.transition='';
-    if(dx<-50 && activeTab<2) switchTab(activeTab+1);
-    else if(dx>50 && activeTab>0) switchTab(activeTab-1);
-    else track.style.transform=`translateX(${-activeTab*100/3}%)`;
-  },{passive:true});
-}
+// Swipe back (detail → dash)
+let txStart=0,tyStart=0,swDir=null;
+document.getElementById('pageDetail').addEventListener('touchstart',e=>{
+  txStart=e.touches[0].clientX;tyStart=e.touches[0].clientY;swDir=null;
+},{passive:true});
+document.getElementById('pageDetail').addEventListener('touchmove',e=>{
+  const dx=e.touches[0].clientX-txStart,dy=e.touches[0].clientY-tyStart;
+  if(!swDir) swDir=Math.abs(dx)>Math.abs(dy)?'h':'v';
+  if(swDir==='h'&&dx>0){
+    document.getElementById('pageDetail').style.transform=`translateX(${Math.max(0,dx)}px)`;
+  }
+},{passive:true});
+document.getElementById('pageDetail').addEventListener('touchend',e=>{
+  const dx=e.changedTouches[0].clientX-txStart;
+  document.getElementById('pageDetail').style.transform='';
+  if(swDir==='h'&&dx>80) goBack();
+},{passive:true});
 
-// ═══════════════════════════
-//  RENDER
-// ═══════════════════════════
-function renderAllPanels(){
-  document.getElementById('panel0').innerHTML=renderOverview();
-  document.getElementById('panel1').innerHTML=renderStages();
-  document.getElementById('panel2').innerHTML=renderDetail();
-}
-
+// ══════════════════════════
+//  RING SVG
+// ══════════════════════════
 function ringHTML(pct,color,size){
   const r=(size-7)/2,circ=2*Math.PI*r,dash=pct/100*circ;
   return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
-    <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="3.5"/>
-    <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${color}" stroke-width="3.5"
+    <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="4"/>
+    <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${color}" stroke-width="4"
       stroke-dasharray="${dash} ${circ-dash}" stroke-dashoffset="${circ/4}" stroke-linecap="round"/>
-    <text x="${size/2}" y="${size/2+4}" text-anchor="middle" fill="white" font-size="9" font-family="'DM Mono',monospace" font-weight="600">${Math.round(pct)}%</text>
+    <text x="${size/2}" y="${size/2+4}" text-anchor="middle" fill="white" font-size="10" font-family="'DM Mono',monospace" font-weight="600">${Math.round(pct)}%</text>
   </svg>`;
 }
 
-// OVERVIEW
-function renderOverview(){
+// ══════════════════════════
+//  DASHBOARD
+// ══════════════════════════
+function renderDash(){
   const tb=totalBudget(),ts=totalSpent(),rem=tb-ts;
   const pct=tb>0?Math.min(ts/tb*100,100):0;
   const doneS=stages.filter(s=>stagePlanned(s)>0&&stageSpent(s)===stagePlanned(s)).length;
-  const hasPrompt=!!window._installPrompt;
   const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
   const isStandalone=window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone;
-  const showInstall=(hasPrompt||isIOS)&&!isStandalone;
-  return `<div class="scroll">
+  const showInstall=(!!window._installPrompt||isIOS)&&!isStandalone;
+
+  document.getElementById('dashContent').innerHTML=`
     ${showInstall?`<div class="install-banner">
-      <div style="font-size:28px">📲</div>
+      <div style="font-size:26px">📲</div>
       <div class="install-banner-text">
         <strong>Установить на рабочий стол</strong>
         ${isIOS?'Safari → Поделиться → «На экран "Домой"»'
           :'<button class="btn btn-sm" style="background:rgba(201,170,124,.2);color:#C9AA7C;border:1px solid rgba(201,170,124,.3);margin-top:6px" onclick="installApp()">Установить</button>'}
       </div></div>`:''}
-    <div class="summary-strip">
-      <div class="sum-card" style="animation-delay:.05s"><div class="sum-label">Бюджет</div><div class="sum-val c-gold">${fmtShort(tb)}</div></div>
-      <div class="sum-card" style="animation-delay:.1s"><div class="sum-label">Потрачено</div><div class="sum-val c-green">${fmtShort(ts)}</div></div>
-      <div class="sum-card" style="animation-delay:.15s"><div class="sum-label">Остаток</div><div class="sum-val ${rem<0?'c-red':'c-blue'}">${fmtShort(rem)}</div></div>
-    </div>
-    <div class="prog-wrap">
-      <div class="prog-head"><span>Общий прогресс</span><span style="font-family:'DM Mono',monospace;color:var(--gold)">${Math.round(pct)}%</span></div>
-      <div class="prog-bar"><div class="prog-fill" style="width:${pct}%"></div></div>
-      <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:11px;color:var(--text3)">
-        <span>${doneS} из ${stages.length} этапов</span>
-        <span>${stages.reduce((a,s)=>a+s.items.filter(i=>i.done).length,0)} / ${stages.reduce((a,s)=>a+s.items.length,0)} позиций</span>
-      </div>
-    </div>
-    ${tb>0?`<div class="card" style="margin-bottom:14px">
-      <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px">Бюджет по этапам</div>
-      <div class="breakdown-bar">${stages.map(s=>`<div class="breakdown-item" style="flex:${s.budget/tb};background:${s.color}cc"></div>`).join('')}</div>
-      <div class="breakdown-legend">${stages.map(s=>`<div class="bl-item"><div class="bl-dot" style="background:${s.color}"></div>${s.name}</div>`).join('')}</div>
-    </div>`:''}
-    ${stages.map((s,i)=>{
-      const sp=stageSpent(s),pct=s.budget>0?Math.min(sp/s.budget*100,100):0;
-      const done=s.items.filter(i=>i.done).length;
-      return `<div class="stage-list-card" style="animation-delay:${.05+i*.06}s" onclick="openStage(${s.id})">
-        <div class="slc-head">
-          <div class="slc-icon">${s.icon}</div>
-          <div class="slc-info"><div class="slc-name">${s.name}</div><div class="slc-sub">${fmt(sp)} / ${fmt(s.budget)}</div></div>
-          <div class="slc-ring">${ringHTML(pct,s.color,48)}</div>
-        </div>
-        <div class="slc-bar"><div class="slc-bar-fill" style="width:${pct}%;background:${s.color}"></div></div>
-      </div>`;
-    }).join('')}
-  </div>`;
-}
 
-// STAGES
-function renderStages(){
-  return `<div class="scroll">
-    ${stages.length===0?`<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">Нет этапов.<br>Нажмите + чтобы добавить</div></div>`:''}
-    ${stages.map((s,i)=>{
-      const sp=stageSpent(s),pl=stagePlanned(s),pct=s.budget>0?Math.min(sp/s.budget*100,100):0;
-      const done=s.items.filter(i=>i.done).length;
-      return `<div class="card" style="animation-delay:${i*.07}s">
-        <div class="card-accent" style="background:linear-gradient(90deg,${s.color},transparent)"></div>
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:12px">
-          <div style="display:flex;align-items:center;gap:10px;min-width:0;flex:1">
-            <span style="font-size:26px">${s.icon}</span>
-            <div style="min-width:0">
-              <div style="font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.name}</div>
-              <div style="font-size:11px;color:var(--text3);margin-top:1px">${done}/${s.items.length} позиций</div>
+    <div class="summary-strip">
+      <div class="sum-card" style="animation-delay:.04s">
+        <div class="sum-label">Общий бюджет</div>
+        <div class="sum-val c-gold">${fmtShort(tb)}</div>
+        <div class="sum-sub">${stages.length} этапов</div>
+      </div>
+      <div class="sum-card" style="animation-delay:.08s">
+        <div class="sum-label">Потрачено</div>
+        <div class="sum-val c-green">${fmtShort(ts)}</div>
+        <div class="sum-sub">${Math.round(pct)}% от бюджета</div>
+      </div>
+      <div class="sum-card full" style="animation-delay:.12s">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <div class="sum-label">Остаток</div>
+            <div class="sum-val ${rem<0?'c-red':'c-blue'}">${fmtShort(rem)}</div>
+            <div class="sum-sub">${doneS} из ${stages.length} этапов завершено</div>
+          </div>
+          <div style="text-align:right">
+            <div class="sum-label">Позиции</div>
+            <div style="font-family:'DM Mono',monospace;font-size:18px;font-weight:600">
+              ${stages.reduce((a,s)=>a+s.items.filter(i=>i.done).length,0)}<span style="color:var(--text3);font-size:13px"> / ${stages.reduce((a,s)=>a+s.items.length,0)}</span>
             </div>
           </div>
-          <div style="display:flex;gap:6px;flex-shrink:0">
-            <button class="btn btn-icon btn-sm" onclick="editStage(${s.id})" style="font-size:14px">✏️</button>
-            <button class="btn btn-icon btn-sm" onclick="confirmDeleteStage(${s.id})" style="font-size:14px">🗑</button>
+        </div>
+        <div class="prog-bar-wrap">
+          <div class="prog-bar-fill" style="width:${pct}%"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title">Этапы строительства</div>
+
+    ${stages.map((s,i)=>{
+      const sp=stageSpent(s),pl=stagePlanned(s);
+      const pct=s.budget>0?Math.min(sp/s.budget*100,100):0;
+      const done=s.items.filter(i=>i.done).length;
+      const over=s.budget-pl<0;
+      return `<div class="stage-card" style="animation-delay:${.15+i*.07}s" onclick="goDetail(${s.id})">
+        <div class="stage-card-accent" style="background:linear-gradient(90deg,${s.color},transparent)"></div>
+        <div class="stage-card-body">
+          <div class="stage-card-icon">${s.icon}</div>
+          <div class="stage-card-info">
+            <div class="stage-card-name">${s.name}</div>
+            <div class="stage-card-meta">${done}/${s.items.length} позиций · ${fmt(sp)}</div>
           </div>
+          <div class="stage-card-ring">${ringHTML(pct,s.color,54)}</div>
         </div>
-        <div class="stat-grid">
-          <div class="stat-box"><div class="stat-lbl">Бюджет</div><div class="stat-val c-gold">${fmtShort(s.budget)}</div></div>
-          <div class="stat-box"><div class="stat-lbl">Потрачено</div><div class="stat-val c-green">${fmtShort(sp)}</div></div>
-          <div class="stat-box"><div class="stat-lbl">Запланировано</div><div class="stat-val">${fmtShort(pl)}</div></div>
-          <div class="stat-box"><div class="stat-lbl">${s.budget-pl<0?'Перерасход':'Запас'}</div>
-            <div class="stat-val ${s.budget-pl<0?'c-red':'c-blue'}">${fmtShort(Math.abs(s.budget-pl))}</div></div>
+        <div class="stage-card-bar"><div class="stage-card-bar-fill" style="width:${pct}%;background:${s.color}"></div></div>
+        <div class="stage-card-stats">
+          <div class="scs-item"><div class="scs-label">Бюджет</div><div class="scs-val c-gold">${fmtShort(s.budget)}</div></div>
+          <div class="scs-item"><div class="scs-label">${over?'Перерасход':'Запас'}</div><div class="scs-val ${over?'c-red':'c-blue'}">${fmtShort(Math.abs(s.budget-pl))}</div></div>
         </div>
-        <div style="height:6px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;margin-bottom:10px">
-          <div style="height:100%;width:${pct}%;background:${s.color};border-radius:3px;transition:width .6s"></div>
-        </div>
-        <button class="btn btn-secondary" onclick="openStage(${s.id})" style="width:100%;font-size:13px">Открыть позиции →</button>
       </div>`;
     }).join('')}
-  </div>`;
+    ${stages.length===0?`<div class="empty"><div class="empty-icon">🏗</div><div style="font-size:14px">Нажмите + чтобы добавить первый этап</div></div>`:''}
+  `;
 }
 
-// DETAIL
+// ══════════════════════════
+//  DETAIL
+// ══════════════════════════
 function renderDetail(){
   const s=stages.find(st=>st.id===activeStageId);
-  if(!s) return `<div class="empty" style="margin-top:60px"><div class="empty-icon">👈</div><div class="empty-text">Выберите этап<br>на вкладке «Этапы»</div></div>`;
+  if(!s) return;
   const sp=stageSpent(s),pct=s.budget>0?Math.min(sp/s.budget*100,100):0;
-  return `<div id="view-detail">
-    <div class="stage-detail-header">
-      <div class="sdh-left">
-        <div class="sdh-title"><span>${s.icon}</span><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.name}</span></div>
-        <div class="sdh-budget">${fmt(sp)} из ${fmt(s.budget)}</div>
-        <div class="sdh-prog"><div class="sdh-prog-fill" style="width:${pct}%;background:${s.color}"></div></div>
-      </div>
-      <button class="btn btn-icon btn-sm" onclick="editStage(${s.id})" style="flex-shrink:0;margin-left:10px">✏️</button>
+
+  document.getElementById('detailHero').innerHTML=`
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      <button class="back-btn" onclick="goBack()">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><polyline points="11,4 6,9 11,14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Назад
+      </button>
+      <button class="btn btn-icon btn-sm" onclick="editStage(${s.id})" style="margin-left:auto">✏️</button>
     </div>
-    <div class="detail-scroll">
-      <div>
-        <div style="padding:6px 16px;font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;background:var(--bg2);border-bottom:1px solid var(--border);display:grid;grid-template-columns:36px 1fr auto 32px;gap:8px;align-items:center">
-          <span></span><span>Позиция</span><span>Сумма</span><span></span>
-        </div>
-        <div class="items-list">
-          ${s.items.length===0?`<div class="empty" style="padding:32px 16px"><div style="font-size:32px;opacity:.3;margin-bottom:8px">📋</div><div class="empty-text">Добавьте первую позицию</div></div>`:''}
-          ${s.items.map((item,i)=>`
-          <div class="item-row" style="animation-delay:${i*.04}s">
-            <div class="item-check ${item.done?'done':''}" style="${item.done?'background:'+s.color+';border-color:'+s.color:''}" onclick="toggleItem(${s.id},${item.id})">
-              ${item.done?'<svg width="12" height="12" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" fill="none" stroke="#0D0F14" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>':''}
-            </div>
-            <div class="item-name ${item.done?'done':''}">${item.name}</div>
-            <div class="item-cost" style="${item.done?'color:'+s.color:''}">${fmtShort(item.cost)}</div>
-            <button class="item-del" onclick="deleteItem(${s.id},${item.id})">×</button>
-          </div>`).join('')}
-        </div>
-        <div class="add-item-form">
-          <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px">Добавить позицию</div>
-          <input type="text" id="newItemName" placeholder="Название работы / материала"/>
-          <div class="add-item-row">
-            <input type="number" id="newItemCost" placeholder="Сумма, ${curCurrency().symbol}" style="flex:1"/>
-            <button class="btn btn-sm" style="background:${s.color}22;color:${s.color};border:1px solid ${s.color}44;flex-shrink:0" onclick="addItem(${s.id})">＋ Добавить</button>
-          </div>
-        </div>
+    <div class="detail-hero-top">
+      <div class="detail-hero-left">
+        <div class="detail-hero-icon">${s.icon}</div>
+        <div class="detail-hero-name">${s.name}</div>
+        <div class="detail-hero-budget">${fmt(sp)} потрачено из ${fmt(s.budget)}</div>
       </div>
-      <div style="padding:12px 16px 8px">
-        <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">Итого по этапу</div>
-        <div class="stat-grid">
-          <div class="stat-box"><div class="stat-lbl">Бюджет</div><div class="stat-val c-gold">${fmtShort(s.budget)}</div></div>
-          <div class="stat-box"><div class="stat-lbl">Выполнено</div><div class="stat-val c-green">${fmtShort(sp)}</div></div>
-          <div class="stat-box"><div class="stat-lbl">В смете</div><div class="stat-val">${fmtShort(stagePlanned(s))}</div></div>
-          <div class="stat-box"><div class="stat-lbl">${s.budget-stagePlanned(s)<0?'Перерасход':'Запас'}</div>
-            <div class="stat-val ${s.budget-stagePlanned(s)<0?'c-red':'c-blue'}">${fmtShort(Math.abs(s.budget-stagePlanned(s)))}</div></div>
+      <div>${ringHTML(pct,s.color,64)}</div>
+    </div>
+    <div class="detail-hero-prog"><div class="detail-hero-prog-fill" style="width:${pct}%;background:${s.color}"></div></div>
+  `;
+
+  document.getElementById('detailContent').innerHTML=`
+    <div class="stat-grid" style="margin-top:4px">
+      <div class="stat-box"><div class="stat-lbl">Бюджет</div><div class="stat-val c-gold">${fmtShort(s.budget)}</div></div>
+      <div class="stat-box"><div class="stat-lbl">Выполнено</div><div class="stat-val c-green">${fmtShort(sp)}</div></div>
+      <div class="stat-box"><div class="stat-lbl">В смете</div><div class="stat-val">${fmtShort(stagePlanned(s))}</div></div>
+      <div class="stat-box"><div class="stat-lbl">${s.budget-stagePlanned(s)<0?'Перерасход':'Запас'}</div>
+        <div class="stat-val ${s.budget-stagePlanned(s)<0?'c-red':'c-blue'}">${fmtShort(Math.abs(s.budget-stagePlanned(s)))}</div></div>
+    </div>
+
+    <div class="section-title">Позиции</div>
+    <div class="items-section">
+      <div class="items-header"><span></span><span>Позиция</span><span>Сумма</span><span></span></div>
+      ${s.items.length===0?`<div class="empty" style="padding:28px 16px"><div style="font-size:28px;opacity:.3;margin-bottom:8px">📋</div><div style="font-size:13px">Добавьте первую позицию</div></div>`:''}
+      ${s.items.map((item,i)=>`
+      <div class="item-row" style="animation-delay:${i*.04}s">
+        <div class="item-check ${item.done?'done':''}" style="${item.done?'background:'+s.color+';border-color:'+s.color:''}" onclick="toggleItem(${s.id},${item.id})">
+          ${item.done?'<svg width="12" height="12" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" fill="none" stroke="#0D0F14" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>':''}
         </div>
-      </div>
-      <div style="padding:0 16px 8px">
-        <button class="btn btn-danger btn-sm" onclick="confirmDeleteStage(${s.id})" style="width:100%">🗑 Удалить этап</button>
+        <div class="item-name ${item.done?'done':''}">${item.name}</div>
+        <div class="item-cost" style="${item.done?'color:'+s.color:''}">${fmtShort(item.cost)}</div>
+        <button class="item-del" onclick="deleteItem(${s.id},${item.id})">×</button>
+      </div>`).join('')}
+    </div>
+
+    <div class="add-form">
+      <div class="add-form-title">Добавить позицию</div>
+      <input type="text" id="newItemName" placeholder="Название работы / материала"/>
+      <div class="add-form-row">
+        <input type="number" id="newItemCost" placeholder="Сумма, ₼" style="flex:1"/>
+        <button class="btn btn-sm" style="background:${s.color}22;color:${s.color};border:1px solid ${s.color}44;flex-shrink:0" onclick="addItem(${s.id})">＋ Добавить</button>
       </div>
     </div>
-  </div>`;
+
+    <button class="btn btn-danger btn-sm" onclick="confirmDeleteStage(${s.id})" style="width:100%;margin-top:4px">🗑 Удалить этап</button>
+    <div style="height:8px"></div>
+  `;
 }
 
-// ═══════════════════════════
+// ══════════════════════════
 //  ACTIONS
-// ═══════════════════════════
-function openStage(id){
-  activeStageId=id;
-  switchTab(2);
-}
-
+// ══════════════════════════
 function toggleItem(stageId,itemId){
   stages=stages.map(s=>s.id!==stageId?s:{...s,items:s.items.map(i=>i.id===itemId?{...i,done:!i.done}:i)});
-  save(stages);
-  document.getElementById('panel2').innerHTML=renderDetail();
-  document.getElementById('panel0').innerHTML=renderOverview();
+  save(stages);renderDetail();
 }
-
 function deleteItem(stageId,itemId){
   stages=stages.map(s=>s.id!==stageId?s:{...s,items:s.items.filter(i=>i.id!==itemId)});
-  save(stages);
-  document.getElementById('panel2').innerHTML=renderDetail();
-  document.getElementById('panel0').innerHTML=renderOverview();
-  showToast('Позиция удалена');
+  save(stages);renderDetail();showToast('Позиция удалена');
 }
-
 function addItem(stageId){
-  const nameEl=document.getElementById('newItemName');
-  const costEl=document.getElementById('newItemCost');
-  const name=nameEl?.value.trim(),cost=parseInt(costEl?.value);
+  const name=document.getElementById('newItemName')?.value.trim();
+  const cost=parseInt(document.getElementById('newItemCost')?.value);
   if(!name){showToast('Введите название','err');return;}
   if(!cost||cost<=0){showToast('Введите сумму','err');return;}
   stages=stages.map(s=>s.id!==stageId?s:{...s,items:[...s.items,{id:newId(),name,cost,done:false}]});
-  save(stages);
-  document.getElementById('panel2').innerHTML=renderDetail();
-  document.getElementById('panel0').innerHTML=renderOverview();
-  showToast('Позиция добавлена');
+  save(stages);renderDetail();showToast('Позиция добавлена');
 }
-
 function confirmDeleteStage(id){
   const s=stages.find(st=>st.id===id);if(!s)return;
   showModal(`<div class="modal-handle"></div>
     <div class="modal-title">Удалить «${s.name}»?</div>
-    <p style="color:var(--text2);font-size:14px;margin-bottom:20px">Этап и все его позиции будут удалены навсегда.</p>
+    <p style="color:var(--text2);font-size:14px;margin-bottom:20px">Этап и все позиции будут удалены навсегда.</p>
     <div style="display:flex;gap:10px">
       <button class="btn btn-secondary" onclick="closeModal()">Отмена</button>
       <button class="btn btn-danger" style="flex:1" onclick="deleteStage(${id})">Удалить</button>
     </div>`);
 }
-
 function deleteStage(id){
-  stages=stages.filter(s=>s.id!==id);
-  if(activeStageId===id) activeStageId=stages[0]?.id||null;
-  save(stages);closeModal();
-  if(activeTab===2) switchTab(1);
-  else renderAllPanels();
-  showToast('Этап удалён');
+  stages=stages.filter(s=>s.id!==id);save(stages);closeModal();goBack();showToast('Этап удалён');
 }
 
 function showStageModal(existing){
   const isEdit=!!existing;
   const data=existing||{name:'',budget:'',icon:'🏠',color:'#7BB8CC'};
-  window._stageFormData={...data};
+  window._sfd={...data};
   showModal(`<div class="modal-handle"></div>
-    <div class="modal-title">${isEdit?'Редактировать этап':'Новый этап'}</div>
+    <div class="modal-title">${isEdit?'Редактировать':'Новый этап'}</div>
     <div class="form-group"><label class="form-label">Название</label>
       <input type="text" id="sName" placeholder="Например: Благоустройство" value="${data.name}"/></div>
-    <div class="form-group"><label class="form-label">Бюджет (${curCurrency().symbol})</label>
+    <div class="form-group"><label class="form-label">Бюджет (₼)</label>
       <input type="number" id="sBudget" placeholder="500000" value="${data.budget||''}"/></div>
     <div class="form-group"><label class="form-label">Иконка</label>
-      <div class="icon-grid">${ICONS.map(ic=>`<div class="icon-opt ${ic===data.icon?'sel':''}" onclick="selectIcon('${ic}')">${ic}</div>`).join('')}</div></div>
+      <div class="icon-grid">${ICONS.map(ic=>`<div class="icon-opt ${ic===data.icon?'sel':''}" onclick="selIcon('${ic}')">${ic}</div>`).join('')}</div></div>
     <div class="form-group"><label class="form-label">Цвет</label>
-      <div class="color-grid">${COLORS.map(c=>`<div class="color-opt ${c===data.color?'sel':''}" style="background:${c}" onclick="selectColor('${c}')"></div>`).join('')}</div></div>
+      <div class="color-grid">${COLORS.map(c=>`<div class="color-opt ${c===data.color?'sel':''}" style="background:${c}" onclick="selColor('${c}')"></div>`).join('')}</div></div>
     <div style="display:flex;gap:10px;margin-top:4px">
       <button class="btn btn-secondary" onclick="closeModal()">Отмена</button>
       <button class="btn btn-primary" onclick="saveStage('${isEdit?data.id:''}')">${isEdit?'Сохранить':'Создать'}</button>
     </div>`);
 }
-
-function selectIcon(ic){
-  window._stageFormData.icon=ic;
-  document.querySelectorAll('.icon-opt').forEach(el=>el.classList.toggle('sel',el.textContent===ic));
-}
-function selectColor(c){
-  window._stageFormData.color=c;
-  document.querySelectorAll('.color-opt').forEach(el=>el.classList.toggle('sel',el.getAttribute('onclick')===`selectColor('${c}')`));
-}
-
+function selIcon(ic){window._sfd.icon=ic;document.querySelectorAll('.icon-opt').forEach(el=>el.classList.toggle('sel',el.textContent===ic))}
+function selColor(c){window._sfd.color=c;document.querySelectorAll('.color-opt').forEach(el=>el.classList.toggle('sel',el.getAttribute('onclick')===`selColor('${c}')`))}
 function saveStage(editId){
   const name=document.getElementById('sName')?.value.trim();
   const budget=parseInt(document.getElementById('sBudget')?.value);
-  const icon=window._stageFormData?.icon||'🏠';
-  const color=window._stageFormData?.color||'#7BB8CC';
+  const icon=window._sfd?.icon||'🏠',color=window._sfd?.color||'#7BB8CC';
   if(!name){showToast('Введите название','err');return;}
   if(!budget||budget<=0){showToast('Введите бюджет','err');return;}
   if(editId){
@@ -651,14 +572,14 @@ function saveStage(editId){
     stages=stages.map(s=>s.id===id?{...s,name,budget,icon,color}:s);
     showToast('Этап обновлён');
   } else {
-    const id=newId();
-    stages=[...stages,{id,name,icon,color,budget,items:[]}];
-    activeStageId=id;
+    stages=[...stages,{id:newId(),name,icon,color,budget,items:[]}];
     showToast('Этап добавлен');
   }
-  save(stages);closeModal();renderAllPanels();
+  save(stages);closeModal();
+  if(document.getElementById('pageDetail').classList.contains('page-hidden-right')) renderDash();
+  else renderDetail();
+  renderDash();
 }
-
 function editStage(id){const s=stages.find(st=>st.id===id);if(s)showStageModal(s);}
 
 function showModal(html){
@@ -675,28 +596,24 @@ function exportData(){
   const blob=new Blob([JSON.stringify(stages,null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');a.href=url;
-  a.download=`isapp-backup-${new Date().toISOString().split('T')[0]}.json`;
-  a.click();URL.revokeObjectURL(url);
-  showToast('Данные сохранены');
+  a.download=`isapp-${new Date().toISOString().split('T')[0]}.json`;
+  a.click();URL.revokeObjectURL(url);showToast('Данные сохранены');
 }
 
 window._installPrompt=null;
-window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();window._installPrompt=e;renderAllPanels();});
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();window._installPrompt=e;renderDash();});
 function installApp(){
   if(!window._installPrompt)return;
   window._installPrompt.prompt();
-  window._installPrompt.userChoice.then(()=>{window._installPrompt=null;renderAllPanels();});
+  window._installPrompt.userChoice.then(()=>{window._installPrompt=null;renderDash();});
 }
 
-// ─ INIT ─
-document.getElementById('btnAddStage').onclick=()=>showStageModal(null);
+document.getElementById('btnAdd').onclick=()=>showStageModal(null);
 document.getElementById('btnExport').onclick=exportData;
 
 if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
 
-renderCurrencyPill();
-switchTab(0, false);
-initSwipe();
+renderDash();
 </script>
 </body>
 </html>
