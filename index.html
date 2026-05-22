@@ -12,7 +12,7 @@
 <title>Строим Дом</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700&family=Mulish:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 <style>
 :root{
   --bg:#0D0F14;--bg2:#13161C;--bg3:#1A1E27;
@@ -494,208 +494,215 @@ function showModal(html){
 function closeModal(){document.getElementById('modalBackdrop')?.remove();}
 
 // ══════════════════════════════════
-//  PDF EXPORT
+//  PDF EXPORT — через print window
 // ══════════════════════════════════
 function exportPDF(){
-  const {jsPDF} = window.jspdf;
-  const doc = new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
-  const W=210, PL=14, PR=14, CW=W-PL-PR;
-  let y=0;
-
-  // ── helpers ──
-  const hex2rgb = h => {
-    const r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16);
-    return [r,g,b];
-  };
-  const setFont=(style,size)=>{doc.setFont('helvetica',style);doc.setFontSize(size);}
-  const setColor=(r,g,b)=>doc.setTextColor(r,g,b);
-  const setFill=(r,g,b)=>doc.setFillColor(r,g,b);
-  const setDraw=(r,g,b)=>doc.setDrawColor(r,g,b);
-
-  const checkPage=(need=20)=>{
-    if(y+need>280){doc.addPage();y=16;}
-  };
-
-  // ── COVER HEADER ──
-  setFill(13,15,20); doc.rect(0,0,W,42,'F');
-  setFill(201,170,124); doc.rect(0,42,W,1.5,'F');
-
-  setFont('bold',22); setColor(201,170,124);
-  doc.text('Строим Дом', PL, 20);
-  setFont('normal',10); setColor(180,176,168);
-  doc.text('Отчёт о бюджете строительства', PL, 28);
-
+  const tb=totalBudget(), ts=totalSpent(), rem=tb-ts;
+  const pct=tb>0?Math.min(ts/tb*100,100):0;
+  const doneS=stages.filter(s=>stagePlanned(s)>0&&stageSpent(s)===stagePlanned(s)).length;
   const now=new Date();
   const dateStr=now.toLocaleDateString('ru-RU',{day:'2-digit',month:'long',year:'numeric'});
-  setFont('normal',9); setColor(140,136,128);
-  doc.text(dateStr, W-PR, 28, {align:'right'});
 
-  y=52;
-
-  // ── SUMMARY BOXES ──
-  const tb=totalBudget(),ts=totalSpent(),rem=tb-ts;
-  const pct=tb>0?Math.min(ts/tb*100,100):0;
-
-  const boxes=[
-    {label:'Общий бюджет', val:fmtShort(tb), color:[201,170,124]},
-    {label:'Потрачено',     val:fmtShort(ts), color:[128,200,154]},
-    {label:'Остаток',       val:fmtShort(rem),color:rem<0?[204,123,123]:[123,184,204]},
-  ];
-  const bw=(CW-8)/3;
-  boxes.forEach((b,i)=>{
-    const bx=PL+i*(bw+4);
-    setFill(19,22,28); setDraw(40,44,54);
-    doc.roundedRect(bx,y,bw,20,3,3,'FD');
-    // accent line top
-    setFill(...b.color);
-    doc.roundedRect(bx,y,bw,1.2,0.6,0.6,'F');
-    // label
-    setFont('normal',7.5); setColor(140,136,128);
-    doc.text(b.label.toUpperCase(), bx+6, y+8);
-    // value
-    setFont('bold',11); setColor(...b.color);
-    doc.text(b.val, bx+6, y+16);
-  });
-  y+=26;
-
-  // progress bar
-  setFill(30,33,42); doc.roundedRect(PL,y,CW,4,2,2,'F');
-  setFill(201,170,124); doc.roundedRect(PL,y,CW*pct/100,4,2,2,'F');
-  y+=8;
-  setFont('normal',8); setColor(140,136,128);
-  doc.text(`Общий прогресс: ${Math.round(pct)}%`, PL, y);
-  const doneS=stages.filter(s=>stagePlanned(s)>0&&stageSpent(s)===stagePlanned(s)).length;
-  doc.text(`${doneS} из ${stages.length} этапов завершено`, W-PR, y, {align:'right'});
-  y+=10;
-
-  // ── DIVIDER ──
-  setDraw(40,44,54); doc.setLineWidth(0.3);
-  doc.line(PL,y,W-PR,y);
-  setFill(201,170,124); doc.rect(PL,y-0.4,20,1.2,'F');
-  y+=7;
-
-  // ── STAGES ──
-  setFont('bold',11); setColor(234,230,222);
-  doc.text('Этапы строительства', PL, y);
-  y+=8;
-
-  stages.forEach(s=>{
-    checkPage(52);
-    const sp=stageSpent(s),pl=stagePlanned(s);
+  const stagesHTML = stages.map(s=>{
+    const sp=stageSpent(s), pl=stagePlanned(s);
     const spct=s.budget>0?Math.min(sp/s.budget*100,100):0;
     const done=s.items.filter(i=>i.done).length;
-    const sc=hex2rgb(s.color);
+    const over=s.budget-pl<0;
+    return `
+    <div class="stage-block">
+      <div class="stage-header" style="border-left:4px solid ${s.color}">
+        <div class="stage-header-left">
+          <div class="stage-name">${s.name}</div>
+          <div class="stage-sub">${done} из ${s.items.length} позиций выполнено</div>
+        </div>
+        <div class="stage-pct" style="color:${s.color}">${Math.round(spct)}%</div>
+      </div>
+      <div class="stage-stats">
+        <div class="stat-cell">
+          <div class="stat-label">Бюджет</div>
+          <div class="stat-value gold">${fmt(s.budget)}</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-label">Потрачено</div>
+          <div class="stat-value green">${fmt(sp)}</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-label">В смете</div>
+          <div class="stat-value">${fmt(pl)}</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-label">${over?'Перерасход':'Запас'}</div>
+          <div class="stat-value ${over?'red':'blue'}">${fmt(Math.abs(s.budget-pl))}</div>
+        </div>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-bar" style="width:${spct}%;background:${s.color}"></div>
+      </div>
+      ${s.items.length>0?`
+      <table class="items-table">
+        <thead>
+          <tr>
+            <th style="width:24px"></th>
+            <th style="text-align:left">Позиция</th>
+            <th style="text-align:right">Сумма</th>
+            <th style="text-align:center;width:70px">Статус</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${s.items.map((item,ii)=>`
+          <tr class="${ii%2===0?'row-even':'row-odd'} ${item.done?'done-row':''}">
+            <td style="text-align:center">
+              <span class="dot" style="background:${item.done?s.color:'transparent'};border:1.5px solid ${item.done?s.color:'#555'}">${item.done?'✓':''}</span>
+            </td>
+            <td class="item-name-cell">${item.name}</td>
+            <td style="text-align:right;font-family:monospace;font-size:12px;white-space:nowrap">${fmt(item.cost)}</td>
+            <td style="text-align:center">
+              <span class="badge ${item.done?'badge-done':'badge-plan'}" style="${item.done?'background:'+s.color+'22;color:'+s.color+';border-color:'+s.color+'44':''}">
+                ${item.done?'Готово':'План'}
+              </span>
+            </td>
+          </tr>`).join('')}
+        </tbody>
+        <tfoot>
+          <tr class="total-row">
+            <td colspan="2"><b>Итого выполнено</b></td>
+            <td style="text-align:right;font-family:monospace"><b>${fmt(sp)}</b></td>
+            <td style="text-align:center;font-size:11px;color:#888">из ${fmt(pl)}</td>
+          </tr>
+        </tfoot>
+      </table>`:'<div class="no-items">Позиции не добавлены</div>'}
+    </div>`;
+  }).join('');
 
-    // card bg
-    setFill(19,22,28); setDraw(35,38,48); doc.setLineWidth(0.2);
-    doc.roundedRect(PL,y,CW,44,3,3,'FD');
-    // accent
-    setFill(...sc); doc.roundedRect(PL,y,CW,1.5,0.5,0.5,'F');
+  const html=`<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"/>
+<link href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Mulish',sans-serif;background:#fff;color:#1a1a2e;font-size:13px;line-height:1.5}
+@page{size:A4;margin:16mm 14mm}
 
-    // stage name
-    setFont('bold',12); setColor(234,230,222);
-    doc.text(s.name, PL+8, y+10);
+/* HEADER */
+.doc-header{background:#0D0F14;color:#EAE6DE;padding:20px 24px;border-radius:10px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:flex-end}
+.doc-title{font-size:22px;font-weight:700;color:#C9AA7C;letter-spacing:-.5px;margin-bottom:4px}
+.doc-sub{font-size:12px;color:#888;margin-top:2px}
+.doc-date{font-size:11px;color:#666;text-align:right}
 
-    // done badge
-    setFill(40,44,54);
-    doc.roundedRect(W-PR-28,y+5,26,7,2,2,'F');
-    setFont('normal',7.5); setColor(...sc);
-    doc.text(`${done}/${s.items.length} поз.`, W-PR-25, y+10.5);
+/* SUMMARY */
+.summary-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px}
+.sum-box{border-radius:8px;padding:14px 16px;border:1px solid #e8e4dc}
+.sum-box-label{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:#999;margin-bottom:6px}
+.sum-box-val{font-family:'DM Mono',monospace;font-size:18px;font-weight:700}
+.sum-box-sub{font-size:11px;color:#aaa;margin-top:4px}
+.gold{color:#b8924a}.green{color:#4a9b6a}.blue{color:#4a7fb8}.red{color:#b84a4a}
 
-    // stats row
-    const cols=[
-      {label:'Бюджет',       val:fmtShort(s.budget),  c:[201,170,124]},
-      {label:'Потрачено',    val:fmtShort(sp),         c:[128,200,154]},
-      {label:'В смете',      val:fmtShort(pl),         c:[200,200,200]},
-      {label:s.budget-pl<0?'Перерасход':'Запас', val:fmtShort(Math.abs(s.budget-pl)), c:s.budget-pl<0?[204,123,123]:[123,184,204]},
-    ];
-    const cw2=CW/4;
-    cols.forEach((col,ci)=>{
-      const cx=PL+ci*cw2;
-      setFont('normal',7); setColor(140,136,128);
-      doc.text(col.label.toUpperCase(), cx+4, y+20);
-      setFont('bold',9); setColor(...col.c);
-      doc.text(col.val, cx+4, y+27);
-    });
+/* OVERALL PROGRESS */
+.overall-prog{background:#f5f3ef;border-radius:8px;padding:14px 16px;margin-bottom:20px}
+.prog-row{display:flex;justify-content:space-between;margin-bottom:8px;font-size:12px;color:#666}
+.prog-track{height:8px;background:#e0ddd8;border-radius:4px;overflow:hidden}
+.prog-fill-gold{height:100%;border-radius:4px;background:linear-gradient(90deg,#C9AA7C,#80C89A)}
+.prog-sub{display:flex;justify-content:space-between;margin-top:6px;font-size:11px;color:#aaa}
 
-    // progress bar
-    setFill(30,33,42); doc.roundedRect(PL+4,y+32,CW-8,3,1.5,1.5,'F');
-    setFill(...sc); doc.roundedRect(PL+4,y+32,Math.max(2,(CW-8)*spct/100),3,1.5,1.5,'F');
-    setFont('normal',7.5); setColor(...sc);
-    doc.text(`${Math.round(spct)}%`, W-PR-6, y+35, {align:'right'});
+/* DIVIDER */
+.section-divider{display:flex;align-items:center;gap:10px;margin:0 0 16px}
+.section-divider-line{flex:1;height:1px;background:#e0ddd8}
+.section-divider-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#999}
 
-    y+=50;
+/* STAGE BLOCK */
+.stage-block{border:1px solid #e8e4dc;border-radius:10px;margin-bottom:16px;overflow:hidden;break-inside:avoid}
+.stage-header{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;background:#f9f8f6}
+.stage-name{font-size:15px;font-weight:700;color:#1a1a2e;margin-bottom:2px}
+.stage-sub{font-size:11px;color:#999}
+.stage-pct{font-family:'DM Mono',monospace;font-size:20px;font-weight:700}
+.stage-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#e8e4dc;border-top:1px solid #e8e4dc;border-bottom:1px solid #e8e4dc}
+.stat-cell{background:#fff;padding:10px 12px}
+.stat-label{font-size:9px;text-transform:uppercase;letter-spacing:.6px;color:#aaa;margin-bottom:4px}
+.stat-value{font-family:'DM Mono',monospace;font-size:13px;font-weight:600}
+.progress-wrap{height:5px;background:#f0ede8;margin:0}
+.progress-bar{height:100%}
 
-    // items table (if any)
-    if(s.items.length>0){
-      checkPage(14+s.items.length*8);
+/* TABLE */
+.items-table{width:100%;border-collapse:collapse}
+.items-table thead tr{background:#f5f3ef}
+.items-table th{padding:8px 10px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#999;border-bottom:1px solid #e8e4dc}
+.row-even{background:#fff}
+.row-odd{background:#faf9f7}
+.done-row .item-name-cell{color:#aaa;text-decoration:line-through}
+.items-table td{padding:8px 10px;border-bottom:1px solid #f0ede8;font-size:12.5px}
+.dot{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;font-size:8px;font-weight:700;color:#fff}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600;border:1px solid}
+.badge-done{background:#f0faf5;color:#4a9b6a;border-color:#b0dfc5}
+.badge-plan{background:#f5f3ef;color:#aaa;border-color:#ddd}
+.total-row{background:#f0ede8}
+.total-row td{padding:9px 10px;font-size:12.5px;border-top:1.5px solid #ddd}
+.no-items{padding:14px 16px;font-size:12px;color:#bbb;font-style:italic}
 
-      // table header
-      setFill(26,30,39); doc.rect(PL,y,CW,7,'F');
-      setFont('bold',7.5); setColor(140,136,128);
-      doc.text('ПОЗИЦИЯ', PL+4, y+5);
-      doc.text('СУММА', W-PR-4, y+5, {align:'right'});
-      doc.text('СТАТУС', W-PR-36, y+5, {align:'right'});
-      y+=7;
+/* FOOTER */
+.doc-footer{margin-top:24px;padding-top:12px;border-top:1px solid #e8e4dc;display:flex;justify-content:space-between;font-size:10px;color:#bbb}
+@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+</style>
+</head>
+<body>
 
-      s.items.forEach((item,ii)=>{
-        checkPage(9);
-        const rowBg = ii%2===0 ? [17,20,26] : [20,23,32];
-        setFill(...rowBg); doc.rect(PL,y,CW,7,'F');
+<div class="doc-header">
+  <div>
+    <div class="doc-title">🏡 Строим Дом</div>
+    <div class="doc-sub">Отчёт о бюджете строительства</div>
+  </div>
+  <div class="doc-date">${dateStr}</div>
+</div>
 
-        // done indicator
-        if(item.done){
-          setFill(...sc); doc.circle(PL+5,y+3.5,1.5,'F');
-        } else {
-          setDraw(80,84,94); doc.setLineWidth(0.3); doc.circle(PL+5,y+3.5,1.5,'D');
-        }
+<div class="summary-grid">
+  <div class="sum-box" style="border-top:3px solid #C9AA7C">
+    <div class="sum-box-label">Общий бюджет</div>
+    <div class="sum-box-val gold">${fmt(tb)}</div>
+    <div class="sum-box-sub">${stages.length} этапов</div>
+  </div>
+  <div class="sum-box" style="border-top:3px solid #80C89A">
+    <div class="sum-box-label">Потрачено</div>
+    <div class="sum-box-val green">${fmt(ts)}</div>
+    <div class="sum-box-sub">${Math.round(pct)}% от бюджета</div>
+  </div>
+  <div class="sum-box" style="border-top:3px solid ${rem<0?'#CC7B7B':'#7BB8CC'}">
+    <div class="sum-box-label">Остаток</div>
+    <div class="sum-box-val ${rem<0?'red':'blue'}">${fmt(rem)}</div>
+    <div class="sum-box-sub">${rem<0?'Перерасход бюджета':'В запасе'}</div>
+  </div>
+</div>
 
-        setFont(item.done?'normal':'normal',8.5);
-        setColor(item.done?140:220, item.done?136:216, item.done?128:208);
-        // truncate name
-        let nm=item.name;
-        while(doc.getTextWidth(nm)>CW-52&&nm.length>3)nm=nm.slice(0,-1);
-        if(nm!==item.name)nm+='...';
-        doc.text(nm, PL+11, y+5);
+<div class="overall-prog">
+  <div class="prog-row">
+    <span>Общий прогресс строительства</span>
+    <span style="font-family:'DM Mono',monospace;font-weight:700;color:#C9AA7C">${Math.round(pct)}%</span>
+  </div>
+  <div class="prog-track"><div class="prog-fill-gold" style="width:${pct}%"></div></div>
+  <div class="prog-sub">
+    <span>${doneS} из ${stages.length} этапов завершено</span>
+    <span>${stages.reduce((a,s)=>a+s.items.filter(i=>i.done).length,0)} / ${stages.reduce((a,s)=>a+s.items.length,0)} позиций выполнено</span>
+  </div>
+</div>
 
-        setFont('normal',8.5);
-        setColor(...(item.done?sc:[180,176,168]));
-        doc.text(fmtShort(item.cost), W-PR-38, y+5, {align:'right'});
+<div class="section-divider">
+  <div class="section-divider-line"></div>
+  <div class="section-divider-title">Этапы строительства</div>
+  <div class="section-divider-line"></div>
+</div>
 
-        setFont('normal',7);
-        if(item.done){setFill(...sc.map(v=>Math.round(v*0.25)));doc.roundedRect(W-PR-28,y+1.5,24,4,1.5,1.5,'F');setColor(...sc);}
-        else{setFill(40,44,54);doc.roundedRect(W-PR-28,y+1.5,24,4,1.5,1.5,'F');setColor(120,116,108);}
-        doc.text(item.done?'ГОТОВО':'ПЛАН', W-PR-16, y+5, {align:'center'});
+${stagesHTML}
 
-        y+=7;
-      });
+<div class="doc-footer">
+  <span>Строим Дом — бюджет строительства</span>
+  <span>Сформировано: ${dateStr}</span>
+</div>
+</body></html>`;
 
-      // total row
-      setFill(30,33,42); doc.rect(PL,y,CW,8,'F');
-      setFont('bold',9); setColor(201,170,124);
-      doc.text('ИТОГО ВЫПОЛНЕНО:', PL+4, y+5.5);
-      doc.text(fmtShort(sp), W-PR-38, y+5.5, {align:'right'});
-      setFont('normal',8); setColor(140,136,128);
-      doc.text(`из ${fmtShort(pl)} запланировано`, W-PR-4, y+5.5, {align:'right'});
-      y+=14;
-    } else {
-      y+=4;
-    }
-  });
-
-  // ── FOOTER ──
-  const pages=doc.getNumberOfPages();
-  for(let i=1;i<=pages;i++){
-    doc.setPage(i);
-    setFill(13,15,20); doc.rect(0,287,W,10,'F');
-    setFont('normal',7.5); setColor(80,76,68);
-    doc.text('Строим Дом — бюджет строительства', PL, 293);
-    doc.text(`${i} / ${pages}`, W-PR, 293, {align:'right'});
-  }
-
-  const fname=`isapp-report-${now.toISOString().split('T')[0]}.pdf`;
-  doc.save(fname);
-  showToast('PDF сохранён');
+  const w=window.open('','_blank','width=900,height=700');
+  w.document.write(html);
+  w.document.close();
+  w.onload=()=>{ w.focus(); w.print(); };
+  showToast('Открываю PDF...');
 }
 
 // ══════════════════
