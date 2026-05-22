@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Строим 🏡"/>
+<meta name="theme-color" content="#0D0F14"/>
+<link rel="manifest" href="./manifest.json"/>
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='40' fill='%230D0F14'/><text y='130' x='90' font-size='100' text-anchor='middle'>🏡</text></svg>"/>
+<title>Строим Дом</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700&family=Mulish:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{
+  --bg:#0D0F14;--bg2:#13161C;--bg3:#1A1E27;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.12);
+  --text:#EAE6DE;--text2:rgba(234,230,222,0.55);--text3:rgba(234,230,222,0.28);
+  --gold:#C9AA7C;--blue:#7BB8CC;--green:#80C89A;--red:#CC7B7B;
+  --safe:env(safe-area-inset-bottom,0px);--top:env(safe-area-inset-top,0px);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Mulish',sans-serif;overflow:hidden}
+#app{position:fixed;inset:0;overflow:hidden}
+
+.page{position:absolute;inset:0;background:var(--bg);overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;transition:transform .35s cubic-bezier(.4,0,.2,1),opacity .35s ease;will-change:transform}
+.page::-webkit-scrollbar{display:none}
+.page.page-hidden-right{transform:translateX(100%);opacity:0;pointer-events:none}
+.page.page-hidden-left{transform:translateX(-30%);opacity:0;pointer-events:none}
+
+.header{padding:calc(var(--top) + 16px) 16px 14px;background:var(--bg);position:sticky;top:0;z-index:10}
+.header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:var(--border)}
+.header-row{display:flex;align-items:center;justify-content:space-between}
+.logo{font-family:'Unbounded',sans-serif;font-size:17px;font-weight:700;letter-spacing:-.5px}
+.logo span{color:var(--gold)}
+.back-btn{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--gold);background:none;border:none;cursor:pointer;padding:4px 0;font-family:'Mulish',sans-serif}
+
+.content{padding:16px 16px calc(32px + var(--safe))}
+
+/* SUMMARY */
+.summary-strip{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.sum-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:14px;animation:fadeUp .4s ease both}
+.sum-card.full{grid-column:1/-1}
+.sum-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px}
+.sum-val{font-family:'DM Mono',monospace;font-size:20px;font-weight:600;line-height:1}
+.sum-sub{font-size:11px;color:var(--text3);margin-top:4px}
+.prog-bar-wrap{height:6px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;margin-top:10px}
+.prog-bar-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--gold),var(--green));transition:width .8s cubic-bezier(.4,0,.2,1)}
+
+/* DIVIDER */
+.section-divider{height:1px;background:var(--border);margin:6px 0 16px;position:relative}
+.section-divider::before{content:'';position:absolute;left:0;top:-1px;width:40px;height:3px;background:var(--gold);border-radius:2px}
+
+.section-title{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.9px;margin-bottom:10px;margin-top:4px}
+
+/* STAGE CARD */
+.stage-card{background:var(--bg2);border:1px solid var(--border);border-radius:18px;margin-bottom:10px;overflow:hidden;cursor:pointer;transition:transform .18s;animation:fadeUp .4s ease both;position:relative}
+.stage-card:active{transform:scale(.97)}
+.stage-card-accent{position:absolute;top:0;left:0;right:0;height:3px}
+.stage-card-body{padding:16px 16px 14px;display:flex;align-items:center;gap:14px}
+.stage-card-icon{font-size:28px;flex-shrink:0}
+.stage-card-info{flex:1;min-width:0}
+.stage-card-name{font-weight:700;font-size:15px;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stage-card-meta{font-size:12px;color:var(--text3);font-family:'DM Mono',monospace}
+.stage-card-bar{height:3px;background:rgba(255,255,255,.05);margin:0 16px 14px;border-radius:2px;overflow:hidden}
+.stage-card-bar-fill{height:100%;border-radius:2px;transition:width .6s ease}
+.stage-card-stats{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);border-top:1px solid var(--border)}
+.scs-item{background:var(--bg2);padding:10px 14px}
+.scs-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
+.scs-val{font-family:'DM Mono',monospace;font-size:13px;font-weight:500}
+
+/* DETAIL */
+.detail-hero{padding:calc(var(--top) + 16px) 16px 0;background:var(--bg2);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10}
+.detail-hero-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px}
+.detail-hero-name{font-family:'Unbounded',sans-serif;font-size:18px;font-weight:700;margin-bottom:4px}
+.detail-hero-budget{font-family:'DM Mono',monospace;font-size:13px;color:var(--text3)}
+.detail-hero-prog{height:4px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden;margin:10px 0 0}
+.detail-hero-prog-fill{height:100%;border-radius:2px;transition:width .6s}
+
+/* ITEMS */
+.items-section{background:var(--bg2);border:1px solid var(--border);border-radius:18px;overflow:hidden;margin-bottom:12px}
+.items-header{padding:10px 16px;font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;border-bottom:1px solid var(--border);display:grid;grid-template-columns:32px 1fr auto 32px;gap:8px;align-items:center}
+.item-row{display:grid;grid-template-columns:32px 1fr auto 32px;align-items:center;gap:8px;padding:11px 16px;border-bottom:1px solid var(--border);transition:background .15s;animation:itemIn .25s ease both}
+.item-row:last-child{border-bottom:none}
+@keyframes itemIn{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:none}}
+.item-check{width:22px;height:22px;border-radius:6px;border:1.5px solid rgba(255,255,255,.2);background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
+.item-check.done{border-color:transparent}
+.item-name{font-size:13px;font-weight:500;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;transition:color .2s}
+.item-name.done{text-decoration:line-through;color:var(--text3)}
+.item-cost{font-family:'DM Mono',monospace;font-size:12px;white-space:nowrap;color:var(--text2)}
+.item-del{background:none;border:none;color:var(--text3);cursor:pointer;font-size:20px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:6px;transition:all .2s}
+.item-del:active{background:rgba(204,123,123,.2);color:var(--red)}
+
+.add-form{background:var(--bg2);border:1px solid var(--border);border-radius:18px;padding:14px 16px;margin-bottom:12px}
+.add-form-title{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px}
+.add-form-row{display:flex;gap:8px;margin-top:8px}
+
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.stat-box{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:12px 14px}
+.stat-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.stat-val{font-family:'DM Mono',monospace;font-size:14px;font-weight:500}
+
+input[type=text],input[type=number]{background:rgba(255,255,255,.05);border:1px solid var(--border2);color:var(--text);border-radius:10px;padding:10px 12px;font-family:'Mulish',sans-serif;font-size:14px;outline:none;width:100%;transition:border-color .2s;-webkit-appearance:none}
+input:focus{border-color:rgba(255,255,255,.3)}
+
+.btn{cursor:pointer;border:none;border-radius:12px;font-family:'Mulish',sans-serif;font-weight:600;font-size:14px;padding:12px 16px;transition:transform .15s,opacity .15s;display:flex;align-items:center;justify-content:center;gap:6px;-webkit-user-select:none;user-select:none}
+.btn:active{transform:scale(.96)}
+.btn-primary{background:var(--gold);color:#0D0F14;width:100%}
+.btn-secondary{background:rgba(255,255,255,.07);color:var(--text2);flex:1}
+.btn-danger{background:rgba(204,123,123,.15);color:var(--red)}
+.btn-sm{padding:8px 12px;font-size:13px;border-radius:10px}
+.btn-icon{padding:10px;border-radius:10px;background:rgba(255,255,255,.06);border:1px solid var(--border)}
+
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(8px);z-index:200;display:flex;align-items:flex-end;justify-content:center;animation:fadeIn .2s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:24px 24px 0 0;width:100%;max-width:600px;padding:24px 20px calc(24px + var(--safe));max-height:92vh;overflow-y:auto;animation:slideUp .28s cubic-bezier(.4,0,.2,1)}
+@keyframes slideUp{from{transform:translateY(60px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-handle{width:40px;height:4px;background:rgba(255,255,255,.15);border-radius:2px;margin:0 auto 20px}
+.modal-title{font-family:'Unbounded',sans-serif;font-size:16px;font-weight:600;margin-bottom:20px}
+.form-group{margin-bottom:14px}
+.form-label{display:block;font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px}
+.icon-grid{display:flex;flex-wrap:wrap;gap:6px}
+.icon-opt{width:42px;height:42px;border-radius:10px;border:1.5px solid transparent;background:rgba(255,255,255,.05);font-size:20px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s}
+.icon-opt.sel{border-color:rgba(255,255,255,.4);background:rgba(255,255,255,.1)}
+.color-grid{display:flex;gap:8px;flex-wrap:wrap}
+.color-opt{width:28px;height:28px;border-radius:50%;cursor:pointer;transition:transform .15s;border:2px solid transparent}
+.color-opt.sel{border-color:white;transform:scale(1.15)}
+
+.toast{position:fixed;top:calc(var(--top) + 12px);left:50%;transform:translateX(-50%) translateY(-80px);background:var(--bg3);border:1px solid var(--border2);border-radius:12px;padding:10px 18px;font-size:13px;font-weight:600;z-index:300;transition:transform .3s ease;white-space:nowrap;box-shadow:0 8px 32px rgba(0,0,0,.5)}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+.empty{text-align:center;padding:48px 20px;color:var(--text3)}
+.install-banner{background:linear-gradient(135deg,rgba(201,170,124,.12),rgba(127,184,204,.08));border:1px solid rgba(201,170,124,.25);border-radius:14px;padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px}
+.install-banner-text{flex:1;font-size:12px;color:var(--text2);line-height:1.4}
+.install-banner-text strong{color:var(--gold);display:block;font-size:13px;margin-bottom:2px}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.c-gold{color:var(--gold)}.c-blue{color:var(--blue)}.c-green{color:var(--green)}.c-red{color:var(--red)}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="page" id="pageDash">
+    <div class="header">
+      <div class="header-row">
+        <div class="logo">Строим <span>Дом</span> 🏡</div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-icon" id="btnPdf" style="font-size:16px" title="Экспорт PDF">📄</button>
+          <button class="btn btn-icon" id="btnAdd" style="font-size:18px">＋</button>
+        </div>
+      </div>
+    </div>
+    <div class="content" id="dashContent"></div>
+  </div>
+
+  <div class="page page-hidden-right" id="pageDetail">
+    <div class="detail-hero" id="detailHero"></div>
+    <div class="content" id="detailContent"></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════
+//  FORMAT
+// ══════════════════
+const fmt = n => {
+  try{ return new Intl.NumberFormat('az-AZ',{style:'currency',currency:'AZN',maximumFractionDigits:0}).format(n); }
+  catch{ return Math.round(n).toLocaleString()+' \u20BC'; }
+};
+const fmtShort = n => {
+  const abs=Math.abs(n),s=n<0?'\u2212':'';
+  if(abs>=1e6) return s+(abs/1e6).toFixed(1).replace('.0','')+' \u043c\u043b\u043d \u20BC';
+  if(abs>=1e3) return s+(abs/1e3).toFixed(0)+' \u0442\u044b\u0441 \u20BC';
+  return fmt(n);
+};
+
+// ══════════════════
+//  DATA
+// ══════════════════
+const STORE_KEY='isapp_v3';
+const DEFAULT_STAGES=[
+  {id:1,name:"\u0424\u0443\u043d\u0434\u0430\u043c\u0435\u043d\u0442",icon:"\u2b1b",color:"#C9AA7C",budget:850000,items:[
+    {id:1,name:"\u0417\u0435\u043c\u043b\u044f\u043d\u044b\u0435 \u0440\u0430\u0431\u043e\u0442\u044b",cost:120000,done:true},
+    {id:2,name:"\u0410\u0440\u043c\u0430\u0442\u0443\u0440\u0430 \u0438 \u043e\u043f\u0430\u043b\u0443\u0431\u043a\u0430",cost:180000,done:true},
+    {id:3,name:"\u0411\u0435\u0442\u043e\u043d",cost:220000,done:true},
+    {id:4,name:"\u0413\u0438\u0434\u0440\u043e\u0438\u0437\u043e\u043b\u044f\u0446\u0438\u044f",cost:100000,done:false},
+    {id:5,name:"\u0417\u0430\u0441\u044b\u043f\u043a\u0430 \u043f\u0430\u0437\u0443\u0445",cost:80000,done:false},
+  ]},
+  {id:2,name:"\u041a\u043e\u0440\u043e\u0431\u043a\u0430 \u0434\u043e\u043c\u0430",icon:"\u{1F3D7}",color:"#7BB8CC",budget:2400000,items:[
+    {id:1,name:"\u041a\u043b\u0430\u0434\u043a\u0430 1 \u044d\u0442\u0430\u0436",cost:480000,done:true},
+    {id:2,name:"\u041f\u0435\u0440\u0435\u043a\u0440\u044b\u0442\u0438\u0435",cost:320000,done:true},
+    {id:3,name:"\u041a\u043b\u0430\u0434\u043a\u0430 2 \u044d\u0442\u0430\u0436",cost:480000,done:false},
+    {id:4,name:"\u0424\u0440\u043e\u043d\u0442\u043e\u043d\u044b",cost:120000,done:false},
+    {id:5,name:"\u0421\u0442\u0440\u043e\u043f\u0438\u043b\u0430",cost:280000,done:false},
+  ]},
+  {id:3,name:"\u041a\u0440\u043e\u0432\u043b\u044f",icon:"\u{1F3E0}",color:"#CC7B7B",budget:680000,items:[
+    {id:1,name:"\u0423\u0442\u0435\u043f\u043b\u0438\u0442\u0435\u043b\u044c",cost:120000,done:false},
+    {id:2,name:"\u041a\u0440\u043e\u0432\u0435\u043b\u044c\u043d\u044b\u0439 \u043c\u0430\u0442\u0435\u0440\u0438\u0430\u043b",cost:320000,done:false},
+    {id:3,name:"\u0412\u043e\u0434\u043e\u0441\u0442\u043e\u043a",cost:85000,done:false},
+    {id:4,name:"\u0414\u043e\u0431\u043e\u0440\u043d\u044b\u0435 \u044d\u043b\u0435\u043c\u0435\u043d\u0442\u044b",cost:55000,done:false},
+  ]},
+  {id:4,name:"\u041e\u043a\u043d\u0430 \u0438 \u0434\u0432\u0435\u0440\u0438",icon:"\u{1FA9F}",color:"#9E8ED4",budget:520000,items:[
+    {id:1,name:"\u041e\u043a\u043d\u0430 \u041f\u0412\u0425",cost:280000,done:false},
+    {id:2,name:"\u0412\u0445\u043e\u0434\u043d\u0430\u044f \u0434\u0432\u0435\u0440\u044c",cost:85000,done:false},
+    {id:3,name:"\u041c\u0435\u0436\u043a\u043e\u043c\u043d\u0430\u0442\u043d\u044b\u0435 \u0434\u0432\u0435\u0440\u0438",cost:120000,done:false},
+    {id:4,name:"\u041c\u043e\u043d\u0442\u0430\u0436",cost:35000,done:false},
+  ]},
+  {id:5,name:"\u0418\u043d\u0436\u0435\u043d\u0435\u0440\u0438\u044f",icon:"\u2699\uFE0F",color:"#80C89A",budget:980000,items:[
+    {id:1,name:"\u042d\u043b\u0435\u043a\u0442\u0440\u0438\u043a\u0430",cost:280000,done:false},
+    {id:2,name:"\u0412\u043e\u0434\u043e\u0441\u043d\u0430\u0431\u0436\u0435\u043d\u0438\u0435",cost:180000,done:false},
+    {id:3,name:"\u041a\u0430\u043d\u0430\u043b\u0438\u0437\u0430\u0446\u0438\u044f",cost:150000,done:false},
+    {id:4,name:"\u041e\u0442\u043e\u043f\u043b\u0435\u043d\u0438\u0435",cost:320000,done:false},
+  ]},
+  {id:6,name:"\u041e\u0442\u0434\u0435\u043b\u043a\u0430",icon:"\u{1F3A8}",color:"#C8C07E",budget:1200000,items:[
+    {id:1,name:"\u0421\u0442\u044f\u0436\u043a\u0430 \u043f\u043e\u043b\u043e\u0432",cost:180000,done:false},
+    {id:2,name:"\u0428\u0442\u0443\u043a\u0430\u0442\u0443\u0440\u043a\u0430",cost:240000,done:false},
+    {id:3,name:"\u041f\u043b\u0438\u0442\u043a\u0430",cost:120000,done:false},
+    {id:4,name:"\u041f\u043e\u043a\u0440\u0430\u0441\u043a\u0430",cost:160000,done:false},
+    {id:5,name:"\u041b\u0430\u043c\u0438\u043d\u0430\u0442",cost:220000,done:false},
+  ]},
+];
+
+function load(){try{return JSON.parse(localStorage.getItem(STORE_KEY))||DEFAULT_STAGES}catch{return DEFAULT_STAGES}}
+function save(s){localStorage.setItem(STORE_KEY,JSON.stringify(s))}
+
+let stages=load();
+let activeStageId=null;
+
+const stageSpent  =s=>s.items.filter(i=>i.done).reduce((a,b)=>a+b.cost,0);
+const stagePlanned=s=>s.items.reduce((a,b)=>a+b.cost,0);
+const totalBudget =()=>stages.reduce((a,s)=>a+s.budget,0);
+const totalSpent  =()=>stages.reduce((a,s)=>a+stageSpent(s),0);
+const newId=()=>Date.now()+Math.floor(Math.random()*999);
+const ICONS=['\u{1F3E0}','\u{1F3D7}','\u2B1B','\u{1FA9F}','\u2699\uFE0F','\u{1F3A8}','\u{1F33F}','\u{1F9F1}','\u{1F527}','\u{1F4A1}','\u{1F6BF}','\u{1F6E0}','\u{1F3E1}','\u{1F332}','\u{1FAA3}','\u{1F511}','\u{1F3CA}','\u{1F333}'];
+const COLORS=['#C9AA7C','#7BB8CC','#CC7B7B','#9E8ED4','#80C89A','#C8C07E','#CC9B7B','#7BC4CC','#B87BB8','#7BA8CC'];
+
+function showToast(msg,type='ok'){
+  const t=document.getElementById('toast');
+  t.textContent=(type==='ok'?'\u2713 ':type==='err'?'\u2715 ':'')+msg;
+  t.className='toast show';clearTimeout(t._to);
+  t._to=setTimeout(()=>{t.className='toast'},2400);
+}
+
+// ══════════════════
+//  NAVIGATION
+// ══════════════════
+function goDetail(id){
+  activeStageId=id;renderDetail();
+  document.getElementById('pageDetail').classList.remove('page-hidden-right');
+  document.getElementById('pageDash').classList.add('page-hidden-left');
+  document.getElementById('pageDetail').scrollTop=0;
+}
+function goBack(){
+  document.getElementById('pageDash').classList.remove('page-hidden-left');
+  document.getElementById('pageDetail').classList.add('page-hidden-right');
+  renderDash();
+}
+
+let txStart=0,tyStart=0,swDir=null;
+document.getElementById('pageDetail').addEventListener('touchstart',e=>{txStart=e.touches[0].clientX;tyStart=e.touches[0].clientY;swDir=null;},{passive:true});
+document.getElementById('pageDetail').addEventListener('touchmove',e=>{
+  const dx=e.touches[0].clientX-txStart,dy=e.touches[0].clientY-tyStart;
+  if(!swDir)swDir=Math.abs(dx)>Math.abs(dy)?'h':'v';
+  if(swDir==='h'&&dx>0)document.getElementById('pageDetail').style.transform=`translateX(${Math.max(0,dx)}px)`;
+},{passive:true});
+document.getElementById('pageDetail').addEventListener('touchend',e=>{
+  const dx=e.changedTouches[0].clientX-txStart;
+  document.getElementById('pageDetail').style.transform='';
+  if(swDir==='h'&&dx>80)goBack();
+},{passive:true});
+
+// ══════════════════
+//  SVG RING
+// ══════════════════
+function ringHTML(pct,color,size){
+  const r=(size-7)/2,circ=2*Math.PI*r,dash=pct/100*circ;
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+    <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="4"/>
+    <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${color}" stroke-width="4"
+      stroke-dasharray="${dash} ${circ-dash}" stroke-dashoffset="${circ/4}" stroke-linecap="round"/>
+    <text x="${size/2}" y="${size/2+4}" text-anchor="middle" fill="white" font-size="10" font-family="monospace" font-weight="600">${Math.round(pct)}%</text>
+  </svg>`;
+}
+
+// ══════════════════
+//  DASHBOARD
+// ══════════════════
+function renderDash(){
+  const tb=totalBudget(),ts=totalSpent(),rem=tb-ts;
+  const pct=tb>0?Math.min(ts/tb*100,100):0;
+  const doneS=stages.filter(s=>stagePlanned(s)>0&&stageSpent(s)===stagePlanned(s)).length;
+  const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isStandalone=window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone;
+  const showInstall=(!!window._installPrompt||isIOS)&&!isStandalone;
+
+  document.getElementById('dashContent').innerHTML=`
+    ${showInstall?`<div class="install-banner"><div style="font-size:26px">📲</div>
+      <div class="install-banner-text"><strong>Установить на рабочий стол</strong>
+        ${isIOS?'Safari → Поделиться → «На экран "Домой"»'
+          :'<button class="btn btn-sm" style="background:rgba(201,170,124,.2);color:#C9AA7C;border:1px solid rgba(201,170,124,.3);margin-top:6px" onclick="installApp()">Установить</button>'}
+      </div></div>`:''}
+
+    <div class="summary-strip">
+      <div class="sum-card" style="animation-delay:.04s">
+        <div class="sum-label">Общий бюджет</div>
+        <div class="sum-val c-gold">${fmtShort(tb)}</div>
+        <div class="sum-sub">${stages.length} этапов</div>
+      </div>
+      <div class="sum-card" style="animation-delay:.08s">
+        <div class="sum-label">Потрачено</div>
+        <div class="sum-val c-green">${fmtShort(ts)}</div>
+        <div class="sum-sub">${Math.round(pct)}% от бюджета</div>
+      </div>
+      <div class="sum-card full" style="animation-delay:.12s">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <div class="sum-label">Остаток</div>
+            <div class="sum-val ${rem<0?'c-red':'c-blue'}">${fmtShort(rem)}</div>
+            <div class="sum-sub">${doneS} из ${stages.length} этапов завершено</div>
+          </div>
+          <div style="text-align:right">
+            <div class="sum-label">Позиции</div>
+            <div style="font-family:'DM Mono',monospace;font-size:18px;font-weight:600">
+              ${stages.reduce((a,s)=>a+s.items.filter(i=>i.done).length,0)}<span style="color:var(--text3);font-size:13px"> / ${stages.reduce((a,s)=>a+s.items.length,0)}</span>
+            </div>
+          </div>
+        </div>
+        <div class="prog-bar-wrap"><div class="prog-bar-fill" style="width:${pct}%"></div></div>
+      </div>
+    </div>
+
+    <div class="section-divider"></div>
+    <div class="section-title">Этапы строительства</div>
+
+    ${stages.map((s,i)=>{
+      const sp=stageSpent(s),pl=stagePlanned(s),pct=s.budget>0?Math.min(sp/s.budget*100,100):0;
+      const done=s.items.filter(i=>i.done).length,over=s.budget-pl<0;
+      return `<div class="stage-card" style="animation-delay:${.18+i*.07}s" onclick="goDetail(${s.id})">
+        <div class="stage-card-accent" style="background:linear-gradient(90deg,${s.color},transparent)"></div>
+        <div class="stage-card-body">
+          <div class="stage-card-icon">${s.icon}</div>
+          <div class="stage-card-info">
+            <div class="stage-card-name">${s.name}</div>
+            <div class="stage-card-meta">${done}/${s.items.length} позиций · ${fmt(sp)}</div>
+          </div>
+          <div>${ringHTML(pct,s.color,54)}</div>
+        </div>
+        <div class="stage-card-bar"><div class="stage-card-bar-fill" style="width:${pct}%;background:${s.color}"></div></div>
+        <div class="stage-card-stats">
+          <div class="scs-item"><div class="scs-label">Бюджет</div><div class="scs-val c-gold">${fmtShort(s.budget)}</div></div>
+          <div class="scs-item"><div class="scs-label">${over?'Перерасход':'Запас'}</div><div class="scs-val ${over?'c-red':'c-blue'}">${fmtShort(Math.abs(s.budget-pl))}</div></div>
+        </div>
+      </div>`;
+    }).join('')}
+    ${stages.length===0?`<div class="empty"><div style="font-size:48px;opacity:.3;margin-bottom:12px">🏗</div><div style="font-size:14px">Нажмите + чтобы добавить первый этап</div></div>`:''}
+  `;
+}
+
+// ══════════════════
+//  DETAIL
+// ══════════════════
+function renderDetail(){
+  const s=stages.find(st=>st.id===activeStageId);if(!s)return;
+  const sp=stageSpent(s),pct=s.budget>0?Math.min(sp/s.budget*100,100):0;
+  document.getElementById('detailHero').innerHTML=`
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      <button class="back-btn" onclick="goBack()">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><polyline points="11,4 6,9 11,14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Назад
+      </button>
+      <button class="btn btn-icon btn-sm" onclick="editStage(${s.id})" style="margin-left:auto">✏️</button>
+    </div>
+    <div class="detail-hero-top">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:30px;margin-bottom:6px">${s.icon}</div>
+        <div class="detail-hero-name">${s.name}</div>
+        <div class="detail-hero-budget">${fmt(sp)} потрачено из ${fmt(s.budget)}</div>
+      </div>
+      <div>${ringHTML(pct,s.color,64)}</div>
+    </div>
+    <div class="detail-hero-prog"><div class="detail-hero-prog-fill" style="width:${pct}%;background:${s.color}"></div></div>`;
+
+  document.getElementById('detailContent').innerHTML=`
+    <div class="stat-grid" style="margin-top:4px">
+      <div class="stat-box"><div class="stat-lbl">Бюджет</div><div class="stat-val c-gold">${fmtShort(s.budget)}</div></div>
+      <div class="stat-box"><div class="stat-lbl">Выполнено</div><div class="stat-val c-green">${fmtShort(sp)}</div></div>
+      <div class="stat-box"><div class="stat-lbl">В смете</div><div class="stat-val">${fmtShort(stagePlanned(s))}</div></div>
+      <div class="stat-box"><div class="stat-lbl">${s.budget-stagePlanned(s)<0?'Перерасход':'Запас'}</div>
+        <div class="stat-val ${s.budget-stagePlanned(s)<0?'c-red':'c-blue'}">${fmtShort(Math.abs(s.budget-stagePlanned(s)))}</div></div>
+    </div>
+    <div class="section-title">Позиции</div>
+    <div class="items-section">
+      <div class="items-header"><span></span><span>Позиция</span><span>Сумма</span><span></span></div>
+      ${s.items.length===0?`<div class="empty" style="padding:28px 16px"><div style="font-size:28px;opacity:.3;margin-bottom:8px">📋</div><div style="font-size:13px">Добавьте первую позицию</div></div>`:''}
+      ${s.items.map((item,i)=>`
+      <div class="item-row" style="animation-delay:${i*.04}s">
+        <div class="item-check ${item.done?'done':''}" style="${item.done?'background:'+s.color+';border-color:'+s.color:''}" onclick="toggleItem(${s.id},${item.id})">
+          ${item.done?'<svg width="12" height="12" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" fill="none" stroke="#0D0F14" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>':''}
+        </div>
+        <div class="item-name ${item.done?'done':''}">${item.name}</div>
+        <div class="item-cost" style="${item.done?'color:'+s.color:''}">${fmtShort(item.cost)}</div>
+        <button class="item-del" onclick="deleteItem(${s.id},${item.id})">×</button>
+      </div>`).join('')}
+    </div>
+    <div class="add-form">
+      <div class="add-form-title">Добавить позицию</div>
+      <input type="text" id="newItemName" placeholder="Название работы / материала"/>
+      <div class="add-form-row">
+        <input type="number" id="newItemCost" placeholder="Сумма, ₼" style="flex:1"/>
+        <button class="btn btn-sm" style="background:${s.color}22;color:${s.color};border:1px solid ${s.color}44;flex-shrink:0" onclick="addItem(${s.id})">＋ Добавить</button>
+      </div>
+    </div>
+    <button class="btn btn-danger btn-sm" onclick="confirmDeleteStage(${s.id})" style="width:100%;margin-top:4px">🗑 Удалить этап</button>
+    <div style="height:8px"></div>`;
+}
+
+// ══════════════════
+//  ACTIONS
+// ══════════════════
+function toggleItem(stageId,itemId){
+  stages=stages.map(s=>s.id!==stageId?s:{...s,items:s.items.map(i=>i.id===itemId?{...i,done:!i.done}:i)});
+  save(stages);renderDetail();
+}
+function deleteItem(stageId,itemId){
+  stages=stages.map(s=>s.id!==stageId?s:{...s,items:s.items.filter(i=>i.id!==itemId)});
+  save(stages);renderDetail();showToast('Позиция удалена');
+}
+function addItem(stageId){
+  const name=document.getElementById('newItemName')?.value.trim();
+  const cost=parseInt(document.getElementById('newItemCost')?.value);
+  if(!name){showToast('Введите название','err');return;}
+  if(!cost||cost<=0){showToast('Введите сумму','err');return;}
+  stages=stages.map(s=>s.id!==stageId?s:{...s,items:[...s.items,{id:newId(),name,cost,done:false}]});
+  save(stages);renderDetail();showToast('Позиция добавлена');
+}
+function confirmDeleteStage(id){
+  const s=stages.find(st=>st.id===id);if(!s)return;
+  showModal(`<div class="modal-handle"></div>
+    <div class="modal-title">Удалить «${s.name}»?</div>
+    <p style="color:var(--text2);font-size:14px;margin-bottom:20px">Этап и все позиции будут удалены навсегда.</p>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-secondary" onclick="closeModal()">Отмена</button>
+      <button class="btn btn-danger" style="flex:1" onclick="deleteStage(${id})">Удалить</button>
+    </div>`);
+}
+function deleteStage(id){
+  stages=stages.filter(s=>s.id!==id);save(stages);closeModal();goBack();showToast('Этап удалён');
+}
+function showStageModal(existing){
+  const isEdit=!!existing,data=existing||{name:'',budget:'',icon:'\u{1F3E0}',color:'#7BB8CC'};
+  window._sfd={...data};
+  showModal(`<div class="modal-handle"></div>
+    <div class="modal-title">${isEdit?'Редактировать':'Новый этап'}</div>
+    <div class="form-group"><label class="form-label">Название</label>
+      <input type="text" id="sName" placeholder="Например: Благоустройство" value="${data.name}"/></div>
+    <div class="form-group"><label class="form-label">Бюджет (₼)</label>
+      <input type="number" id="sBudget" placeholder="500000" value="${data.budget||''}"/></div>
+    <div class="form-group"><label class="form-label">Иконка</label>
+      <div class="icon-grid">${ICONS.map(ic=>`<div class="icon-opt ${ic===data.icon?'sel':''}" onclick="selIcon('${ic}')">${ic}</div>`).join('')}</div></div>
+    <div class="form-group"><label class="form-label">Цвет</label>
+      <div class="color-grid">${COLORS.map(c=>`<div class="color-opt ${c===data.color?'sel':''}" style="background:${c}" onclick="selColor('${c}')"></div>`).join('')}</div></div>
+    <div style="display:flex;gap:10px;margin-top:4px">
+      <button class="btn btn-secondary" onclick="closeModal()">Отмена</button>
+      <button class="btn btn-primary" onclick="saveStage('${isEdit?data.id:''}')">${isEdit?'Сохранить':'Создать'}</button>
+    </div>`);
+}
+function selIcon(ic){window._sfd.icon=ic;document.querySelectorAll('.icon-opt').forEach(el=>el.classList.toggle('sel',el.textContent===ic))}
+function selColor(c){window._sfd.color=c;document.querySelectorAll('.color-opt').forEach(el=>el.classList.toggle('sel',el.getAttribute('onclick')===`selColor('${c}')`))}
+function saveStage(editId){
+  const name=document.getElementById('sName')?.value.trim();
+  const budget=parseInt(document.getElementById('sBudget')?.value);
+  const icon=window._sfd?.icon||'\u{1F3E0}',color=window._sfd?.color||'#7BB8CC';
+  if(!name){showToast('Введите название','err');return;}
+  if(!budget||budget<=0){showToast('Введите бюджет','err');return;}
+  if(editId){const id=parseInt(editId);stages=stages.map(s=>s.id===id?{...s,name,budget,icon,color}:s);showToast('Этап обновлён');}
+  else{stages=[...stages,{id:newId(),name,icon,color,budget,items:[]}];showToast('Этап добавлен');}
+  save(stages);closeModal();
+  if(document.getElementById('pageDetail').classList.contains('page-hidden-right'))renderDash();
+  else{renderDash();renderDetail();}
+}
+function editStage(id){const s=stages.find(st=>st.id===id);if(s)showStageModal(s);}
+
+function showModal(html){
+  closeModal();
+  const bd=document.createElement('div');
+  bd.className='modal-backdrop';bd.id='modalBackdrop';
+  bd.innerHTML=`<div class="modal">${html}</div>`;
+  bd.addEventListener('click',e=>{if(e.target===bd)closeModal();});
+  document.body.appendChild(bd);
+}
+function closeModal(){document.getElementById('modalBackdrop')?.remove();}
+
+// ══════════════════════════════════
+//  PDF EXPORT
+// ══════════════════════════════════
+function exportPDF(){
+  const {jsPDF} = window.jspdf;
+  const doc = new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  const W=210, PL=14, PR=14, CW=W-PL-PR;
+  let y=0;
+
+  // ── helpers ──
+  const hex2rgb = h => {
+    const r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16);
+    return [r,g,b];
+  };
+  const setFont=(style,size)=>{doc.setFont('helvetica',style);doc.setFontSize(size);}
+  const setColor=(r,g,b)=>doc.setTextColor(r,g,b);
+  const setFill=(r,g,b)=>doc.setFillColor(r,g,b);
+  const setDraw=(r,g,b)=>doc.setDrawColor(r,g,b);
+
+  const checkPage=(need=20)=>{
+    if(y+need>280){doc.addPage();y=16;}
+  };
+
+  // ── COVER HEADER ──
+  setFill(13,15,20); doc.rect(0,0,W,42,'F');
+  setFill(201,170,124); doc.rect(0,42,W,1.5,'F');
+
+  setFont('bold',22); setColor(201,170,124);
+  doc.text('Строим Дом', PL, 20);
+  setFont('normal',10); setColor(180,176,168);
+  doc.text('Отчёт о бюджете строительства', PL, 28);
+
+  const now=new Date();
+  const dateStr=now.toLocaleDateString('ru-RU',{day:'2-digit',month:'long',year:'numeric'});
+  setFont('normal',9); setColor(140,136,128);
+  doc.text(dateStr, W-PR, 28, {align:'right'});
+
+  y=52;
+
+  // ── SUMMARY BOXES ──
+  const tb=totalBudget(),ts=totalSpent(),rem=tb-ts;
+  const pct=tb>0?Math.min(ts/tb*100,100):0;
+
+  const boxes=[
+    {label:'Общий бюджет', val:fmtShort(tb), color:[201,170,124]},
+    {label:'Потрачено',     val:fmtShort(ts), color:[128,200,154]},
+    {label:'Остаток',       val:fmtShort(rem),color:rem<0?[204,123,123]:[123,184,204]},
+  ];
+  const bw=(CW-8)/3;
+  boxes.forEach((b,i)=>{
+    const bx=PL+i*(bw+4);
+    setFill(19,22,28); setDraw(40,44,54);
+    doc.roundedRect(bx,y,bw,20,3,3,'FD');
+    // accent line top
+    setFill(...b.color);
+    doc.roundedRect(bx,y,bw,1.2,0.6,0.6,'F');
+    // label
+    setFont('normal',7.5); setColor(140,136,128);
+    doc.text(b.label.toUpperCase(), bx+6, y+8);
+    // value
+    setFont('bold',11); setColor(...b.color);
+    doc.text(b.val, bx+6, y+16);
+  });
+  y+=26;
+
+  // progress bar
+  setFill(30,33,42); doc.roundedRect(PL,y,CW,4,2,2,'F');
+  setFill(201,170,124); doc.roundedRect(PL,y,CW*pct/100,4,2,2,'F');
+  y+=8;
+  setFont('normal',8); setColor(140,136,128);
+  doc.text(`Общий прогресс: ${Math.round(pct)}%`, PL, y);
+  const doneS=stages.filter(s=>stagePlanned(s)>0&&stageSpent(s)===stagePlanned(s)).length;
+  doc.text(`${doneS} из ${stages.length} этапов завершено`, W-PR, y, {align:'right'});
+  y+=10;
+
+  // ── DIVIDER ──
+  setDraw(40,44,54); doc.setLineWidth(0.3);
+  doc.line(PL,y,W-PR,y);
+  setFill(201,170,124); doc.rect(PL,y-0.4,20,1.2,'F');
+  y+=7;
+
+  // ── STAGES ──
+  setFont('bold',11); setColor(234,230,222);
+  doc.text('Этапы строительства', PL, y);
+  y+=8;
+
+  stages.forEach(s=>{
+    checkPage(52);
+    const sp=stageSpent(s),pl=stagePlanned(s);
+    const spct=s.budget>0?Math.min(sp/s.budget*100,100):0;
+    const done=s.items.filter(i=>i.done).length;
+    const sc=hex2rgb(s.color);
+
+    // card bg
+    setFill(19,22,28); setDraw(35,38,48); doc.setLineWidth(0.2);
+    doc.roundedRect(PL,y,CW,44,3,3,'FD');
+    // accent
+    setFill(...sc); doc.roundedRect(PL,y,CW,1.5,0.5,0.5,'F');
+
+    // stage name
+    setFont('bold',12); setColor(234,230,222);
+    doc.text(s.name, PL+8, y+10);
+
+    // done badge
+    setFill(40,44,54);
+    doc.roundedRect(W-PR-28,y+5,26,7,2,2,'F');
+    setFont('normal',7.5); setColor(...sc);
+    doc.text(`${done}/${s.items.length} поз.`, W-PR-25, y+10.5);
+
+    // stats row
+    const cols=[
+      {label:'Бюджет',       val:fmtShort(s.budget),  c:[201,170,124]},
+      {label:'Потрачено',    val:fmtShort(sp),         c:[128,200,154]},
+      {label:'В смете',      val:fmtShort(pl),         c:[200,200,200]},
+      {label:s.budget-pl<0?'Перерасход':'Запас', val:fmtShort(Math.abs(s.budget-pl)), c:s.budget-pl<0?[204,123,123]:[123,184,204]},
+    ];
+    const cw2=CW/4;
+    cols.forEach((col,ci)=>{
+      const cx=PL+ci*cw2;
+      setFont('normal',7); setColor(140,136,128);
+      doc.text(col.label.toUpperCase(), cx+4, y+20);
+      setFont('bold',9); setColor(...col.c);
+      doc.text(col.val, cx+4, y+27);
+    });
+
+    // progress bar
+    setFill(30,33,42); doc.roundedRect(PL+4,y+32,CW-8,3,1.5,1.5,'F');
+    setFill(...sc); doc.roundedRect(PL+4,y+32,Math.max(2,(CW-8)*spct/100),3,1.5,1.5,'F');
+    setFont('normal',7.5); setColor(...sc);
+    doc.text(`${Math.round(spct)}%`, W-PR-6, y+35, {align:'right'});
+
+    y+=50;
+
+    // items table (if any)
+    if(s.items.length>0){
+      checkPage(14+s.items.length*8);
+
+      // table header
+      setFill(26,30,39); doc.rect(PL,y,CW,7,'F');
+      setFont('bold',7.5); setColor(140,136,128);
+      doc.text('ПОЗИЦИЯ', PL+4, y+5);
+      doc.text('СУММА', W-PR-4, y+5, {align:'right'});
+      doc.text('СТАТУС', W-PR-36, y+5, {align:'right'});
+      y+=7;
+
+      s.items.forEach((item,ii)=>{
+        checkPage(9);
+        const rowBg = ii%2===0 ? [17,20,26] : [20,23,32];
+        setFill(...rowBg); doc.rect(PL,y,CW,7,'F');
+
+        // done indicator
+        if(item.done){
+          setFill(...sc); doc.circle(PL+5,y+3.5,1.5,'F');
+        } else {
+          setDraw(80,84,94); doc.setLineWidth(0.3); doc.circle(PL+5,y+3.5,1.5,'D');
+        }
+
+        setFont(item.done?'normal':'normal',8.5);
+        setColor(item.done?140:220, item.done?136:216, item.done?128:208);
+        // truncate name
+        let nm=item.name;
+        while(doc.getTextWidth(nm)>CW-52&&nm.length>3)nm=nm.slice(0,-1);
+        if(nm!==item.name)nm+='...';
+        doc.text(nm, PL+11, y+5);
+
+        setFont('normal',8.5);
+        setColor(...(item.done?sc:[180,176,168]));
+        doc.text(fmtShort(item.cost), W-PR-38, y+5, {align:'right'});
+
+        setFont('normal',7);
+        if(item.done){setFill(...sc.map(v=>Math.round(v*0.25)));doc.roundedRect(W-PR-28,y+1.5,24,4,1.5,1.5,'F');setColor(...sc);}
+        else{setFill(40,44,54);doc.roundedRect(W-PR-28,y+1.5,24,4,1.5,1.5,'F');setColor(120,116,108);}
+        doc.text(item.done?'ГОТОВО':'ПЛАН', W-PR-16, y+5, {align:'center'});
+
+        y+=7;
+      });
+
+      // total row
+      setFill(30,33,42); doc.rect(PL,y,CW,8,'F');
+      setFont('bold',9); setColor(201,170,124);
+      doc.text('ИТОГО ВЫПОЛНЕНО:', PL+4, y+5.5);
+      doc.text(fmtShort(sp), W-PR-38, y+5.5, {align:'right'});
+      setFont('normal',8); setColor(140,136,128);
+      doc.text(`из ${fmtShort(pl)} запланировано`, W-PR-4, y+5.5, {align:'right'});
+      y+=14;
+    } else {
+      y+=4;
+    }
+  });
+
+  // ── FOOTER ──
+  const pages=doc.getNumberOfPages();
+  for(let i=1;i<=pages;i++){
+    doc.setPage(i);
+    setFill(13,15,20); doc.rect(0,287,W,10,'F');
+    setFont('normal',7.5); setColor(80,76,68);
+    doc.text('Строим Дом — бюджет строительства', PL, 293);
+    doc.text(`${i} / ${pages}`, W-PR, 293, {align:'right'});
+  }
+
+  const fname=`isapp-report-${now.toISOString().split('T')[0]}.pdf`;
+  doc.save(fname);
+  showToast('PDF сохранён');
+}
+
+// ══════════════════
+//  INSTALL
+// ══════════════════
+window._installPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();window._installPrompt=e;renderDash();});
+function installApp(){
+  if(!window._installPrompt)return;
+  window._installPrompt.prompt();
+  window._installPrompt.userChoice.then(()=>{window._installPrompt=null;renderDash();});
+}
+
+document.getElementById('btnAdd').onclick=()=>showStageModal(null);
+document.getElementById('btnPdf').onclick=exportPDF;
+
+if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
+
+renderDash();
+</script>
+</body>
+</html>
