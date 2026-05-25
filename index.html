@@ -8,11 +8,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-<meta name="apple-mobile-web-app-title" content="Строим 🏡"/>
+<meta name="apple-mobile-web-app-title" content="Tikinti"/>
 <meta name="theme-color" content="#0D0F14"/>
 <link rel="manifest" href="./manifest.json"/>
 <link rel="apple-touch-icon" href="./icons/icon-192.png"/>
-<title>Строим Дом</title>
+<title>Tikinti</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700&family=Mulish:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <style>
@@ -22,14 +22,14 @@
   --text:#EAE6DE;--text2:rgba(234,230,222,0.55);--text3:rgba(234,230,222,0.28);
   --gold:#C9AA7C;--blue:#7BB8CC;--green:#80C89A;--red:#CC7B7B;
   --safe:env(safe-area-inset-bottom,0px);--top:env(safe-area-inset-top,0px);
-  --drawer:280px;
+  --drawer:285px;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Mulish',sans-serif;overflow:hidden}
 #app{position:fixed;inset:0;overflow:hidden}
 
 /* DRAWER */
-#drawerBackdrop{position:fixed;inset:0;background:rgba(0,0,0,0);z-index:90;pointer-events:none;transition:background .3s ease}
+#drawerBackdrop{position:fixed;inset:0;background:rgba(0,0,0,0);z-index:90;pointer-events:none;transition:background .3s}
 #drawerBackdrop.open{background:rgba(0,0,0,.6);pointer-events:all}
 #drawer{position:fixed;top:0;left:0;bottom:0;width:var(--drawer);background:#0f1118;border-right:1px solid var(--border2);z-index:100;transform:translateX(-100%);transition:transform .32s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;overflow:hidden}
 #drawer.open{transform:translateX(0)}
@@ -39,7 +39,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Mulish
 .drawer-scroll{flex:1;overflow-y:auto;padding:12px 10px;-webkit-overflow-scrolling:touch}
 .drawer-scroll::-webkit-scrollbar{display:none}
 .drawer-section-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;padding:4px 10px 8px}
-.obj-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;cursor:pointer;transition:background .15s;margin-bottom:2px}
+.obj-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;cursor:pointer;margin-bottom:2px}
 .obj-item.active{background:rgba(201,170,124,.12);border:1px solid rgba(201,170,124,.2)}
 .obj-item:not(.active){border:1px solid transparent}
 .obj-icon{font-size:20px;flex-shrink:0;width:36px;height:36px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.05);border-radius:9px}
@@ -47,10 +47,15 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Mulish
 .obj-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:1px}
 .obj-meta{font-size:10px;color:var(--text3);font-family:'DM Mono',monospace}
 .obj-active-dot{width:7px;height:7px;border-radius:50%;background:var(--gold);flex-shrink:0}
-.drawer-add-btn{margin:8px 10px 0;padding:11px;border-radius:12px;background:rgba(201,170,124,.08);border:1.5px dashed rgba(201,170,124,.25);color:var(--gold);font-size:13px;font-weight:600;font-family:'Mulish',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;width:calc(100% - 20px)}
-.drawer-pdf-btn{margin:6px 10px 0;padding:10px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid var(--border);color:var(--text2);font-size:13px;font-weight:600;font-family:'Mulish',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;width:calc(100% - 20px);transition:background .15s}
-.drawer-pdf-btn:active{background:rgba(255,255,255,.08)}
-.drawer-footer{padding:14px 16px calc(14px + var(--safe));border-top:1px solid var(--border);flex-shrink:0;font-size:11px;color:var(--text3);line-height:1.6}
+.drawer-btn{margin:6px 10px 0;padding:11px;border-radius:12px;font-size:13px;font-weight:600;font-family:'Mulish',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;width:calc(100% - 20px);transition:background .15s;border:none}
+.drawer-btn-add{background:rgba(201,170,124,.08);border:1.5px dashed rgba(201,170,124,.25) !important;color:var(--gold)}
+.drawer-btn-pdf{background:rgba(255,255,255,.04);border:1px solid var(--border) !important;color:var(--text2)}
+.drawer-footer{padding:14px 16px calc(14px + var(--safe));border-top:1px solid var(--border);flex-shrink:0}
+
+/* LANG SWITCHER */
+.lang-switch{display:flex;gap:4px;margin-bottom:10px}
+.lang-btn{flex:1;padding:6px 4px;border-radius:8px;border:1px solid var(--border);background:none;color:var(--text3);font-size:11px;font-weight:700;font-family:'Mulish',sans-serif;cursor:pointer;transition:all .2s;text-align:center}
+.lang-btn.active{background:rgba(201,170,124,.15);border-color:rgba(201,170,124,.4);color:var(--gold)}
 
 /* PAGES */
 .page{position:absolute;inset:0;background:var(--bg);overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;transition:transform .32s cubic-bezier(.4,0,.2,1),opacity .32s ease;will-change:transform}
@@ -68,43 +73,21 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Mulish
 .logo{font-family:'Unbounded',sans-serif;font-size:15px;font-weight:700;letter-spacing:-.4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .logo span{color:var(--gold)}
 .logo-sub{font-size:10px;color:var(--text3);margin-top:1px}
-.header-actions{display:flex;gap:7px;flex-shrink:0}
 .back-btn{display:flex;align-items:center;gap:6px;font-size:14px;font-weight:600;color:var(--gold);background:none;border:none;cursor:pointer;padding:4px 0;font-family:'Mulish',sans-serif}
 
-/* CONTENT */
 .content{padding:16px 16px calc(32px + var(--safe))}
 
-/* TOTAL BUDGET BANNER */
+/* BUDGET BANNER */
 .budget-banner{
-  background:linear-gradient(135deg, rgba(201,170,124,.12), rgba(201,170,124,.04));
+  background:linear-gradient(135deg,rgba(201,170,124,.12),rgba(201,170,124,.04));
   border:1px solid rgba(201,170,124,.25);
   border-radius:16px;padding:16px;margin-bottom:14px;
   display:block;
   animation:fadeUp .35s ease both;
 }
-.bb-left{}
 .bb-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px}
-.bb-val{font-family:'DM Mono',monospace;font-size:24px;font-weight:700;color:var(--gold)}
-.bb-sub{font-size:11px;color:var(--text3);margin-top:3px}
-.bb-edit{background:rgba(201,170,124,.12);border:1px solid rgba(201,170,124,.2);color:var(--gold);border-radius:10px;padding:9px 11px;font-size:16px;cursor:pointer;flex-shrink:0;line-height:1}
-
-/* SUMMARY STRIP */
-.summary-strip{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
-.sum-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:14px;animation:fadeUp .4s ease both}
-.sum-card.full{grid-column:1/-1}
-.sum-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px}
-.sum-val{font-family:'DM Mono',monospace;font-size:18px;font-weight:600;line-height:1}
-.sum-sub{font-size:11px;color:var(--text3);margin-top:4px}
-
-/* BUDGET HEALTH BAR */
-.health-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:14px;animation:fadeUp .4s ease both}
-.health-row{display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-bottom:8px}
-.health-track{height:10px;background:rgba(255,255,255,.06);border-radius:5px;overflow:hidden;position:relative}
-.health-bar-smeta{height:100%;border-radius:5px;position:absolute;top:0;left:0;transition:width .7s ease}
-.health-bar-fact{height:100%;border-radius:5px;position:absolute;top:0;left:0;transition:width .7s ease}
-.health-legend{display:flex;gap:14px;margin-top:8px}
-.hl-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3)}
-.hl-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+.bb-val{font-family:'DM Mono',monospace;font-size:24px;font-weight:700;color:var(--gold);margin-bottom:2px}
+.bb-sub{font-size:11px;color:var(--text3);margin-bottom:0}
 
 /* SECTION */
 .section-divider{height:1px;background:var(--border);margin:6px 0 16px;position:relative}
@@ -120,11 +103,8 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Mulish
 .stage-card-info{flex:1;min-width:0}
 .stage-card-name{font-weight:700;font-size:14px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .stage-card-meta{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace}
-.stage-card-bar{height:3px;background:rgba(255,255,255,.05);margin:0 16px 0;border-radius:2px;overflow:hidden}
-.stage-card-bar-fill{height:100%;border-radius:2px;transition:width .6s ease}
-/* two-layer bar */
-.stage-card-bar-track{height:4px;background:rgba(255,255,255,.05);margin:0 16px 12px;border-radius:2px;overflow:hidden;position:relative}
-.scb-smeta{position:absolute;top:0;left:0;height:100%;border-radius:2px;opacity:.4}
+.stage-card-bar-track{height:4px;background:rgba(255,255,255,.05);margin:0 16px 0;border-radius:2px;overflow:hidden;position:relative}
+.scb-smeta{position:absolute;top:0;left:0;height:100%;border-radius:2px;opacity:.35}
 .scb-fact{position:absolute;top:0;left:0;height:100%;border-radius:2px}
 .stage-card-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--border);border-top:1px solid var(--border)}
 .scs-item{background:var(--bg2);padding:9px 12px}
@@ -135,8 +115,8 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Mulish
 .detail-hero{padding:calc(var(--top) + 14px) 16px 0;background:var(--bg2);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10}
 .detail-hero-name{font-family:'Unbounded',sans-serif;font-size:17px;font-weight:700;margin-bottom:3px}
 .detail-hero-sub{font-family:'DM Mono',monospace;font-size:12px;color:var(--text3);margin-bottom:10px}
-.detail-two-bar{height:6px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden;position:relative;margin-bottom:0}
-.dtb-smeta{position:absolute;top:0;left:0;height:100%;border-radius:3px;opacity:.4;transition:width .5s}
+.detail-two-bar{height:5px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden;position:relative;margin-bottom:0}
+.dtb-smeta{position:absolute;top:0;left:0;height:100%;border-radius:3px;opacity:.35;transition:width .5s}
 .dtb-fact{position:absolute;top:0;left:0;height:100%;border-radius:3px;transition:width .5s}
 
 /* STAT GRID */
@@ -148,8 +128,9 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Mulish
 /* ITEMS */
 .items-section{background:var(--bg2);border:1px solid var(--border);border-radius:18px;overflow:hidden;margin-bottom:12px}
 .items-header{padding:10px 16px;font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;border-bottom:1px solid var(--border);display:grid;grid-template-columns:32px 1fr auto 32px;gap:8px;align-items:center}
-.item-row{display:grid;grid-template-columns:32px 1fr auto 32px;align-items:center;gap:8px;padding:11px 16px;border-bottom:1px solid var(--border);transition:background .15s;animation:itemIn .22s ease both}
+.item-row{display:grid;grid-template-columns:32px 1fr auto 32px;align-items:center;gap:8px;padding:11px 16px;border-bottom:1px solid var(--border);transition:background .15s;animation:itemIn .22s ease both;cursor:pointer}
 .item-row:last-child{border-bottom:none}
+.item-row:active{background:rgba(255,255,255,.03)}
 @keyframes itemIn{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:none}}
 .item-check{width:22px;height:22px;border-radius:6px;border:1.5px solid rgba(255,255,255,.2);background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
 .item-check.done{border-color:transparent}
@@ -159,12 +140,21 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Mulish
 .item-del{background:none;border:none;color:var(--text3);cursor:pointer;font-size:20px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:6px;transition:all .2s}
 .item-del:active{background:rgba(204,123,123,.2);color:var(--red)}
 
+/* ITEM NOTE */
+.item-note{font-size:11px;color:var(--text3);padding:0 16px 8px 56px;font-style:italic}
+
 .add-form{background:var(--bg2);border:1px solid var(--border);border-radius:18px;padding:14px 16px;margin-bottom:12px}
 .add-form-title{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px}
 .add-form-row{display:flex;gap:8px;margin-top:8px}
 
-input[type=text],input[type=number]{background:rgba(255,255,255,.05);border:1px solid var(--border2);color:var(--text);border-radius:10px;padding:10px 12px;font-family:'Mulish',sans-serif;font-size:14px;outline:none;width:100%;transition:border-color .2s;-webkit-appearance:none}
-input:focus{border-color:rgba(255,255,255,.3)}
+/* FILTER TABS */
+.filter-tabs{display:flex;gap:6px;margin-bottom:10px}
+.filter-tab{padding:6px 12px;border-radius:20px;border:1px solid var(--border);background:none;color:var(--text3);font-size:12px;font-weight:600;font-family:'Mulish',sans-serif;cursor:pointer;transition:all .2s}
+.filter-tab.active{background:rgba(201,170,124,.15);border-color:rgba(201,170,124,.35);color:var(--gold)}
+
+input[type=text],input[type=number],textarea{background:rgba(255,255,255,.05);border:1px solid var(--border2);color:var(--text);border-radius:10px;padding:10px 12px;font-family:'Mulish',sans-serif;font-size:14px;outline:none;width:100%;transition:border-color .2s;-webkit-appearance:none}
+textarea{resize:none;height:72px;line-height:1.4}
+input:focus,textarea:focus{border-color:rgba(255,255,255,.3)}
 
 .btn{cursor:pointer;border:none;border-radius:12px;font-family:'Mulish',sans-serif;font-weight:600;font-size:14px;padding:12px 16px;transition:transform .15s,opacity .15s;display:flex;align-items:center;justify-content:center;gap:6px;-webkit-user-select:none;user-select:none}
 .btn:active{transform:scale(.96)}
@@ -189,6 +179,10 @@ input:focus{border-color:rgba(255,255,255,.3)}
 .color-opt{width:28px;height:28px;border-radius:50%;cursor:pointer;transition:transform .15s;border:2px solid transparent}
 .color-opt.sel{border-color:white;transform:scale(1.15)}
 
+/* QTY × PRICE */
+.qty-price-row{display:grid;grid-template-columns:1fr 16px 1fr;align-items:center;gap:6px;margin-top:8px}
+.qty-sep{text-align:center;color:var(--text3);font-size:14px;font-weight:600}
+
 .toast{position:fixed;top:calc(var(--top) + 12px);left:50%;transform:translateX(-50%) translateY(-80px);background:var(--bg3);border:1px solid var(--border2);border-radius:12px;padding:10px 18px;font-size:13px;font-weight:600;z-index:300;transition:transform .3s ease;white-space:nowrap;box-shadow:0 8px 32px rgba(0,0,0,.5)}
 .toast.show{transform:translateX(-50%) translateY(0)}
 .empty{text-align:center;padding:48px 20px;color:var(--text3)}
@@ -197,8 +191,6 @@ input:focus{border-color:rgba(255,255,255,.3)}
 .install-banner-text strong{color:var(--gold);display:block;font-size:13px;margin-bottom:2px}
 @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
 .c-gold{color:var(--gold)}.c-blue{color:var(--blue)}.c-green{color:var(--green)}.c-red{color:var(--red)}
-
-/* OVER BUDGET WARNING */
 .over-badge{display:inline-flex;align-items:center;gap:4px;background:rgba(204,123,123,.15);border:1px solid rgba(204,123,123,.3);color:var(--red);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:600}
 </style>
 </head>
@@ -207,16 +199,26 @@ input:focus{border-color:rgba(255,255,255,.3)}
   <div id="drawerBackdrop" onclick="closeDrawer()"></div>
   <div id="drawer">
     <div class="drawer-header">
-      <div class="drawer-logo">🏡 Строим Дом</div>
-      <div class="drawer-sub">Мои объекты</div>
+      <div class="drawer-logo">🏡 Tikinti</div>
+      <div class="drawer-sub" id="drawerSub">Mənim obyektlərim</div>
     </div>
     <div class="drawer-scroll">
-      <div class="drawer-section-label">Объекты</div>
+      <div class="drawer-section-label" id="dlObjects">OBYEKTLƏRİM</div>
       <div id="drawerObjects"></div>
-      <button class="drawer-add-btn" onclick="addObjectPrompt()">＋ Новый объект</button>
-      <button class="drawer-pdf-btn" onclick="closeDrawer();exportPDF()">📄 Экспорт PDF</button>
+      <button class="drawer-btn drawer-btn-add" id="drawerBtnAdd" onclick="addObjectPrompt()">＋ Yeni obyekt</button>
+      <button class="drawer-btn drawer-btn-pdf" onclick="closeDrawer();exportPDF()">📄 PDF export</button>
+      <div style="margin-top:16px;padding:0 4px">
+        <div class="drawer-section-label" id="dlLang">DİL / ЯЗЫК / LANGUAGE</div>
+        <div class="lang-switch">
+          <button class="lang-btn" id="langAZ" onclick="setLang('az')">AZ</button>
+          <button class="lang-btn" id="langRU" onclick="setLang('ru')">RU</button>
+          <button class="lang-btn" id="langEN" onclick="setLang('en')">EN</button>
+        </div>
+      </div>
     </div>
-    <div class="drawer-footer">💾 Данные хранятся на этом устройстве</div>
+    <div class="drawer-footer">
+      <div style="font-size:11px;color:var(--text3);line-height:1.6" id="drawerFooterText">💾 Məlumatlar bu cihazda saxlanılır</div>
+    </div>
   </div>
 
   <div class="page" id="pageDash">
@@ -226,10 +228,10 @@ input:focus{border-color:rgba(255,255,255,.3)}
           <div class="burger-line"></div><div class="burger-line"></div><div class="burger-line"></div>
         </button>
         <div class="header-title">
-          <div class="logo" id="headerTitle">Строим <span>Дом</span></div>
+          <div class="logo" id="headerTitle">🏡 <span>Tikinti</span></div>
           <div class="logo-sub" id="headerSub"></div>
         </div>
-        <div class="header-actions">
+        <div style="display:flex;gap:7px;flex-shrink:0">
           <button class="btn btn-icon" id="btnAdd" style="font-size:22px;color:var(--gold)">＋</button>
         </div>
       </div>
@@ -246,6 +248,279 @@ input:focus{border-color:rgba(255,255,255,.3)}
 
 <script>
 // ══════════════════════════
+//  I18N
+// ══════════════════════════
+const LANGS = {
+  az: {
+    appName:'Tikinti',
+    myObjects:'Mənim obyektlərim',
+    objects:'OBYEKTLƏRİM',
+    langLabel:'DİL',
+    newObject:'＋ Yeni obyekt',
+    pdfExport:'📄 PDF export',
+    dataStored:'💾 Məlumatlar bu cihazda saxlanılır',
+    totalBudget:'Ümumi büdcə',
+    budgetNotSet:'Büdcə təyin edilməyib',
+    budgetOver:'⚠️ Smeta büdcəni keçir',
+    budgetLeft:'Qalıq',
+    setBudget:'Büdcəni menyudan təyin edin ☰',
+    smeta:'Smeta (plan)',
+    fact:'Xərcləndi (fakt)',
+    done:'Tamamlandı',
+    stages:'TİKİNTİ MƏRHƏLƏLƏRİ',
+    positions:'mövqe',
+    factLabel:'fakt',
+    smetaLabel:'Smeta',
+    factShort:'Fakt',
+    remainder:'Qalıq',
+    budget:'Büdcə',
+    addStage:'Yeni mərhələ',
+    editStage:'Mərhələni redaktə et',
+    stageName:'Ad',
+    stageNamePh:'Məs: Fasad',
+    stageIcon:'İkon',
+    stageColor:'Rəng',
+    stageHint:'💡 Mərhələ büdcəsi mövqelərin cəmindən avtomatik hesablanır.',
+    save:'Saxla',
+    cancel:'Ləğv et',
+    create:'Yarat',
+    delete:'Sil',
+    deleteStage:'Mərhələni sil',
+    deleteStageConfirm:'Mərhələ və bütün mövqelər silinəcək.',
+    addPosition:'Mövqe əlavə et',
+    posName:'İş / material adı',
+    posNamePh:'Məs: Beton',
+    qty:'Miqdar',
+    price:'Qiymət',
+    note:'Qeyd (ixtiyari)',
+    notePh:'Əlavə məlumat...',
+    totalDone:'Cəmi tamamlandı',
+    outOf:'dan',
+    filterAll:'Hamısı',
+    filterDone:'Tamamlandı',
+    filterPlan:'Plan',
+    editPos:'Mövqeni redaktə et',
+    deletePos:'Mövqe silindi',
+    posAdded:'Mövqe əlavə edildi',
+    stageAdded:'Mərhələ əlavə edildi',
+    stageUpdated:'Mərhələ yeniləndi',
+    stageDeleted:'Mərhələ silindi',
+    objCreated:'Obyekt yaradıldı',
+    objUpdated:'Yeniləndi',
+    objDeleted:'Obyekt silindi',
+    budgetUpdated:'Büdcə yeniləndi',
+    enterName:'Ad daxil edin',
+    enterBudget:'Büdcə daxil edin',
+    pdfOpening:'PDF açılır...',
+    cantDeleteLast:'Son obyekti silmək olmaz',
+    newObj:'Yeni obyekt',
+    editObj:'Obyekti redaktə et',
+    objName:'Ad',
+    objNamePh:'Məs: Bağ evi, Qaraj...',
+    objBudget:'Ümumi büdcə (₼)',
+    objIcon:'İkon',
+    deleteObj:'Obyekti sil',
+    deleteObjConfirm:'Bütün məlumatlar silinəcək.',
+    reportTitle:'Tikinti büdcəsi hesabatı',
+    reportDate:'Tarix',
+    backBtn:'Geri',
+    shareOfSmeta:'smeta payı',
+    pctDone:'tamamlandı',
+    stagesTitle:'Tikinti mərhələləri',
+    noStages:'Mərhələ yoxdur. ＋ düyməsinə basın',
+    install:'Əsas ekrana əlavə et',
+    installHint:'Safari → Paylaş → "Ana Ekrana Əlavə Et"',
+    installBtn:'Quraşdır',
+  },
+  ru: {
+    appName:'Tikinti',
+    myObjects:'Мои объекты',
+    objects:'МОИ ОБЪЕКТЫ',
+    langLabel:'ЯЗЫК',
+    newObject:'＋ Новый объект',
+    pdfExport:'📄 Экспорт PDF',
+    dataStored:'💾 Данные хранятся на этом устройстве',
+    totalBudget:'Общий бюджет объекта',
+    budgetNotSet:'Не задан',
+    budgetOver:'⚠️ Смета превышает бюджет',
+    budgetLeft:'Остаток',
+    setBudget:'Задайте бюджет в меню ☰',
+    smeta:'Смета (план)',
+    fact:'Потрачено (факт)',
+    done:'Выполнено',
+    stages:'ЭТАПЫ СТРОИТЕЛЬСТВА',
+    positions:'позиций',
+    factLabel:'факт',
+    smetaLabel:'Смета',
+    factShort:'Факт',
+    remainder:'Остаток',
+    budget:'Бюджет',
+    addStage:'Новый этап',
+    editStage:'Редактировать этап',
+    stageName:'Название',
+    stageNamePh:'Например: Фасад',
+    stageIcon:'Иконка',
+    stageColor:'Цвет',
+    stageHint:'💡 Бюджет этапа считается автоматически из позиций.',
+    save:'Сохранить',
+    cancel:'Отмена',
+    create:'Создать',
+    delete:'Удалить',
+    deleteStage:'Удалить этап',
+    deleteStageConfirm:'Этап и все позиции будут удалены навсегда.',
+    addPosition:'Добавить позицию',
+    posName:'Название работы / материала',
+    posNamePh:'Например: Бетон',
+    qty:'Количество',
+    price:'Цена',
+    note:'Заметка (необязательно)',
+    notePh:'Дополнительная информация...',
+    totalDone:'Итого выполнено',
+    outOf:'из',
+    filterAll:'Все',
+    filterDone:'Выполнено',
+    filterPlan:'План',
+    editPos:'Редактировать позицию',
+    deletePos:'Позиция удалена',
+    posAdded:'Позиция добавлена',
+    stageAdded:'Этап добавлен',
+    stageUpdated:'Этап обновлён',
+    stageDeleted:'Этап удалён',
+    objCreated:'Объект создан',
+    objUpdated:'Сохранено',
+    objDeleted:'Объект удалён',
+    budgetUpdated:'Бюджет обновлён',
+    enterName:'Введите название',
+    enterBudget:'Введите бюджет',
+    pdfOpening:'Открываю PDF...',
+    cantDeleteLast:'Нельзя удалить единственный объект',
+    newObj:'Новый объект',
+    editObj:'Редактировать объект',
+    objName:'Название',
+    objNamePh:'Дача, Гараж, Квартира...',
+    objBudget:'Общий бюджет (₼)',
+    objIcon:'Иконка',
+    deleteObj:'Удалить объект',
+    deleteObjConfirm:'Все данные будут удалены навсегда.',
+    reportTitle:'Отчёт о бюджете строительства',
+    reportDate:'Дата',
+    backBtn:'Назад',
+    shareOfSmeta:'доля в смете',
+    pctDone:'выполнено',
+    stagesTitle:'Этапы строительства',
+    noStages:'Нет этапов. Нажмите + чтобы добавить',
+    install:'Установить на рабочий стол',
+    installHint:'Safari → Поделиться → «На экран "Домой"»',
+    installBtn:'Установить',
+  },
+  en: {
+    appName:'Tikinti',
+    myObjects:'My projects',
+    objects:'MY PROJECTS',
+    langLabel:'LANGUAGE',
+    newObject:'＋ New project',
+    pdfExport:'📄 Export PDF',
+    dataStored:'💾 Data stored on this device',
+    totalBudget:'Total budget',
+    budgetNotSet:'Not set',
+    budgetOver:'⚠️ Estimate exceeds budget',
+    budgetLeft:'Remaining',
+    setBudget:'Set budget in menu ☰',
+    smeta:'Estimate (plan)',
+    fact:'Spent (actual)',
+    done:'Completed',
+    stages:'CONSTRUCTION STAGES',
+    positions:'items',
+    factLabel:'actual',
+    smetaLabel:'Estimate',
+    factShort:'Actual',
+    remainder:'Left',
+    budget:'Budget',
+    addStage:'New stage',
+    editStage:'Edit stage',
+    stageName:'Name',
+    stageNamePh:'E.g.: Facade',
+    stageIcon:'Icon',
+    stageColor:'Color',
+    stageHint:'💡 Stage budget is calculated automatically from items.',
+    save:'Save',
+    cancel:'Cancel',
+    create:'Create',
+    delete:'Delete',
+    deleteStage:'Delete stage',
+    deleteStageConfirm:'Stage and all items will be permanently deleted.',
+    addPosition:'Add item',
+    posName:'Work / material name',
+    posNamePh:'E.g.: Concrete',
+    qty:'Quantity',
+    price:'Price',
+    note:'Note (optional)',
+    notePh:'Additional info...',
+    totalDone:'Total completed',
+    outOf:'of',
+    filterAll:'All',
+    filterDone:'Done',
+    filterPlan:'Planned',
+    editPos:'Edit item',
+    deletePos:'Item deleted',
+    posAdded:'Item added',
+    stageAdded:'Stage added',
+    stageUpdated:'Stage updated',
+    stageDeleted:'Stage deleted',
+    objCreated:'Project created',
+    objUpdated:'Saved',
+    objDeleted:'Project deleted',
+    budgetUpdated:'Budget updated',
+    enterName:'Enter name',
+    enterBudget:'Enter budget',
+    pdfOpening:'Opening PDF...',
+    cantDeleteLast:'Cannot delete the only project',
+    newObj:'New project',
+    editObj:'Edit project',
+    objName:'Name',
+    objNamePh:'Cottage, Garage, Apartment...',
+    objBudget:'Total budget (₼)',
+    objIcon:'Icon',
+    deleteObj:'Delete project',
+    deleteObjConfirm:'All data will be permanently deleted.',
+    reportTitle:'Construction budget report',
+    reportDate:'Date',
+    backBtn:'Back',
+    shareOfSmeta:'share of estimate',
+    pctDone:'completed',
+    stagesTitle:'Construction stages',
+    noStages:'No stages. Tap + to add',
+    install:'Add to home screen',
+    installHint:'Safari → Share → "Add to Home Screen"',
+    installBtn:'Install',
+  }
+};
+
+let lang = localStorage.getItem('isapp_lang') || 'az';
+const t = k => LANGS[lang][k] || LANGS['ru'][k] || k;
+
+function setLang(l) {
+  lang = l;
+  localStorage.setItem('isapp_lang', l);
+  ['langAZ','langRU','langEN'].forEach(id => {
+    document.getElementById(id)?.classList.toggle('active', id === 'lang'+l.toUpperCase());
+  });
+  renderDash();
+  updateDrawerLabels();
+  if(!document.getElementById('pageDetail').classList.contains('page-hidden-right')) renderDetail();
+}
+
+function updateDrawerLabels() {
+  document.getElementById('drawerSub').textContent = t('myObjects');
+  document.getElementById('dlObjects').textContent = t('objects');
+  document.getElementById('drawerBtnAdd').innerHTML = t('newObject');
+  document.getElementById('drawerFooterText').textContent = t('dataStored');
+  ['langAZ','langRU','langEN'].forEach(id => {
+    document.getElementById(id)?.classList.toggle('active', id === 'lang'+lang.toUpperCase());
+  });
+}
+
+// ══════════════════════════
 //  FORMAT
 // ══════════════════════════
 const fmt = n => {
@@ -254,61 +529,56 @@ const fmt = n => {
 };
 const fmtShort = n => {
   const abs=Math.abs(n),s=n<0?'−':'';
-  if(abs>=1e6) return s+(abs/1e6).toFixed(1).replace('.0','')+' млн ₼';
-  if(abs>=1e3) return s+(abs/1e3).toFixed(0)+' тыс ₼';
+  if(abs>=1e6) return s+(abs/1e6).toFixed(1).replace('.0','')+' mln ₼';
+  if(abs>=1e3) return s+(abs/1e3).toFixed(0)+' min ₼';
   return fmt(n);
 };
 
 // ══════════════════════════
 //  DATA
-//  Объект: { id, name, icon, totalBudget, stages[] }
-//  Этап:   { id, name, icon, color, items[] }  — бюджета нет!
-//  Позиция:{ id, name, cost, done }
 // ══════════════════════════
-const STORE_KEY='isapp_v5';
+const STORE_KEY='isapp_v6';
 
 const DEFAULT_OBJECT={
-  id:1, name:'Мой дом', icon:'🏠',
-  totalBudget: 7630000, // общий бюджет на весь объект
+  id:1, name:'Ev tikintisi', icon:'🏠',
+  totalBudget: 180000,
   stages:[
-    {id:1,name:'Фундамент',icon:'⬛',color:'#C9AA7C',items:[
-      {id:1,name:'Земляные работы',cost:120000,done:true},
-      {id:2,name:'Арматура и опалубка',cost:180000,done:true},
-      {id:3,name:'Бетон',cost:220000,done:true},
-      {id:4,name:'Гидроизоляция',cost:100000,done:false},
-      {id:5,name:'Засыпка пазух',cost:80000,done:false},
+    {id:1,name:'Təməl',icon:'⬛',color:'#C9AA7C',items:[
+      {id:1,name:'Torpaq işləri',qty:1,price:3500,done:false,note:''},
+      {id:2,name:'Armatur və qəlib',qty:1,price:5200,done:false,note:''},
+      {id:3,name:'Beton',qty:40,price:85,done:false,note:'m³ başına'},
+      {id:4,name:'Hidroizolyasiya',qty:1,price:2800,done:false,note:''},
     ]},
-    {id:2,name:'Коробка дома',icon:'🏗',color:'#7BB8CC',items:[
-      {id:1,name:'Кладка 1 этаж',cost:480000,done:true},
-      {id:2,name:'Перекрытие',cost:320000,done:true},
-      {id:3,name:'Кладка 2 этаж',cost:480000,done:false},
-      {id:4,name:'Фронтоны',cost:120000,done:false},
-      {id:5,name:'Стропила',cost:280000,done:false},
+    {id:2,name:'Ev gövdəsi',icon:'🏗',color:'#7BB8CC',items:[
+      {id:1,name:'Kərpic hörgüsü (1-ci mərtəbə)',qty:1,price:12000,done:false,note:''},
+      {id:2,name:'Tavan örtüyü',qty:1,price:8500,done:false,note:''},
+      {id:3,name:'Kərpic hörgüsü (2-ci mərtəbə)',qty:1,price:11000,done:false,note:''},
+      {id:4,name:'Çərçivələr',qty:1,price:3200,done:false,note:''},
+      {id:5,name:'Mərtek konstruksiyası',qty:1,price:7500,done:false,note:''},
     ]},
-    {id:3,name:'Кровля',icon:'🏠',color:'#CC7B7B',items:[
-      {id:1,name:'Утеплитель',cost:120000,done:false},
-      {id:2,name:'Кровельный материал',cost:320000,done:false},
-      {id:3,name:'Водосток',cost:85000,done:false},
-      {id:4,name:'Доборные элементы',cost:55000,done:false},
+    {id:3,name:'Dam örtüyü',icon:'🏠',color:'#CC7B7B',items:[
+      {id:1,name:'İstilik izolyasiyası',qty:120,price:12,done:false,note:'m² başına'},
+      {id:2,name:'Dam örtüyü materialı',qty:1,price:9500,done:false,note:''},
+      {id:3,name:'Yağış suyu sistemi',qty:1,price:2400,done:false,note:''},
     ]},
-    {id:4,name:'Окна и двери',icon:'🪟',color:'#9E8ED4',items:[
-      {id:1,name:'Окна ПВХ',cost:280000,done:false},
-      {id:2,name:'Входная дверь',cost:85000,done:false},
-      {id:3,name:'Межкомнатные двери',cost:120000,done:false},
-      {id:4,name:'Монтаж',cost:35000,done:false},
+    {id:4,name:'Qapı və pəncərələr',icon:'🪟',color:'#9E8ED4',items:[
+      {id:1,name:'PVC pəncərələr',qty:8,price:950,done:false,note:'ədəd'},
+      {id:2,name:'Giriş qapısı',qty:1,price:2200,done:false,note:''},
+      {id:3,name:'Otaq qapıları',qty:6,price:480,done:false,note:'ədəd'},
+      {id:4,name:'Quraşdırma',qty:1,price:1200,done:false,note:''},
     ]},
-    {id:5,name:'Инженерия',icon:'⚙️',color:'#80C89A',items:[
-      {id:1,name:'Электрика',cost:280000,done:false},
-      {id:2,name:'Водоснабжение',cost:180000,done:false},
-      {id:3,name:'Канализация',cost:150000,done:false},
-      {id:4,name:'Отопление',cost:320000,done:false},
+    {id:5,name:'Mühəndislik',icon:'⚙️',color:'#80C89A',items:[
+      {id:1,name:'Elektrik',qty:1,price:8500,done:false,note:''},
+      {id:2,name:'Su təchizatı',qty:1,price:5200,done:false,note:''},
+      {id:3,name:'Kanalizasiya',qty:1,price:3800,done:false,note:''},
+      {id:4,name:'İstilik sistemi',qty:1,price:9500,done:false,note:''},
     ]},
-    {id:6,name:'Отделка',icon:'🎨',color:'#C8C07E',items:[
-      {id:1,name:'Стяжка полов',cost:180000,done:false},
-      {id:2,name:'Штукатурка',cost:240000,done:false},
-      {id:3,name:'Плитка',cost:120000,done:false},
-      {id:4,name:'Покраска',cost:160000,done:false},
-      {id:5,name:'Ламинат',cost:220000,done:false},
+    {id:6,name:'Bitirmə işləri',icon:'🎨',color:'#C8C07E',items:[
+      {id:1,name:'Döşəmə stяжkası',qty:120,price:18,done:false,note:'m²'},
+      {id:2,name:'Divar suvağı',qty:1,price:7200,done:false,note:''},
+      {id:3,name:'Kafel',qty:45,price:35,done:false,note:'m²'},
+      {id:4,name:'Rəngkarlıq',qty:1,price:4800,done:false,note:''},
+      {id:5,name:'Laminat / parket',qty:80,price:28,done:false,note:'m²'},
     ]},
   ]
 };
@@ -321,28 +591,27 @@ function saveDB(){localStorage.setItem(STORE_KEY,JSON.stringify(db));}
 
 let db=loadDB();
 let activeStageId=null;
+let detailFilter='all'; // all | done | plan
 
 const curObj=()=>db.objects.find(o=>o.id===db.activeObjectId)||db.objects[0];
 const stages=()=>curObj().stages;
-
-// ── Вычисления (без бюджета этапа) ──
-const itemCost    = i => i.cost||0;
-const stageSmeta  = s => s.items.reduce((a,i)=>a+itemCost(i),0);       // полная смета этапа
-const stageFact   = s => s.items.filter(i=>i.done).reduce((a,i)=>a+itemCost(i),0); // реально потрачено
+const itemTotal = i => (i.qty||1)*(i.price||i.cost||0);
+const stageSmeta  = s => s.items.reduce((a,i)=>a+itemTotal(i),0);
+const stageFact   = s => s.items.filter(i=>i.done).reduce((a,i)=>a+itemTotal(i),0);
 const totalSmeta  = () => stages().reduce((a,s)=>a+stageSmeta(s),0);
 const totalFact   = () => stages().reduce((a,s)=>a+stageFact(s),0);
 const totalBudget = () => curObj().totalBudget||0;
-
 const newId=()=>Date.now()+Math.floor(Math.random()*999);
+
 const OBJ_ICONS=['🏠','🏡','🏗','🏢','🏬','🏭','🌳','🌿','🏊','🔑','⬛','🧱'];
 const ICONS=['🏠','🏗','⬛','🪟','⚙️','🎨','🌿','🧱','🔧','💡','🚿','🛠','🏡','🌲','🪣','🔑','🏊','🌳'];
 const COLORS=['#C9AA7C','#7BB8CC','#CC7B7B','#9E8ED4','#80C89A','#C8C07E','#CC9B7B','#7BC4CC','#B87BB8','#7BA8CC'];
 
 function showToast(msg,type='ok'){
-  const t=document.getElementById('toast');
-  t.textContent=(type==='ok'?'✓ ':type==='err'?'✕ ':'')+msg;
-  t.className='toast show';clearTimeout(t._to);
-  t._to=setTimeout(()=>{t.className='toast'},2400);
+  const el=document.getElementById('toast');
+  el.textContent=(type==='ok'?'✓ ':type==='err'?'✕ ':'')+msg;
+  el.className='toast show';clearTimeout(el._to);
+  el._to=setTimeout(()=>{el.className='toast'},2400);
 }
 
 // ══════════════════════════
@@ -351,6 +620,7 @@ function showToast(msg,type='ok'){
 function openDrawer(){
   document.getElementById('drawer').classList.add('open');
   document.getElementById('drawerBackdrop').classList.add('open');
+  updateDrawerLabels();
   renderDrawer();
 }
 function closeDrawer(){
@@ -359,18 +629,18 @@ function closeDrawer(){
 }
 function renderDrawer(){
   document.getElementById('drawerObjects').innerHTML=db.objects.map(o=>{
-    const smeta=o.stages.reduce((a,s)=>a+s.items.reduce((b,i)=>b+i.cost,0),0);
-    const fact=o.stages.reduce((a,s)=>a+s.items.filter(i=>i.done).reduce((b,i)=>b+i.cost,0),0);
+    const smeta=o.stages.reduce((a,s)=>a+s.items.reduce((b,i)=>b+itemTotal(i),0),0);
+    const fact=o.stages.reduce((a,s)=>a+s.items.filter(i=>i.done).reduce((b,i)=>b+itemTotal(i),0),0);
     const pct=smeta>0?Math.round(fact/smeta*100):0;
     const isActive=o.id===db.activeObjectId;
     return `<div class="obj-item ${isActive?'active':''}" onclick="switchObject(${o.id})">
       <div class="obj-icon">${o.icon}</div>
       <div class="obj-info">
         <div class="obj-name">${o.name}</div>
-        <div class="obj-meta">${o.stages.length} эт. · факт ${pct}%</div>
+        <div class="obj-meta">${o.stages.length} • ${pct}%</div>
       </div>
       ${isActive?'<div class="obj-active-dot"></div>':''}
-      <button onclick="event.stopPropagation();editObjectPrompt(${o.id})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:15px;padding:4px;border-radius:6px;flex-shrink:0">✏️</button>
+      <button onclick="event.stopPropagation();editObjectPrompt(${o.id})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:15px;padding:4px;flex-shrink:0">✏️</button>
     </div>`;
   }).join('');
 }
@@ -383,75 +653,75 @@ function switchObject(id){
 function addObjectPrompt(){
   closeDrawer();window._objfd={name:'',icon:'🏠',budget:''};
   showModal(`<div class="modal-handle"></div>
-    <div class="modal-title">Новый объект</div>
-    <div class="form-group"><label class="form-label">Название</label>
-      <input type="text" id="oName" placeholder="Дача, Гараж, Квартира..."/></div>
-    <div class="form-group"><label class="form-label">Общий бюджет (₼)</label>
-      <input type="number" id="oBudget" placeholder="10000000"/></div>
-    <div class="form-group"><label class="form-label">Иконка</label>
+    <div class="modal-title">${t('newObj')}</div>
+    <div class="form-group"><label class="form-label">${t('objName')}</label>
+      <input type="text" id="oName" placeholder="${t('objNamePh')}"/></div>
+    <div class="form-group"><label class="form-label">${t('objBudget')}</label>
+      <input type="number" id="oBudget" placeholder="200000"/></div>
+    <div class="form-group"><label class="form-label">${t('objIcon')}</label>
       <div class="icon-grid">${OBJ_ICONS.map(ic=>`<div class="icon-opt ${ic==='🏠'?'sel':''}" onclick="selObjIcon('${ic}')">${ic}</div>`).join('')}</div></div>
     <div style="display:flex;gap:10px;margin-top:4px">
-      <button class="btn btn-secondary" onclick="closeModal()">Отмена</button>
-      <button class="btn btn-primary" onclick="createObject()">Создать</button>
+      <button class="btn btn-secondary" onclick="closeModal()">${t('cancel')}</button>
+      <button class="btn btn-primary" onclick="createObject()">${t('create')}</button>
     </div>`);
 }
 function editObjectPrompt(id){
   closeDrawer();const o=db.objects.find(x=>x.id===id);if(!o)return;
   window._objfd={id,name:o.name,icon:o.icon,budget:o.totalBudget||''};
   showModal(`<div class="modal-handle"></div>
-    <div class="modal-title">Редактировать объект</div>
-    <div class="form-group"><label class="form-label">Название</label>
+    <div class="modal-title">${t('editObj')}</div>
+    <div class="form-group"><label class="form-label">${t('objName')}</label>
       <input type="text" id="oName" value="${o.name}"/></div>
-    <div class="form-group"><label class="form-label">Общий бюджет (₼)</label>
+    <div class="form-group"><label class="form-label">${t('objBudget')}</label>
       <input type="number" id="oBudget" value="${o.totalBudget||''}"/></div>
-    <div class="form-group"><label class="form-label">Иконка</label>
+    <div class="form-group"><label class="form-label">${t('objIcon')}</label>
       <div class="icon-grid">${OBJ_ICONS.map(ic=>`<div class="icon-opt ${ic===o.icon?'sel':''}" onclick="selObjIcon('${ic}')">${ic}</div>`).join('')}</div></div>
     <div style="display:flex;gap:10px;margin-top:4px">
-      <button class="btn btn-secondary" onclick="closeModal()">Отмена</button>
-      <button class="btn btn-danger btn-sm" onclick="deleteObjectConfirm(${id})">Удалить</button>
-      <button class="btn btn-primary" style="flex:1" onclick="saveObject()">Сохранить</button>
+      <button class="btn btn-secondary" onclick="closeModal()">${t('cancel')}</button>
+      <button class="btn btn-danger btn-sm" onclick="deleteObjectConfirm(${id})">${t('delete')}</button>
+      <button class="btn btn-primary" style="flex:1" onclick="saveObject()">${t('save')}</button>
     </div>`);
 }
 function selObjIcon(ic){window._objfd.icon=ic;document.querySelectorAll('.icon-opt').forEach(el=>el.classList.toggle('sel',el.textContent===ic));}
 function createObject(){
   const name=document.getElementById('oName')?.value.trim();
   const budget=parseInt(document.getElementById('oBudget')?.value)||0;
-  if(!name){showToast('Введите название','err');return;}
+  if(!name){showToast(t('enterName'),'err');return;}
   const id=newId();
   db.objects.push({id,name,icon:window._objfd.icon||'🏠',totalBudget:budget,stages:[]});
   db.activeObjectId=id;activeStageId=null;
-  saveDB();closeModal();renderDash();showToast('Объект создан');
+  saveDB();closeModal();renderDash();showToast(t('objCreated'));
 }
 function saveObject(){
   const name=document.getElementById('oName')?.value.trim();
   const budget=parseInt(document.getElementById('oBudget')?.value)||0;
-  if(!name){showToast('Введите название','err');return;}
+  if(!name){showToast(t('enterName'),'err');return;}
   const id=window._objfd.id;
   db.objects=db.objects.map(o=>o.id===id?{...o,name,icon:window._objfd.icon||o.icon,totalBudget:budget}:o);
-  saveDB();closeModal();renderDash();showToast('Сохранено');
+  saveDB();closeModal();renderDash();showToast(t('objUpdated'));
 }
 function deleteObjectConfirm(id){
-  if(db.objects.length<=1){showToast('Нельзя удалить единственный объект','err');return;}
+  if(db.objects.length<=1){showToast(t('cantDeleteLast'),'err');return;}
   const o=db.objects.find(x=>x.id===id);closeModal();
   showModal(`<div class="modal-handle"></div>
-    <div class="modal-title">Удалить «${o.name}»?</div>
-    <p style="color:var(--text2);font-size:14px;margin-bottom:20px">Все данные будут удалены навсегда.</p>
+    <div class="modal-title">${t('deleteObj')} «${o.name}»?</div>
+    <p style="color:var(--text2);font-size:14px;margin-bottom:20px">${t('deleteObjConfirm')}</p>
     <div style="display:flex;gap:10px">
-      <button class="btn btn-secondary" onclick="closeModal()">Отмена</button>
-      <button class="btn btn-danger" style="flex:1" onclick="deleteObject(${id})">Удалить</button>
+      <button class="btn btn-secondary" onclick="closeModal()">${t('cancel')}</button>
+      <button class="btn btn-danger" style="flex:1" onclick="deleteObject(${id})">${t('delete')}</button>
     </div>`);
 }
 function deleteObject(id){
   db.objects=db.objects.filter(o=>o.id!==id);
   if(db.activeObjectId===id)db.activeObjectId=db.objects[0].id;
-  activeStageId=null;saveDB();closeModal();renderDash();showToast('Объект удалён');
+  activeStageId=null;saveDB();closeModal();renderDash();showToast(t('objDeleted'));
 }
 
 // ══════════════════════════
 //  NAVIGATION
 // ══════════════════════════
 function goDetail(id){
-  activeStageId=id;renderDetail();
+  activeStageId=id;detailFilter='all';renderDetail();
   document.getElementById('pageDetail').classList.remove('page-hidden-right');
   document.getElementById('pageDash').classList.add('page-hidden-left');
   document.getElementById('pageDetail').scrollTop=0;
@@ -491,19 +761,14 @@ function ringHTML(pct,color,size){
 //  DASHBOARD
 // ══════════════════════════
 function renderDash(){
-  const obj=curObj();
-  const st=stages();
-  const tb=totalBudget();
-  const ts=totalSmeta();  // смета = сумма всех позиций
-  const tf=totalFact();   // факт = сумма выполненных
-  const rem=tb-ts;        // остаток бюджета относительно сметы
-  const smetaPct=tb>0?Math.min(ts/tb*100,100):0;
-  const factPct=tb>0?Math.min(tf/tb*100,100):0;
+  const obj=curObj(), st=stages();
+  const tb=totalBudget(), ts=totalSmeta(), tf=totalFact();
+  const rem=tb-ts, isOver=ts>tb&&tb>0;
   const factOfSmeta=ts>0?Math.min(tf/ts*100,100):0;
-  const isOver=ts>tb;
+  const smetaPct=tb>0?Math.min(ts/tb*100,100):0;
 
   document.getElementById('headerTitle').innerHTML=`${obj.icon} <span style="color:var(--gold)">${obj.name}</span>`;
-  document.getElementById('headerSub').textContent=`${st.length} этапов`;
+  document.getElementById('headerSub').textContent=`${st.length} ${lang==='en'?'stages':lang==='az'?'mərhələ':'этапов'}`;
 
   const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
   const isStandalone=window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone;
@@ -511,80 +776,56 @@ function renderDash(){
 
   document.getElementById('dashContent').innerHTML=`
     ${showInstall?`<div class="install-banner"><div style="font-size:26px">📲</div>
-      <div class="install-banner-text"><strong>Установить на рабочий стол</strong>
-        ${isIOS?'Safari → Поделиться → «На экран "Домой"»':'<button class="btn btn-sm" style="background:rgba(201,170,124,.2);color:#C9AA7C;border:1px solid rgba(201,170,124,.3);margin-top:6px" onclick="installApp()">Установить</button>'}
+      <div class="install-banner-text"><strong>${t('install')}</strong>
+        ${isIOS?t('installHint'):`<button class="btn btn-sm" style="background:rgba(201,170,124,.2);color:#C9AA7C;border:1px solid rgba(201,170,124,.3);margin-top:6px" onclick="installApp()">${t('installBtn')}</button>`}
       </div></div>`:''}
 
-    <!-- Бюджет объекта -->
     <div class="budget-banner" style="animation-delay:.04s">
-      <div class="bb-label">Общий бюджет объекта</div>
-      <div class="bb-val">${tb>0?fmtShort(tb):'Не задан'}</div>
-      <div class="bb-sub">${tb>0?(isOver?`<span style="color:var(--red)">⚠️ Смета превышает на ${fmtShort(ts-tb)}</span>`:`Остаток: ${fmtShort(rem)}`):'Задайте бюджет в меню ☰'}</div>
-      <div style="height:1px;background:rgba(255,255,255,.07);margin:12px 0"></div>
-      <div class="bb-label">Смета (план)</div>
-      <div style="font-family:'DM Mono',monospace;font-size:17px;font-weight:600;color:var(--gold);margin-bottom:10px">${fmtShort(ts)}</div>
-      <div class="bb-label">Потрачено (факт)</div>
-      <div style="font-family:'DM Mono',monospace;font-size:17px;font-weight:600;color:var(--green);margin-bottom:12px">${fmtShort(tf)}</div>
+      <div class="bb-label">${t('totalBudget')}</div>
+      <div class="bb-val">${tb>0?fmtShort(tb):t('budgetNotSet')}</div>
+      <div class="bb-sub" style="margin-bottom:14px">${tb>0?(isOver?`<span style="color:var(--red)">${t('budgetOver')} +${fmtShort(ts-tb)}</span>`:`${t('budgetLeft')}: ${fmtShort(rem)}`):t('setBudget')}</div>
+      <div class="bb-label">${t('smeta')}</div>
+      <div style="font-family:'DM Mono',monospace;font-size:20px;font-weight:700;color:var(--gold);margin-bottom:12px">${fmtShort(ts)}</div>
+      <div class="bb-label">${t('fact')}</div>
+      <div style="font-family:'DM Mono',monospace;font-size:20px;font-weight:700;color:var(--green);margin-bottom:12px">${fmtShort(tf)}</div>
       <div style="height:6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden;position:relative;margin-bottom:6px">
         <div style="position:absolute;inset:0;background:rgba(201,170,124,.3);border-radius:3px"></div>
         <div style="position:absolute;top:0;left:0;height:100%;width:${ts>0?Math.min(tf/ts*100,100):0}%;background:var(--green);border-radius:3px;transition:width .7s ease"></div>
       </div>
-      <div style="font-size:11px;color:var(--text3)">${Math.round(factOfSmeta)}% выполнено от сметы</div>
+      <div style="font-size:11px;color:var(--text3)">${Math.round(factOfSmeta)}% ${t('pctDone')}</div>
     </div>
 
-
-
     <div class="section-divider"></div>
-    <div class="section-title">Этапы строительства</div>
+    <div class="section-title">${t('stages')}</div>
 
     ${st.map((s,i)=>{
       const smeta=stageSmeta(s),fact=stageFact(s);
-      const smetaPct2=ts>0?smeta/ts*100:0; // доля от общей сметы
-      const factPct2=smeta>0?Math.min(fact/smeta*100,100):0;
+      const fp=smeta>0?Math.min(fact/smeta*100,100):0;
       const done=s.items.filter(i=>i.done).length;
-      return `<div class="stage-card" style="animation-delay:${.18+i*.07}s" onclick="goDetail(${s.id})">
+      const over=fact>smeta&&smeta>0;
+      return `<div class="stage-card" style="animation-delay:${.12+i*.07}s" onclick="goDetail(${s.id})">
         <div class="stage-card-accent" style="background:linear-gradient(90deg,${s.color},transparent)"></div>
         <div class="stage-card-body">
           <div class="stage-card-icon">${s.icon}</div>
           <div class="stage-card-info">
             <div class="stage-card-name">${s.name}</div>
-            <div class="stage-card-meta">${done}/${s.items.length} позиций · факт ${fmt(fact)}</div>
+            <div class="stage-card-meta">${done}/${s.items.length} ${t('positions')} · ${t('factLabel')} ${fmt(fact)}</div>
           </div>
-          <div>${ringHTML(factPct2,s.color,54)}</div>
+          <div>${ringHTML(fp,s.color,54)}</div>
         </div>
         <div class="stage-card-bar-track">
           <div class="scb-smeta" style="width:100%;background:${s.color}"></div>
-          <div class="scb-fact" style="width:${factPct2}%;background:${s.color}"></div>
+          <div class="scb-fact" style="width:${fp}%;background:${s.color}"></div>
         </div>
         <div class="stage-card-stats">
-          <div class="scs-item"><div class="scs-label">Смета</div><div class="scs-val c-gold">${fmtShort(smeta)}</div></div>
-          <div class="scs-item"><div class="scs-label">Факт</div><div class="scs-val c-green">${fmtShort(fact)}</div></div>
-          <div class="scs-item"><div class="scs-label">Остаток</div><div class="scs-val ${smeta-fact<0?'c-red':'c-blue'}">${fmtShort(smeta-fact)}</div></div>
+          <div class="scs-item"><div class="scs-label">${t('smetaLabel')}</div><div class="scs-val c-gold">${fmtShort(smeta)}</div></div>
+          <div class="scs-item"><div class="scs-label">${t('factShort')}</div><div class="scs-val c-green">${fmtShort(fact)}</div></div>
+          <div class="scs-item"><div class="scs-label">${t('remainder')}</div><div class="scs-val ${over?'c-red':'c-blue'}">${fmtShort(smeta-fact)}</div></div>
         </div>
       </div>`;
     }).join('')}
-    ${st.length===0?`<div class="empty"><div style="font-size:48px;opacity:.3;margin-bottom:12px">🏗</div><div style="font-size:14px">Нажмите + чтобы добавить первый этап</div></div>`:''}
+    ${st.length===0?`<div class="empty"><div style="font-size:48px;opacity:.3;margin-bottom:12px">🏗</div><div style="font-size:14px">${t('noStages')}</div></div>`:''}
   `;
-}
-
-function editBudget(){
-  showModal(`<div class="modal-handle"></div>
-    <div class="modal-title">Общий бюджет</div>
-    <div class="form-group"><label class="form-label">Сумма (₼)</label>
-      <input type="number" id="budgetInput" placeholder="10000000" value="${curObj().totalBudget||''}"/></div>
-    <p style="font-size:12px;color:var(--text3);margin-bottom:16px;line-height:1.5">
-      Это ваш общий лимит на весь объект. Смета считается автоматически из позиций этапов.
-    </p>
-    <div style="display:flex;gap:10px">
-      <button class="btn btn-secondary" onclick="closeModal()">Отмена</button>
-      <button class="btn btn-primary" onclick="saveBudget()">Сохранить</button>
-    </div>`);
-  setTimeout(()=>document.getElementById('budgetInput')?.focus(),100);
-}
-function saveBudget(){
-  const val=parseInt(document.getElementById('budgetInput')?.value)||0;
-  db.objects=db.objects.map(o=>o.id===db.activeObjectId?{...o,totalBudget:val}:o);
-  saveDB();closeModal();renderDash();showToast('Бюджет обновлён');
 }
 
 // ══════════════════════════
@@ -593,14 +834,15 @@ function saveBudget(){
 function renderDetail(){
   const s=stages().find(st=>st.id===activeStageId);if(!s)return;
   const smeta=stageSmeta(s),fact=stageFact(s);
-  const factPct=smeta>0?Math.min(fact/smeta*100,100):0;
-  const smetaPct=totalSmeta()>0?Math.min(smeta/totalSmeta()*100,100):0;
+  const fp=smeta>0?Math.min(fact/smeta*100,100):0;
+  const totalS=totalSmeta();
+  const shareOfSmeta=totalS>0?Math.round(smeta/totalS*100):0;
 
   document.getElementById('detailHero').innerHTML=`
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
       <button class="back-btn" onclick="goBack()">
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><polyline points="11,4 6,9 11,14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        Назад
+        ${t('backBtn')}
       </button>
       <button class="btn btn-icon btn-sm" onclick="editStage(${s.id})" style="margin-left:auto">✏️</button>
     </div>
@@ -608,47 +850,70 @@ function renderDetail(){
       <div style="flex:1;min-width:0">
         <div style="font-size:28px;margin-bottom:5px">${s.icon}</div>
         <div class="detail-hero-name">${s.name}</div>
-        <div class="detail-hero-sub">Факт: ${fmt(fact)} из сметы ${fmt(smeta)}</div>
+        <div class="detail-hero-sub">${fmt(fact)} ${t('factLabel')} · ${t('smetaLabel')}: ${fmt(smeta)}</div>
       </div>
-      <div>${ringHTML(factPct,s.color,64)}</div>
+      <div>${ringHTML(fp,s.color,64)}</div>
     </div>
     <div class="detail-two-bar">
       <div class="dtb-smeta" style="width:100%;background:${s.color}"></div>
-      <div class="dtb-fact" style="width:${factPct}%;background:${s.color}"></div>
+      <div class="dtb-fact" style="width:${fp}%;background:${s.color}"></div>
     </div>`;
+
+  const filtered = s.items.filter(i => {
+    if(detailFilter==='done') return i.done;
+    if(detailFilter==='plan') return !i.done;
+    return true;
+  });
 
   document.getElementById('detailContent').innerHTML=`
     <div class="stat-grid" style="margin-top:4px">
-      <div class="stat-box"><div class="stat-lbl">Смета этапа</div><div class="stat-val c-gold">${fmtShort(smeta)}</div></div>
-      <div class="stat-box"><div class="stat-lbl">Потрачено</div><div class="stat-val c-green">${fmtShort(fact)}</div></div>
-      <div class="stat-box"><div class="stat-lbl">Остаток</div><div class="stat-val ${smeta-fact<0?'c-red':'c-blue'}">${fmtShort(smeta-fact)}</div></div>
-      <div class="stat-box"><div class="stat-lbl">Доля в смете</div><div class="stat-val">${Math.round(smetaPct)}%</div></div>
+      <div class="stat-box"><div class="stat-lbl">${t('smetaLabel')}</div><div class="stat-val c-gold">${fmtShort(smeta)}</div></div>
+      <div class="stat-box"><div class="stat-lbl">${t('factShort')}</div><div class="stat-val c-green">${fmtShort(fact)}</div></div>
+      <div class="stat-box"><div class="stat-lbl">${t('remainder')}</div><div class="stat-val ${smeta-fact<0?'c-red':'c-blue'}">${fmtShort(smeta-fact)}</div></div>
+      <div class="stat-box"><div class="stat-lbl">${t('shareOfSmeta')}</div><div class="stat-val">${shareOfSmeta}%</div></div>
     </div>
-    <div class="section-title">Позиции</div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <div class="section-title" style="margin:0">${t('positions')}</div>
+      <div class="filter-tabs">
+        <button class="filter-tab ${detailFilter==='all'?'active':''}" onclick="setFilter('all')">${t('filterAll')}</button>
+        <button class="filter-tab ${detailFilter==='plan'?'active':''}" onclick="setFilter('plan')">${t('filterPlan')}</button>
+        <button class="filter-tab ${detailFilter==='done'?'active':''}" onclick="setFilter('done')">${t('filterDone')}</button>
+      </div>
+    </div>
+
     <div class="items-section">
-      <div class="items-header"><span></span><span>Позиция</span><span>Сумма</span><span></span></div>
-      ${s.items.length===0?`<div class="empty" style="padding:28px 16px"><div style="font-size:28px;opacity:.3;margin-bottom:8px">📋</div><div style="font-size:13px">Добавьте первую позицию</div></div>`:''}
-      ${s.items.map((item,i)=>`
+      ${filtered.length===0?`<div class="empty" style="padding:28px 16px"><div style="font-size:28px;opacity:.3;margin-bottom:8px">📋</div></div>`:''}
+      ${filtered.map((item,i)=>`
       <div class="item-row" style="animation-delay:${i*.04}s">
         <div class="item-check ${item.done?'done':''}" style="${item.done?'background:'+s.color+';border-color:'+s.color:''}" onclick="toggleItem(${s.id},${item.id})">
           ${item.done?'<svg width="12" height="12" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" fill="none" stroke="#0D0F14" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>':''}
         </div>
-        <div class="item-name ${item.done?'done':''}">${item.name}</div>
-        <div class="item-cost" style="${item.done?'color:'+s.color:''}">${fmtShort(item.cost)}</div>
+        <div onclick="editItemPrompt(${s.id},${item.id})" style="min-width:0;flex:1">
+          <div class="item-name ${item.done?'done':''}">${item.name}${item.qty>1?` <span style="color:var(--text3);font-size:11px">×${item.qty}</span>`:''}</div>
+          ${item.note?`<div style="font-size:11px;color:var(--text3);margin-top:1px">${item.note}</div>`:''}
+        </div>
+        <div class="item-cost" style="${item.done?'color:'+s.color:''}">${fmtShort(itemTotal(item))}</div>
         <button class="item-del" onclick="deleteItem(${s.id},${item.id})">×</button>
       </div>`).join('')}
     </div>
+
     <div class="add-form">
-      <div class="add-form-title">Добавить позицию</div>
-      <input type="text" id="newItemName" placeholder="Название работы / материала"/>
-      <div class="add-form-row">
-        <input type="number" id="newItemCost" placeholder="Стоимость, ₼" style="flex:1"/>
-        <button class="btn btn-sm" style="background:${s.color}22;color:${s.color};border:1px solid ${s.color}44;flex-shrink:0" onclick="addItem(${s.id})">＋ Добавить</button>
+      <div class="add-form-title">${t('addPosition')}</div>
+      <input type="text" id="newItemName" placeholder="${t('posNamePh')}"/>
+      <div class="qty-price-row" style="margin-top:8px">
+        <input type="number" id="newItemQty" placeholder="${t('qty')}" value="1"/>
+        <div class="qty-sep">×</div>
+        <input type="number" id="newItemPrice" placeholder="${t('price')} ₼"/>
       </div>
+      <input type="text" id="newItemNote" placeholder="${t('notePh')}" style="margin-top:8px"/>
+      <button class="btn btn-sm" style="background:${s.color}22;color:${s.color};border:1px solid ${s.color}44;width:100%;margin-top:8px" onclick="addItem(${s.id})">＋ ${t('addPosition')}</button>
     </div>
-    <button class="btn btn-danger btn-sm" onclick="confirmDeleteStage(${s.id})" style="width:100%;margin-top:4px">🗑 Удалить этап</button>
+    <button class="btn btn-danger btn-sm" onclick="confirmDeleteStage(${s.id})" style="width:100%;margin-top:4px">${t('deleteStage')}</button>
     <div style="height:8px"></div>`;
 }
+
+function setFilter(f){ detailFilter=f; renderDetail(); }
 
 // ══════════════════════════
 //  STAGE ACTIONS
@@ -663,47 +928,79 @@ function toggleItem(stageId,itemId){
 }
 function deleteItem(stageId,itemId){
   updateStages(ss=>ss.map(s=>s.id!==stageId?s:{...s,items:s.items.filter(i=>i.id!==itemId)}));
-  renderDetail();showToast('Позиция удалена');
+  renderDetail();showToast(t('deletePos'));
 }
 function addItem(stageId){
   const name=document.getElementById('newItemName')?.value.trim();
-  const cost=parseInt(document.getElementById('newItemCost')?.value);
-  if(!name){showToast('Введите название','err');return;}
-  if(!cost||cost<=0){showToast('Введите стоимость','err');return;}
-  updateStages(ss=>ss.map(s=>s.id!==stageId?s:{...s,items:[...s.items,{id:newId(),name,cost,done:false}]}));
-  renderDetail();showToast('Позиция добавлена');
+  const qty=parseInt(document.getElementById('newItemQty')?.value)||1;
+  const price=parseFloat(document.getElementById('newItemPrice')?.value);
+  const note=document.getElementById('newItemNote')?.value.trim()||'';
+  if(!name){showToast(t('enterName'),'err');return;}
+  if(!price||price<=0){showToast(t('enterBudget'),'err');return;}
+  updateStages(ss=>ss.map(s=>s.id!==stageId?s:{...s,items:[...s.items,{id:newId(),name,qty,price,done:false,note}]}));
+  renderDetail();showToast(t('posAdded'));
 }
+
+function editItemPrompt(stageId,itemId){
+  const s=stages().find(st=>st.id===stageId);
+  const item=s?.items.find(i=>i.id===itemId);
+  if(!item)return;
+  showModal(`<div class="modal-handle"></div>
+    <div class="modal-title">${t('editPos')}</div>
+    <div class="form-group"><label class="form-label">${t('posName')}</label>
+      <input type="text" id="eiName" value="${item.name}"/></div>
+    <div class="form-group"><label class="form-label">${t('qty')} × ${t('price')}</label>
+      <div class="qty-price-row">
+        <input type="number" id="eiQty" value="${item.qty||1}"/>
+        <div class="qty-sep">×</div>
+        <input type="number" id="eiPrice" value="${item.price||item.cost||0}"/>
+      </div></div>
+    <div class="form-group"><label class="form-label">${t('note')}</label>
+      <input type="text" id="eiNote" value="${item.note||''}"/></div>
+    <div style="display:flex;gap:10px;margin-top:4px">
+      <button class="btn btn-secondary" onclick="closeModal()">${t('cancel')}</button>
+      <button class="btn btn-primary" onclick="saveItemEdit(${stageId},${itemId})">${t('save')}</button>
+    </div>`);
+}
+function saveItemEdit(stageId,itemId){
+  const name=document.getElementById('eiName')?.value.trim();
+  const qty=parseInt(document.getElementById('eiQty')?.value)||1;
+  const price=parseFloat(document.getElementById('eiPrice')?.value)||0;
+  const note=document.getElementById('eiNote')?.value.trim()||'';
+  if(!name){showToast(t('enterName'),'err');return;}
+  updateStages(ss=>ss.map(s=>s.id!==stageId?s:{...s,items:s.items.map(i=>i.id===itemId?{...i,name,qty,price,note}:i)}));
+  closeModal();renderDetail();showToast(t('objUpdated'));
+}
+
 function confirmDeleteStage(id){
   const s=stages().find(st=>st.id===id);if(!s)return;
   showModal(`<div class="modal-handle"></div>
-    <div class="modal-title">Удалить «${s.name}»?</div>
-    <p style="color:var(--text2);font-size:14px;margin-bottom:20px">Этап и все позиции будут удалены навсегда.</p>
+    <div class="modal-title">${t('deleteStage')} «${s.name}»?</div>
+    <p style="color:var(--text2);font-size:14px;margin-bottom:20px">${t('deleteStageConfirm')}</p>
     <div style="display:flex;gap:10px">
-      <button class="btn btn-secondary" onclick="closeModal()">Отмена</button>
-      <button class="btn btn-danger" style="flex:1" onclick="deleteStage(${id})">Удалить</button>
+      <button class="btn btn-secondary" onclick="closeModal()">${t('cancel')}</button>
+      <button class="btn btn-danger" style="flex:1" onclick="deleteStage(${id})">${t('delete')}</button>
     </div>`);
 }
 function deleteStage(id){
   updateStages(ss=>ss.filter(s=>s.id!==id));
-  saveDB();closeModal();goBack();showToast('Этап удалён');
+  saveDB();closeModal();goBack();showToast(t('stageDeleted'));
 }
 function showStageModal(existing){
   const isEdit=!!existing,data=existing||{name:'',icon:'🏠',color:'#7BB8CC'};
   window._sfd={...data};
   showModal(`<div class="modal-handle"></div>
-    <div class="modal-title">${isEdit?'Редактировать этап':'Новый этап'}</div>
-    <div class="form-group"><label class="form-label">Название</label>
-      <input type="text" id="sName" placeholder="Например: Благоустройство" value="${data.name}"/></div>
-    <div class="form-group"><label class="form-label">Иконка</label>
+    <div class="modal-title">${isEdit?t('editStage'):t('addStage')}</div>
+    <div class="form-group"><label class="form-label">${t('stageName')}</label>
+      <input type="text" id="sName" placeholder="${t('stageNamePh')}" value="${data.name}"/></div>
+    <div class="form-group"><label class="form-label">${t('stageIcon')}</label>
       <div class="icon-grid">${ICONS.map(ic=>`<div class="icon-opt ${ic===data.icon?'sel':''}" onclick="selIcon('${ic}')">${ic}</div>`).join('')}</div></div>
-    <div class="form-group"><label class="form-label">Цвет</label>
+    <div class="form-group"><label class="form-label">${t('stageColor')}</label>
       <div class="color-grid">${COLORS.map(c=>`<div class="color-opt ${c===data.color?'sel':''}" style="background:${c}" onclick="selColor('${c}')"></div>`).join('')}</div></div>
-    <p style="font-size:12px;color:var(--text3);margin-bottom:16px;line-height:1.5">
-      💡 Бюджет этапа складывается автоматически из стоимости добавленных позиций.
-    </p>
-    <div style="display:flex;gap:10px;margin-top:4px">
-      <button class="btn btn-secondary" onclick="closeModal()">Отмена</button>
-      <button class="btn btn-primary" onclick="saveStage('${isEdit?data.id:''}')">${isEdit?'Сохранить':'Создать'}</button>
+    <p style="font-size:12px;color:var(--text3);margin-bottom:16px;line-height:1.5">${t('stageHint')}</p>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-secondary" onclick="closeModal()">${t('cancel')}</button>
+      <button class="btn btn-primary" onclick="saveStage('${isEdit?data.id:''}')">${isEdit?t('save'):t('create')}</button>
     </div>`);
 }
 function selIcon(ic){window._sfd.icon=ic;document.querySelectorAll('.icon-opt').forEach(el=>el.classList.toggle('sel',el.textContent===ic))}
@@ -711,14 +1008,14 @@ function selColor(c){window._sfd.color=c;document.querySelectorAll('.color-opt')
 function saveStage(editId){
   const name=document.getElementById('sName')?.value.trim();
   const icon=window._sfd?.icon||'🏠',color=window._sfd?.color||'#7BB8CC';
-  if(!name){showToast('Введите название','err');return;}
+  if(!name){showToast(t('enterName'),'err');return;}
   if(editId){
     const id=parseInt(editId);
     updateStages(ss=>ss.map(s=>s.id===id?{...s,name,icon,color}:s));
-    showToast('Этап обновлён');
+    showToast(t('stageUpdated'));
   } else {
     updateStages(ss=>[...ss,{id:newId(),name,icon,color,items:[]}]);
-    showToast('Этап добавлен');
+    showToast(t('stageAdded'));
   }
   closeModal();
   if(document.getElementById('pageDetail').classList.contains('page-hidden-right'))renderDash();
@@ -743,51 +1040,52 @@ function closeModal(){document.getElementById('modalBackdrop')?.remove();}
 //  PDF
 // ══════════════════════════
 function exportPDF(){
-  const obj=curObj();const st=stages();
+  const obj=curObj(),st=stages();
   const tb=totalBudget(),ts=totalSmeta(),tf=totalFact();
   const now=new Date();
   const dateStr=now.toLocaleDateString('ru-RU',{day:'2-digit',month:'long',year:'numeric'});
-  const factPct=ts>0?Math.min(tf/ts*100,100):0;
-  const smetaVsBudget=tb>0?Math.min(ts/tb*100,100):0;
+  const fp=ts>0?Math.min(tf/ts*100,100):0;
   const isOver=ts>tb&&tb>0;
 
   const stagesHTML=st.map(s=>{
     const smeta=stageSmeta(s),fact=stageFact(s);
-    const fp=smeta>0?Math.min(fact/smeta*100,100):0;
+    const sp=smeta>0?Math.min(fact/smeta*100,100):0;
     const done=s.items.filter(i=>i.done).length;
     return `<div class="stage-block">
       <div class="stage-header" style="border-left:4px solid ${s.color}">
-        <div><div class="stage-name">${s.icon} ${s.name}</div><div class="stage-sub">${done} из ${s.items.length} позиций выполнено</div></div>
-        <div class="stage-pct" style="color:${s.color}">${Math.round(fp)}%</div>
+        <div><div class="stage-name">${s.icon} ${s.name}</div><div class="stage-sub">${done} / ${s.items.length}</div></div>
+        <div class="stage-pct" style="color:${s.color}">${Math.round(sp)}%</div>
       </div>
       <div class="stage-stats">
-        <div class="stat-cell"><div class="stat-label">Смета</div><div class="stat-value gold">${fmt(smeta)}</div></div>
-        <div class="stat-cell"><div class="stat-label">Потрачено</div><div class="stat-value green">${fmt(fact)}</div></div>
-        <div class="stat-cell"><div class="stat-label">Остаток</div><div class="stat-value ${smeta-fact<0?'red':'blue'}">${fmt(smeta-fact)}</div></div>
+        <div class="stat-cell"><div class="stat-label">${t('smetaLabel')}</div><div class="stat-value gold">${fmt(smeta)}</div></div>
+        <div class="stat-cell"><div class="stat-label">${t('factShort')}</div><div class="stat-value green">${fmt(fact)}</div></div>
+        <div class="stat-cell"><div class="stat-label">${t('remainder')}</div><div class="stat-value ${smeta-fact<0?'red':'blue'}">${fmt(smeta-fact)}</div></div>
       </div>
-      <div class="progress-wrap">
-        <div class="pb-smeta" style="width:100%;background:${s.color}22"></div>
-        <div class="pb-fact" style="width:${fp}%;background:${s.color}"></div>
-      </div>
-      ${s.items.length>0?`<table class="items-table"><thead><tr><th style="width:24px"></th><th style="text-align:left">Позиция</th><th style="text-align:right">Сумма</th><th style="text-align:center;width:70px">Статус</th></tr></thead><tbody>
+      <div class="progress-wrap"><div class="pb-smeta" style="width:100%;background:${s.color}22;position:absolute;inset:0"></div><div class="pb-fact" style="width:${sp}%;background:${s.color};position:absolute;top:0;left:0;height:100%"></div></div>
+      ${s.items.length>0?`<table class="items-table"><thead><tr>
+        <th style="width:24px"></th><th style="text-align:left">${t('posName')}</th>
+        <th style="text-align:center">Qty</th>
+        <th style="text-align:right">${t('price')}</th>
+        <th style="text-align:right">Σ</th>
+        <th style="text-align:center;width:65px">Status</th>
+      </tr></thead><tbody>
         ${s.items.map((item,ii)=>`<tr class="${ii%2===0?'row-even':'row-odd'} ${item.done?'done-row':''}">
           <td style="text-align:center"><span class="dot" style="background:${item.done?s.color:'transparent'};border:1.5px solid ${item.done?s.color:'#aaa'};color:${item.done?'#fff':'transparent'}">${item.done?'✓':''}</span></td>
-          <td class="item-name-cell">${item.name}</td>
-          <td style="text-align:right;font-family:monospace;font-size:12px">${fmt(item.cost)}</td>
-          <td style="text-align:center"><span class="badge ${item.done?'badge-done':'badge-plan'}" style="${item.done?'background:'+s.color+'22;color:'+s.color+';border-color:'+s.color+'44':''}">${item.done?'Готово':'План'}</span></td>
+          <td class="item-name-cell">${item.name}${item.note?`<br><span style="font-size:10px;color:#aaa">${item.note}</span>`:''}</td>
+          <td style="text-align:center;font-family:monospace;font-size:11px">${item.qty||1}</td>
+          <td style="text-align:right;font-family:monospace;font-size:11px">${fmt(item.price||item.cost||0)}</td>
+          <td style="text-align:right;font-family:monospace;font-size:12px">${fmt(itemTotal(item))}</td>
+          <td style="text-align:center"><span class="badge ${item.done?'badge-done':'badge-plan'}" style="${item.done?'background:'+s.color+'22;color:'+s.color+';border-color:'+s.color+'44':''}">${item.done?t('filterDone'):t('filterPlan')}</span></td>
         </tr>`).join('')}
       </tbody><tfoot><tr class="total-row">
-        <td colspan="2"><b>Итого потрачено</b></td>
+        <td colspan="4"><b>${t('totalDone')}</b></td>
         <td style="text-align:right;font-family:monospace"><b>${fmt(fact)}</b></td>
-        <td style="text-align:center;font-size:11px;color:#888">из ${fmt(smeta)}</td>
-      </tr></tfoot></table>`:'<div class="no-items">Позиции не добавлены</div>'}
+        <td style="text-align:center;font-size:11px;color:#888">${t('outOf')} ${fmt(smeta)}</td>
+      </tr></tfoot></table>`:'<div class="no-items">—</div>'}
     </div>`;
   }).join('');
 
-  const html=`<!DOCTYPE html><html lang="ru"><head><meta charset="UTF-8"/>
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
-<meta http-equiv="Pragma" content="no-cache"/>
-<meta http-equiv="Expires" content="0"/>
+  const html=`<!DOCTYPE html><html lang="${lang}"><head><meta charset="UTF-8"/>
   <link href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
   <style>
   *{box-sizing:border-box;margin:0;padding:0}
@@ -796,24 +1094,20 @@ function exportPDF(){
   .doc-header{background:#0D0F14;color:#EAE6DE;padding:20px 24px;border-radius:10px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center}
   .doc-title{font-size:22px;font-weight:700;color:#C9AA7C;margin-bottom:4px}
   .doc-sub{font-size:12px;color:#888}
+  ${tb>0?`.budget-row{background:#f9f7f3;border:1px solid #e8d8b8;border-radius:8px;padding:12px 16px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center}
+  .br-label{font-size:11px;color:#999;text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px}
+  .br-val{font-family:'DM Mono',monospace;font-size:20px;font-weight:700;color:#b8924a}`:''}
   .summary-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px}
   .sum-box{border-radius:8px;padding:14px 16px;border:1px solid #e8e4dc}
   .sum-box-label{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:#999;margin-bottom:6px}
   .sum-box-val{font-family:'DM Mono',monospace;font-size:17px;font-weight:700}
   .sum-box-sub{font-size:11px;color:#aaa;margin-top:4px}
   .gold{color:#b8924a}.green{color:#4a9b6a}.blue{color:#4a7fb8}.red{color:#b84a4a}
-  .budget-row{background:#f9f7f3;border:1px solid #e8d8b8;border-radius:8px;padding:12px 16px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center}
-  .br-label{font-size:11px;color:#999;text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px}
-  .br-val{font-family:'DM Mono',monospace;font-size:20px;font-weight:700;color:#b8924a}
-  .br-warn{font-size:12px;color:#b84a4a;margin-top:4px;font-weight:600}
   .prog-section{margin-bottom:20px}
   .prog-label{display:flex;justify-content:space-between;font-size:12px;color:#666;margin-bottom:6px}
   .prog-track{height:10px;background:#e8e4dc;border-radius:5px;overflow:hidden;position:relative;margin-bottom:6px}
   .prog-smeta{position:absolute;top:0;left:0;height:100%;background:#C9AA7C;opacity:.35;border-radius:5px}
   .prog-fact{position:absolute;top:0;left:0;height:100%;background:#80C89A;border-radius:5px}
-  .prog-legend{display:flex;gap:16px}
-  .pl-item{display:flex;align-items:center;gap:6px;font-size:11px;color:#999}
-  .pl-dot{width:10px;height:10px;border-radius:3px}
   .section-divider{display:flex;align-items:center;gap:10px;margin:0 0 16px}
   .section-divider-line{flex:1;height:1px;background:#e0ddd8}
   .section-divider-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#999}
@@ -826,65 +1120,50 @@ function exportPDF(){
   .stat-cell{background:#fff;padding:10px 12px}
   .stat-label{font-size:9px;text-transform:uppercase;letter-spacing:.6px;color:#aaa;margin-bottom:4px}
   .stat-value{font-family:'DM Mono',monospace;font-size:13px;font-weight:600}
-  .progress-wrap{height:6px;background:#f0ede8;position:relative}
-  .pb-smeta{position:absolute;top:0;left:0;height:100%}
-  .pb-fact{position:absolute;top:0;left:0;height:100%}
+  .progress-wrap{height:6px;background:#f0ede8;position:relative;overflow:hidden}
   .items-table{width:100%;border-collapse:collapse}
   .items-table thead tr{background:#f5f3ef}
-  .items-table th{padding:8px 10px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#999;border-bottom:1px solid #e8e4dc}
+  .items-table th{padding:7px 8px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#999;border-bottom:1px solid #e8e4dc}
   .row-even{background:#fff}.row-odd{background:#faf9f7}
   .done-row .item-name-cell{color:#aaa;text-decoration:line-through}
-  .items-table td{padding:8px 10px;border-bottom:1px solid #f0ede8;font-size:12.5px}
+  .items-table td{padding:7px 8px;border-bottom:1px solid #f0ede8;font-size:12px}
   .dot{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;font-size:8px;font-weight:700}
-  .badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600;border:1px solid}
+  .badge{display:inline-block;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600;border:1px solid}
   .badge-done{background:#f0faf5;color:#4a9b6a;border-color:#b0dfc5}
   .badge-plan{background:#f5f3ef;color:#aaa;border-color:#ddd}
   .total-row{background:#f0ede8}.total-row td{padding:9px 10px;border-top:1.5px solid #ddd}
-  .no-items{padding:14px 16px;font-size:12px;color:#bbb;font-style:italic}
+  .no-items{padding:12px 16px;font-size:12px;color:#bbb;font-style:italic}
   .doc-footer{margin-top:24px;padding-top:12px;border-top:1px solid #e8e4dc;display:flex;justify-content:space-between;font-size:10px;color:#bbb}
   @media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
   </style></head><body>
   <div class="doc-header">
-    <div><div class="doc-title">${obj.icon} ${obj.name}</div><div class="doc-sub">Отчёт о бюджете строительства</div></div>
-    <div style="font-size:11px;color:#666;text-align:right">${dateStr}</div>
+    <div><div class="doc-title">${obj.icon} ${obj.name}</div><div class="doc-sub">${t('reportTitle')}</div></div>
+    <div style="font-size:11px;color:#666">${dateStr}</div>
   </div>
-
   ${tb>0?`<div class="budget-row">
-    <div><div class="br-label">Общий бюджет объекта</div><div class="br-val">${fmt(tb)}</div>
-    ${isOver?`<div class="br-warn">⚠️ Смета превышает бюджет на ${fmt(ts-tb)}</div>`:
-    `<div style="font-size:12px;color:#4a9b6a;margin-top:4px">✓ Остаток бюджета: ${fmt(tb-ts)}</div>`}
+    <div><div class="br-label">${t('totalBudget')}</div><div class="br-val">${fmt(tb)}</div>
+    ${isOver?`<div style="font-size:12px;color:#b84a4a;margin-top:4px">⚠️ +${fmt(ts-tb)}</div>`:`<div style="font-size:12px;color:#4a9b6a;margin-top:4px">✓ ${t('budgetLeft')}: ${fmt(tb-ts)}</div>`}
     </div>
-    <div style="text-align:right"><div class="br-label">Смета покрывает</div><div style="font-family:'DM Mono',monospace;font-size:24px;font-weight:700;color:${isOver?'#b84a4a':'#b8924a'}">${Math.round(smetaVsBudget)}%</div></div>
+    <div style="text-align:right"><div class="br-label">${t('smeta')}</div><div style="font-family:'DM Mono',monospace;font-size:18px;font-weight:700;color:#b8924a">${fmt(ts)}</div></div>
   </div>`:''}
-
   <div class="summary-grid">
-    <div class="sum-box" style="border-top:3px solid #C9AA7C"><div class="sum-box-label">Смета (план)</div><div class="sum-box-val gold">${fmt(ts)}</div><div class="sum-box-sub">все позиции · ${st.length} этапов</div></div>
-    <div class="sum-box" style="border-top:3px solid #80C89A"><div class="sum-box-label">Потрачено (факт)</div><div class="sum-box-val green">${fmt(tf)}</div><div class="sum-box-sub">${Math.round(factPct)}% от сметы</div></div>
-    <div class="sum-box" style="border-top:3px solid #7BB8CC"><div class="sum-box-label">Осталось потратить</div><div class="sum-box-val blue">${fmt(ts-tf)}</div><div class="sum-box-sub">по смете</div></div>
+    <div class="sum-box" style="border-top:3px solid #C9AA7C"><div class="sum-box-label">${t('smeta')}</div><div class="sum-box-val gold">${fmt(ts)}</div><div class="sum-box-sub">${st.length} ${t('stages').toLowerCase()}</div></div>
+    <div class="sum-box" style="border-top:3px solid #80C89A"><div class="sum-box-label">${t('fact')}</div><div class="sum-box-val green">${fmt(tf)}</div><div class="sum-box-sub">${Math.round(fp)}%</div></div>
+    <div class="sum-box" style="border-top:3px solid #7BB8CC"><div class="sum-box-label">${t('remainder')}</div><div class="sum-box-val blue">${fmt(ts-tf)}</div><div class="sum-box-sub">${t('outOf')} ${t('smeta').toLowerCase()}</div></div>
   </div>
-
   <div class="prog-section">
-    <div class="prog-label"><span>Прогресс выполнения</span><span style="font-family:'DM Mono',monospace;font-weight:700;color:#80C89A">${Math.round(factPct)}% от сметы</span></div>
-    <div class="prog-track">
-      <div class="prog-smeta" style="width:100%"></div>
-      <div class="prog-fact" style="width:${factPct}%"></div>
-    </div>
-    <div class="prog-legend">
-      <div class="pl-item"><div class="pl-dot" style="background:#C9AA7C;opacity:.4"></div>Смета ${fmt(ts)}</div>
-      <div class="pl-item"><div class="pl-dot" style="background:#80C89A"></div>Факт ${fmt(tf)}</div>
-      <div class="pl-item"><div class="pl-dot" style="background:#e8e4dc"></div>Осталось ${fmt(ts-tf)}</div>
-    </div>
+    <div class="prog-label"><span>${t('done')}</span><span style="font-family:'DM Mono',monospace;font-weight:700;color:#80C89A">${Math.round(fp)}%</span></div>
+    <div class="prog-track"><div class="prog-smeta" style="width:100%"></div><div class="prog-fact" style="width:${fp}%"></div></div>
   </div>
-
-  <div class="section-divider"><div class="section-divider-line"></div><div class="section-divider-title">Этапы строительства</div><div class="section-divider-line"></div></div>
+  <div class="section-divider"><div class="section-divider-line"></div><div class="section-divider-title">${t('stagesTitle')}</div><div class="section-divider-line"></div></div>
   ${stagesHTML}
-  <div class="doc-footer"><span>${obj.icon} ${obj.name} — бюджет строительства</span><span>${dateStr}</span></div>
+  <div class="doc-footer"><span>${obj.icon} ${obj.name}</span><span>${dateStr}</span></div>
   </body></html>`;
 
   const w=window.open('','_blank','width=900,height=700');
   w.document.write(html);w.document.close();
   w.onload=()=>{w.focus();w.print();};
-  showToast('Открываю PDF...');
+  showToast(t('pdfOpening'));
 }
 
 // ══════════════════════════
@@ -900,6 +1179,8 @@ function installApp(){
 
 document.getElementById('btnAdd').onclick=()=>showStageModal(null);
 if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
+
+updateDrawerLabels();
 renderDash();
 </script>
 </body>
