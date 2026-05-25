@@ -95,7 +95,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Mulish
 .section-title{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.9px;margin-bottom:10px;margin-top:4px}
 
 /* STAGE CARDS */
-.stage-card{background:var(--bg2);border:1px solid var(--border);border-radius:18px;margin-bottom:10px;overflow:hidden;cursor:pointer;transition:transform .18s;animation:fadeUp .4s ease both;position:relative}
+.stage-card{background:var(--bg2);border:1px solid var(--border);border-radius:18px;margin-bottom:10px;overflow:hidden;cursor:pointer;transition:transform .18s;animation:fadeUp .4s ease both;position:relative;-webkit-user-select:none;user-select:none}
 .stage-card:active{transform:scale(.97)}
 .stage-card-accent{position:absolute;top:0;left:0;right:0;height:3px}
 .stage-card-body{padding:14px 16px 12px;display:flex;align-items:center;gap:14px}
@@ -196,6 +196,7 @@ input:focus,textarea:focus{border-color:rgba(255,255,255,.3)}
   margin-bottom:8px;overflow:hidden;cursor:pointer;
   transition:all .2s;animation:fadeUp .3s ease both;
   display:flex;align-items:center;gap:10px;padding:10px 14px;
+  -webkit-user-select:none;user-select:none;
 }
 .stage-card-collapsed:active{transform:scale(.98)}
 .scc-icon{font-size:18px;flex-shrink:0}
@@ -905,7 +906,7 @@ function renderDash(){
       return `<div class="stage-card" style="animation-delay:${.12+i*.07}s" onclick="goDetail(${s.id})">
         <div class="stage-card-accent" style="background:linear-gradient(90deg,${s.color},transparent)"></div>
         <div class="stage-card-body">
-          <div class="drag-handle" ontouchstart="onTouchDragStart(event,${s.id})" ontouchmove="onTouchDragMove(event)" ontouchend="onTouchDragEnd()" onclick="event.stopPropagation()">⠿</div>
+
           <div class="stage-card-icon">${s.icon}</div>
           <div class="stage-card-info">
             <div class="stage-card-name">${s.name}</div>
