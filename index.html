@@ -890,6 +890,14 @@ function renderDash(){
       const fp=smeta>0?Math.min(fact/smeta*100,100):0;
       const done=s.items.filter(i=>i.done).length;
       const over=fact>smeta&&smeta>0;
+      if(s.status==='done') return `<div class="stage-card-collapsed" style="animation-delay:${.12+i*.07}s;border-left:3px solid ${s.color}" onclick="goDetail(${s.id})">
+        <div class="scc-check"><svg width="10" height="10" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" fill="none" stroke="#80C89A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="scc-icon">${s.icon}</div>
+        <div class="scc-name">${s.name}</div>
+        <div class="scc-sum">${fmtShort(fact)}</div>
+        <div style="font-size:11px;color:var(--green);margin-left:2px">✓</div>
+      </div>`;
+
       return `<div class="stage-card" style="animation-delay:${.12+i*.07}s" data-sid="${s.id}"
         onclick="sortCardClick(event,${s.id})"
         onmousedown="sortPressStart(event,${s.id})"
@@ -1027,8 +1035,16 @@ function updateStages(fn){
   saveDB();
 }
 function toggleItem(stageId,itemId){
-  updateStages(ss=>ss.map(s=>s.id!==stageId?s:{...s,items:s.items.map(i=>i.id===itemId?{...i,done:!i.done}:i)}));
+  updateStages(ss=>ss.map(s=>{
+    if(s.id!==stageId)return s;
+    const items=s.items.map(i=>i.id===itemId?{...i,done:!i.done}:i);
+    const allDone=items.length>0&&items.every(i=>i.done);
+    const anyDone=items.some(i=>i.done);
+    const status=allDone?'done':anyDone?'active':'idle';
+    return{...s,items,status};
+  }));
   renderDetail();
+  renderDash();
 }
 function deleteItem(stageId,itemId){
   updateStages(ss=>ss.map(s=>s.id!==stageId?s:{...s,items:s.items.filter(i=>i.id!==itemId)}));
@@ -1101,10 +1117,7 @@ function showStageModal(existing){
       <div class="icon-grid">${ICONS.map(ic=>`<div class="icon-opt ${ic===data.icon?'sel':''}" onclick="selIcon('${ic}')">${ic}</div>`).join('')}</div></div>
     <div class="form-group"><label class="form-label">${t('stageColor')}</label>
       <div class="color-grid">${COLORS.map(c=>`<div class="color-opt ${c===data.color?'sel':''}" style="background:${c}" onclick="selColor('${c}')"></div>`).join('')}</div></div>
-    <div class="form-group"><label class="form-label">${t('statusIdle')} / ${t('statusActive')} / ${t('statusDone')}</label>
-      <div style="display:flex;gap:6px">
-        ${['idle','active','done'].map(s=>`<div onclick="window._sfd.status='${s}';document.querySelectorAll('.status-sel').forEach(e=>e.classList.remove('sel-active'));this.classList.add('sel-active')" class="status-sel icon-opt ${(data.status||'idle')===s?'sel':''}" style="flex:1;font-size:12px;font-weight:600;width:auto;padding:8px 4px">${s==='idle'?t('statusIdle'):s==='active'?t('statusActive'):t('statusDone')}</div>`).join('')}
-      </div></div>
+
     <div class="form-group"><label class="form-label">${t('contractor')}</label>
       <input type="text" id="sContractor" placeholder="${t('contractorPh')}" value="${data.contractor||''}"/></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
@@ -1128,13 +1141,12 @@ function saveStage(editId){
   const contractor=document.getElementById('sContractor')?.value.trim()||'';
   const startDate=document.getElementById('sStartDate')?.value||'';
   const endDate=document.getElementById('sEndDate')?.value||'';
-  const status=window._sfd?.status||'idle';
   if(editId){
     const id=parseInt(editId);
-    updateStages(ss=>ss.map(s=>s.id===id?{...s,name,icon,color,contractor,startDate,endDate,status}:s));
+    updateStages(ss=>ss.map(s=>s.id===id?{...s,name,icon,color,contractor,startDate,endDate}:s));
     showToast(t('stageUpdated'));
   } else {
-    updateStages(ss=>[...ss,{id:newId(),name,icon,color,contractor,startDate,endDate,status,items:[]}]);
+    updateStages(ss=>[...ss,{id:newId(),name,icon,color,contractor,startDate,endDate,status:'idle',items:[]}]);
     showToast(t('stageAdded'));
   }
   closeModal();
