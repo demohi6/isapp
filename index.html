@@ -891,10 +891,14 @@ function renderDash(){
           <div class="stage-card-icon">${s.icon}</div>
           <div class="stage-card-info">
             <div class="stage-card-name">${s.name}</div>
-            <div class="stage-card-meta">${done}/${s.items.length} ${t('positions')} · ${t('factLabel')} ${fmt(fact)}</div>
-            ${(s.contractor||s.startDate||s.endDate)?`<div style="font-size:10px;color:var(--text3);margin-top:3px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-              ${s.contractor?`<span>👤 ${s.contractor}</span>`:''}
-              ${(s.startDate||s.endDate)?`<span>📅 ${s.startDate||'?'}${s.endDate?' → '+s.endDate:''}</span>`:''}
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:${s.contractor||s.startDate||s.endDate?'3':'0'}px">
+              <div class="stage-card-meta">${s.items.length>0?`${done}/${s.items.length}`:''}</div>
+              ${s.items.length>0?`<div style="flex:1;height:3px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden;max-width:60px">
+                <div style="height:100%;width:${s.items.length>0?Math.round(done/s.items.length*100):0}%;background:${s.color};border-radius:2px"></div>
+              </div>`:''}
+            </div>
+            ${(s.contractor||s.startDate||s.endDate)?`<div style="font-size:10px;color:var(--text3);margin-top:1px">
+              ${s.contractor?`<span style="margin-right:8px">👤 ${s.contractor}</span>`:''}${(s.startDate||s.endDate)?`<span>📅 ${s.startDate||'?'}${s.endDate?' → '+s.endDate:''}</span>`:''}
             </div>`:''}
           </div>
           <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
