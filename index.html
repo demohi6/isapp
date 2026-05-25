@@ -352,7 +352,7 @@ const LANGS = {
     fact:'Xərcləndi (fakt)',
     done:'Tamamlandı',
     stages:'TİKİNTİ MƏRHƏLƏLƏRİ',
-    positions:'mövqe',
+    positions:'Mövqelər',
     factLabel:'fakt',
     smetaLabel:'Smeta',
     factShort:'Fakt',
@@ -444,7 +444,7 @@ const LANGS = {
     fact:'Потрачено (факт)',
     done:'Выполнено',
     stages:'ЭТАПЫ СТРОИТЕЛЬСТВА',
-    positions:'позиций',
+    positions:'Позиции',
     factLabel:'факт',
     smetaLabel:'Смета',
     factShort:'Факт',
@@ -536,7 +536,7 @@ const LANGS = {
     fact:'Spent (actual)',
     done:'Completed',
     stages:'CONSTRUCTION STAGES',
-    positions:'items',
+    positions:'Items',
     factLabel:'actual',
     smetaLabel:'Estimate',
     factShort:'Actual',
@@ -1042,10 +1042,7 @@ function renderDetail(){
       <div class="dtb-fact" style="width:${fp}%;background:${s.color}"></div>
     </div>`;
 
-  const searchQ = document.getElementById('itemSearch')?.value.toLowerCase().trim()||'';
   const filtered = s.items.filter(i => {
-    const name = (tName(i)||'').toLowerCase();
-    if(searchQ && !name.includes(searchQ)) return false;
     if(detailFilter==='done') return i.done;
     if(detailFilter==='plan') return !i.done;
     return true;
@@ -1059,10 +1056,7 @@ function renderDetail(){
       <div class="stat-box"><div class="stat-lbl">${t('shareOfSmeta')}</div><div class="stat-val">${shareOfSmeta}%</div></div>
     </div>
 
-    <div class="search-wrap">
-      <input type="text" class="search-input" id="itemSearch" style="padding-left:12px" placeholder="${lang==='en'?'Search...':lang==='az'?'Axtar...':'Поиск...'}" oninput="renderDetail()"/>
-      <button class="search-clear" onclick="document.getElementById('itemSearch').value='';renderDetail()" style="display:${searchQ?'block':'none'}">×</button>
-    </div>
+
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
       <div class="section-title" style="margin:0">${t('positions')}</div>
       <div class="filter-tabs">
@@ -1567,10 +1561,17 @@ function confirmDrumDate(){
 }
 
 function clearDrumDate(field){
-  const hid=document.getElementById(field==='start'?'sStartDate':'sEndDate');
-  const dis=document.getElementById(field==='start'?'sStartDateDisplay':'sEndDateDisplay');
+  let hidId,disId,emptyText;
+  if(field==='start'){hidId='sStartDate';disId='sStartDateDisplay';emptyText='— — ——';}
+  else if(field==='end'){hidId='sEndDate';disId='sEndDateDisplay';emptyText='— — ——';}
+  else if(field==='newStart'){hidId='newItemStart';disId='newItemStartDisplay';emptyText='📅 '+t('startDate');}
+  else if(field==='newEnd'){hidId='newItemEnd';disId='newItemEndDisplay';emptyText='🏁 '+t('endDate');}
+  else if(field==='eiStart'){hidId='eiStartDate';disId='eiStartDisplay';emptyText='📅 '+t('startDate');}
+  else if(field==='eiEnd'){hidId='eiEndDate';disId='eiEndDisplay';emptyText='🏁 '+t('endDate');}
+  const hid=document.getElementById(hidId);
+  const dis=document.getElementById(disId);
   if(hid)hid.value='';
-  if(dis){dis.textContent='— — ——';dis.classList.remove('has-value');}
+  if(dis){dis.textContent=emptyText;dis.classList.remove('has-value');}
 }
 
 // ══════════════════════════
@@ -1939,10 +1940,17 @@ function confirmDrumDate(){
 }
 
 function clearDrumDate(field){
-  const hid=document.getElementById(field==='start'?'sStartDate':'sEndDate');
-  const dis=document.getElementById(field==='start'?'sStartDateDisplay':'sEndDateDisplay');
+  let hidId,disId,emptyText;
+  if(field==='start'){hidId='sStartDate';disId='sStartDateDisplay';emptyText='— — ——';}
+  else if(field==='end'){hidId='sEndDate';disId='sEndDateDisplay';emptyText='— — ——';}
+  else if(field==='newStart'){hidId='newItemStart';disId='newItemStartDisplay';emptyText='📅 '+t('startDate');}
+  else if(field==='newEnd'){hidId='newItemEnd';disId='newItemEndDisplay';emptyText='🏁 '+t('endDate');}
+  else if(field==='eiStart'){hidId='eiStartDate';disId='eiStartDisplay';emptyText='📅 '+t('startDate');}
+  else if(field==='eiEnd'){hidId='eiEndDate';disId='eiEndDisplay';emptyText='🏁 '+t('endDate');}
+  const hid=document.getElementById(hidId);
+  const dis=document.getElementById(disId);
   if(hid)hid.value='';
-  if(dis){dis.textContent='— — ——';dis.classList.remove('has-value');}
+  if(dis){dis.textContent=emptyText;dis.classList.remove('has-value');}
 }
 
 // ══════════════════════════
