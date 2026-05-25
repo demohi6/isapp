@@ -257,6 +257,13 @@ input:focus,textarea:focus{border-color:rgba(255,255,255,.3)}
 .over-badge{display:inline-flex;align-items:center;gap:4px;background:rgba(204,123,123,.15);border:1px solid rgba(204,123,123,.3);color:var(--red);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:600}
 .overdue-badge{display:inline-flex;align-items:center;gap:3px;background:rgba(204,123,123,.15);border:1px solid rgba(204,123,123,.35);color:var(--red);border-radius:8px;padding:2px 7px;font-size:11px;font-weight:700;flex-shrink:0;white-space:nowrap}
 
+/* ITEM TYPE */
+.type-toggle{display:flex;gap:4px;margin-top:8px}
+.type-btn{flex:1;padding:7px 4px;border-radius:9px;border:1px solid var(--border);background:none;color:var(--text3);font-size:12px;font-weight:600;font-family:'Mulish',sans-serif;cursor:pointer;transition:all .18s;text-align:center}
+.type-btn.active-work{background:rgba(123,184,204,.15);border-color:rgba(123,184,204,.4);color:var(--blue)}
+.type-btn.active-mat{background:rgba(201,170,124,.12);border-color:rgba(201,170,124,.35);color:var(--gold)}
+.item-type-badge{font-size:10px;opacity:.6;margin-left:3px}
+
 /* TEMPLATE PICKER */
 .tpl-section-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;padding:10px 2px 6px;display:flex;align-items:center;gap:6px}
 .tpl-section-label span{font-size:14px}
@@ -441,6 +448,11 @@ const LANGS = {
     noMyTemplates:'Hələ şablon yoxdur',
     applyTemplate:'Tətbiq et',
     templateHint:'Bütün mövqelər yeni mərhələyə əlavə ediləcək',
+    itemType:'Növ',
+    itemTypeWork:'👷 İş',
+    itemTypeMat:'🧱 Material',
+    typeWork:'İş',
+    typeMat:'Material',
   },
   ru: {
     appName:'Tikinti',
@@ -545,6 +557,11 @@ const LANGS = {
     noMyTemplates:'Нет сохранённых шаблонов',
     applyTemplate:'Применить',
     templateHint:'Все позиции будут добавлены в новый этап',
+    itemType:'Тип',
+    itemTypeWork:'👷 Работа',
+    itemTypeMat:'🧱 Материал',
+    typeWork:'Работа',
+    typeMat:'Материал',
   },
   en: {
     appName:'Tikinti',
@@ -649,6 +666,11 @@ const LANGS = {
     noMyTemplates:'No saved templates yet',
     applyTemplate:'Apply',
     templateHint:'All items will be added to the new stage',
+    itemType:'Type',
+    itemTypeWork:'👷 Labour',
+    itemTypeMat:'🧱 Material',
+    typeWork:'Labour',
+    typeMat:'Material',
   }
 };
 
@@ -1388,6 +1410,15 @@ function renderDetail(){
       <div class="stat-box"><div class="stat-lbl">${t('remainder')}</div><div class="stat-val ${smeta-fact<0?'c-red':'c-blue'}">${fmtShort(smeta-fact)}</div></div>
       <div class="stat-box"><div class="stat-lbl">${t('shareOfSmeta')}</div><div class="stat-val">${shareOfSmeta}%</div></div>
     </div>
+    ${(()=>{
+      const workSum=s.items.filter(i=>!i.type||i.type==='work').reduce((a,i)=>a+itemTotal(i),0);
+      const matSum=s.items.filter(i=>i.type==='mat').reduce((a,i)=>a+itemTotal(i),0);
+      if(!workSum&&!matSum) return '';
+      return `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+        <div class="stat-box" style="border-color:rgba(123,184,204,.2)"><div class="stat-lbl" style="color:var(--blue)">👷 ${t('typeWork')}</div><div class="stat-val" style="color:var(--blue)">${fmtShort(workSum)}</div></div>
+        <div class="stat-box" style="border-color:rgba(201,170,124,.2)"><div class="stat-lbl" style="color:var(--gold)">🧱 ${t('typeMat')}</div><div class="stat-val" style="color:var(--gold)">${fmtShort(matSum)}</div></div>
+      </div>`;
+    })()}
 
 
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
@@ -1407,7 +1438,7 @@ function renderDetail(){
           ${item.done?'<svg width="12" height="12" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" fill="none" stroke="#0D0F14" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>':''}
         </div>
         <div onclick="editItemPrompt(${s.id},${item.id})" style="min-width:0;flex:1">
-          <div class="item-name ${item.done?'done':''}">${tName(item)}${item.qty>1?` <span style="color:var(--text3);font-size:11px">×${item.qty}</span>`:''}</div>
+          <div class="item-name ${item.done?'done':''}">${tName(item)}${item.qty>1?` <span style="color:var(--text3);font-size:11px">×${item.qty}</span>`:''}<span class="item-type-badge">${item.type==='mat'?'🧱':item.type==='work'?'👷':''}</span></div>
           ${item.contractor?`<div style="font-size:10px;color:var(--text3);margin-top:1px">👤 ${item.contractor}</div>`:''}
           ${(item.startDate||item.endDate)?`<div style="font-size:10px;color:var(--text3);margin-top:1px">📅 ${item.startDate?item.startDate.split('-').reverse().join('.'):'?'}${item.endDate?' → '+item.endDate.split('-').reverse().join('.'):''}${item.endDate&&new Date(item.endDate)<new Date()&&!item.done?' <span style="color:var(--red)">⚠️</span>':''}</div>`:''}
           ${item.note?`<div style="font-size:11px;color:var(--text3);margin-top:1px">${item.note}</div>`:''}
@@ -1441,6 +1472,11 @@ function renderDetail(){
         </div>
       </div>
       <input type="text" id="newItemNote" placeholder="${t('notePh')}" style="margin-top:8px"/>
+      <div class="type-toggle">
+        <button class="type-btn active-work" id="newTypeBtnWork" onclick="setNewItemType('work')">${t('itemTypeWork')}</button>
+        <button class="type-btn" id="newTypeBtnMat" onclick="setNewItemType('mat')">${t('itemTypeMat')}</button>
+      </div>
+      <input type="hidden" id="newItemType" value="work"/>
       <button class="btn btn-sm" style="background:${s.color}22;color:${s.color};border:1px solid ${s.color}44;width:100%;margin-top:8px" onclick="addItem(${s.id})">＋ ${t('addPosition')}</button>
     </div>
     <button class="btn btn-danger btn-sm" onclick="confirmDeleteStage(${s.id})" style="width:100%;margin-top:4px">${t('deleteStage')}</button>
@@ -1472,6 +1508,12 @@ function deleteItem(stageId,itemId){
   updateStages(ss=>ss.map(s=>s.id!==stageId?s:{...s,items:s.items.filter(i=>i.id!==itemId)}));
   renderDetail();showToast(t('deletePos'));
 }
+function setNewItemType(type){
+  document.getElementById('newItemType').value=type;
+  document.getElementById('newTypeBtnWork').className='type-btn'+(type==='work'?' active-work':'');
+  document.getElementById('newTypeBtnMat').className='type-btn'+(type==='mat'?' active-mat':'');
+}
+
 function addItem(stageId){
   const name=document.getElementById('newItemName')?.value.trim();
   const qty=parseInt(document.getElementById('newItemQty')?.value)||1;
@@ -1480,14 +1522,17 @@ function addItem(stageId){
   const contractor=document.getElementById('newItemContractor')?.value.trim()||'';
   const startDate=document.getElementById('newItemStart')?.value||'';
   const endDate=document.getElementById('newItemEnd')?.value||'';
+  const type=document.getElementById('newItemType')?.value||'work';
   if(!name){showToast(t('enterName'),'err');return;}
   if(!price||price<=0){showToast(t('enterBudget'),'err');return;}
-  updateStages(ss=>ss.map(s=>s.id!==stageId?s:{...s,items:[...s.items,{id:newId(),name,qty,price,done:false,note,contractor,startDate,endDate}]}));
+  updateStages(ss=>ss.map(s=>s.id!==stageId?s:{...s,items:[...s.items,{id:newId(),name,qty,price,done:false,note,contractor,startDate,endDate,type}]}));
   // Reset date displays
   const sd=document.getElementById('newItemStartDisplay');if(sd){sd.textContent='📅 '+t('startDate');sd.classList.remove('has-value');}
   const ed=document.getElementById('newItemEndDisplay');if(ed){ed.textContent='🏁 '+t('endDate');ed.classList.remove('has-value');}
   const si=document.getElementById('newItemStart');if(si)si.value='';
   const ei=document.getElementById('newItemEnd');if(ei)ei.value='';
+  // Reset type toggle
+  setNewItemType('work');
   renderDetail();showToast(t('posAdded'));
 }
 
@@ -1525,6 +1570,13 @@ function editItemPrompt(stageId,itemId){
     +'</div>'
     +'<div class="form-group"><label class="form-label">'+t('note')+'</label>'
       +'<input type="text" id="eiNote" value="'+(item.note||'').replace(/"/g,'&quot;')+'"/></div>'
+    +'<div class="form-group"><label class="form-label">'+t('itemType')+'</label>'
+      +'<div class="type-toggle">'
+        +'<button class="type-btn'+((!item.type||item.type==='work')?' active-work':'')+'" id="eiTypeBtnWork" onclick="setEiType(\'work\')">'+t('itemTypeWork')+'</button>'
+        +'<button class="type-btn'+(item.type==='mat'?' active-mat':'')+'" id="eiTypeBtnMat" onclick="setEiType(\'mat\')">'+t('itemTypeMat')+'</button>'
+      +'</div>'
+      +'<input type="hidden" id="eiType" value="'+(item.type||'work')+'"/>'
+    +'</div>'
     +'<div style="display:flex;gap:10px;margin-top:4px">'
       +'<button class="btn btn-secondary" onclick="closeModal()">'+t('cancel')+'</button>'
       +'<button class="btn btn-primary" onclick="saveItemEdit('+stageId+','+itemId+')">'+t('save')+'</button>'
@@ -1538,6 +1590,12 @@ function pickEiDate(field){
   openDrumPicker(field, val);
 }
 
+function setEiType(type){
+  document.getElementById('eiType').value=type;
+  document.getElementById('eiTypeBtnWork').className='type-btn'+(type==='work'?' active-work':'');
+  document.getElementById('eiTypeBtnMat').className='type-btn'+(type==='mat'?' active-mat':'');
+}
+
 function saveItemEdit(stageId,itemId){
   const name=document.getElementById('eiName')?.value.trim();
   const qty=parseInt(document.getElementById('eiQty')?.value)||1;
@@ -1546,8 +1604,9 @@ function saveItemEdit(stageId,itemId){
   const contractor=document.getElementById('eiContractor')?.value.trim()||'';
   const startDate=document.getElementById('eiStartDate')?.value||'';
   const endDate=document.getElementById('eiEndDate')?.value||'';
+  const type=document.getElementById('eiType')?.value||'work';
   if(!name){showToast(t('enterName'),'err');return;}
-  updateStages(ss=>ss.map(s=>s.id!==stageId?s:{...s,items:s.items.map(i=>i.id===itemId?{...i,name,qty,price,note,contractor,startDate,endDate}:i)}));
+  updateStages(ss=>ss.map(s=>s.id!==stageId?s:{...s,items:s.items.map(i=>i.id===itemId?{...i,name,qty,price,note,contractor,startDate,endDate,type}:i)}));
   closeModal();renderDetail();showToast(t('objUpdated'));
 }
 
