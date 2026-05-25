@@ -879,15 +879,10 @@ function renderDash(){
       const fp=smeta>0?Math.min(fact/smeta*100,100):0;
       const done=s.items.filter(i=>i.done).length;
       const over=fact>smeta&&smeta>0;
-      return `<div class="stage-card" style="animation-delay:${.12+i*.07}s" data-sid="${s.id}"
-        draggable="true"
-        ondragstart="onDragStart(event,${s.id})"
-        ondragover="onDragOver(event,${s.id})"
-        ondrop="onDrop(event,${s.id})"
-        onclick="goDetail(${s.id})">
+      return `<div class="stage-card" style="animation-delay:${.12+i*.07}s" data-sid="${s.id}" onclick="goDetail(${s.id})">
         <div class="stage-card-accent" style="background:linear-gradient(90deg,${s.color},transparent)"></div>
         <div class="stage-card-body">
-          <div class="drag-handle" ontouchstart="onTouchDragStart(event,${s.id})" ontouchmove="onTouchDragMove(event)" ontouchend="onTouchDragEnd()" onclick="event.stopPropagation()">⠿</div>
+          <div class="drag-handle" id="dh-${s.id}" onmousedown="sortDragStart(event,${s.id})" ontouchstart="sortDragStart(event,${s.id})" onclick="event.stopPropagation()">⠿</div>
           <div class="stage-card-icon">${s.icon}</div>
           <div class="stage-card-info">
             <div class="stage-card-name">${s.name}</div>
@@ -1298,53 +1293,94 @@ function handleImport(e){
 }
 
 // ══════════════════════════
-//  DRAG TO SORT STAGES
+//  SMOOTH DRAG TO SORT
 // ══════════════════════════
-let dragSrcId=null;
-function onDragStart(e,id){ dragSrcId=id; e.dataTransfer.effectAllowed='move'; }
-function onDragOver(e,id){ e.preventDefault(); }
-function onDrop(e,id){
-  e.preventDefault();
-  if(dragSrcId===null||dragSrcId===id)return;
-  updateStages(ss=>{
-    const from=ss.findIndex(s=>s.id===dragSrcId);
-    const to=ss.findIndex(s=>s.id===id);
-    if(from<0||to<0)return ss;
-    const arr=[...ss];
-    const [item]=arr.splice(from,1);
-    arr.splice(to,0,item);
-    return arr;
-  });
-  dragSrcId=null; renderDash();
-}
+let _sd = null; // sort drag state
 
-// Touch drag-to-sort
-let touchDragId=null, touchDragEl=null, touchDragClone=null;
-function onTouchDragStart(e,id){
-  touchDragId=id;
-  touchDragEl=e.currentTarget.closest('.stage-card');
-  if(navigator.vibrate)navigator.vibrate(30);
-}
-function onTouchDragMove(e){
-  if(!touchDragId)return;
-  const touch=e.touches[0];
-  const el=document.elementFromPoint(touch.clientX,touch.clientY);
-  const card=el?.closest('.stage-card[data-sid]');
-  if(card){
-    const overId=parseInt(card.dataset.sid);
-    if(overId!==touchDragId){
-      updateStages(ss=>{
-        const from=ss.findIndex(s=>s.id===touchDragId);
-        const to=ss.findIndex(s=>s.id===overId);
-        if(from<0||to<0)return ss;
-        const arr=[...ss]; const [item]=arr.splice(from,1); arr.splice(to,0,item);
-        return arr;
-      });
-      renderDash();
+function sortDragStart(e, id) {
+  e.preventDefault();
+  e.stopPropagation();
+  const isTouch = e.type === 'touchstart';
+  const clientY = isTouch ? e.touches[0].clientY : e.clientY;
+  const card = document.querySelector(`.stage-card[data-sid="${id}"]`);
+  if (!card) return;
+
+  if (navigator.vibrate) navigator.vibrate(35);
+
+  const rect = card.getBoundingClientRect();
+  const container = card.parentElement;
+  const containerRect = container.getBoundingClientRect();
+
+  // Clone the card as a floating copy
+  const clone = card.cloneNode(true);
+  clone.style.cssText = `
+    position:fixed; left:${rect.left}px; top:${rect.top}px;
+    width:${rect.width}px; z-index:999; pointer-events:none;
+    box-shadow:0 16px 48px rgba(0,0,0,.6); border-radius:18px;
+    transition:none; opacity:.95; transform:scale(1.02);
+  `;
+  document.body.appendChild(clone);
+
+  // Placeholder
+  card.style.opacity = '0.2';
+
+  _sd = { id, card, clone, startY: clientY, cardTop: rect.top, container, containerRect, isTouch };
+
+  const onMove = ev => {
+    if (!_sd) return;
+    const cy = _sd.isTouch ? ev.touches[0].clientY : ev.clientY;
+    const dy = cy - _sd.startY;
+    _sd.clone.style.top = (_sd.cardTop + dy) + 'px';
+
+    // Find card under cursor
+    _sd.clone.style.display = 'none';
+    const el = document.elementFromPoint(_sd.isTouch ? ev.touches[0].clientX : ev.clientX, cy);
+    _sd.clone.style.display = '';
+    const over = el?.closest('.stage-card[data-sid]');
+    if (over) {
+      const overId = parseInt(over.dataset.sid);
+      if (overId !== _sd.id) {
+        updateStages(ss => {
+          const from = ss.findIndex(s => s.id === _sd.id);
+          const to = ss.findIndex(s => s.id === overId);
+          if (from < 0 || to < 0) return ss;
+          const arr = [...ss];
+          const [item] = arr.splice(from, 1);
+          arr.splice(to, 0, item);
+          return arr;
+        });
+        // Re-render but keep drag state
+        const dashContent = document.getElementById('dashContent');
+        const cards = dashContent.querySelectorAll('.stage-card');
+        cards.forEach(c => {
+          if (parseInt(c.dataset.sid) === _sd.id) { c.style.opacity = '0.2'; _sd.card = c; }
+          else c.style.opacity = '';
+        });
+      }
     }
+  };
+
+  const onEnd = () => {
+    if (!_sd) return;
+    _sd.clone.remove();
+    _sd.card.style.opacity = '';
+    _sd = null;
+    saveDB();
+    renderDash();
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup', onEnd);
+    document.removeEventListener('touchmove', onMove);
+    document.removeEventListener('touchend', onEnd);
+  };
+
+  if (isTouch) {
+    document.addEventListener('touchmove', onMove, { passive: true });
+    document.addEventListener('touchend', onEnd, { passive: true });
+  } else {
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onEnd);
   }
 }
-function onTouchDragEnd(){ touchDragId=null; }
 
 // ══════════════════════════
 //  INSTALL
