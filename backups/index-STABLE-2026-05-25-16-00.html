@@ -1,0 +1,2183 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"/>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+<meta http-equiv="Pragma" content="no-cache"/>
+<meta http-equiv="Expires" content="0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Tikinti"/>
+<meta name="theme-color" content="#0D0F14"/>
+<link rel="manifest" href="./manifest.json"/>
+<link rel="apple-touch-icon" sizes="192x192" href="./icons/icon-192.png"/>
+<link rel="apple-touch-icon" sizes="512x512" href="./icons/icon-512.png"/>
+<title>Tikinti</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700&family=Mulish:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#0D0F14;--bg2:#13161C;--bg3:#1A1E27;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.12);
+  --text:#EAE6DE;--text2:rgba(234,230,222,0.55);--text3:rgba(234,230,222,0.28);
+  --gold:#C9AA7C;--blue:#7BB8CC;--green:#80C89A;--red:#CC7B7B;
+  --safe:env(safe-area-inset-bottom,0px);--top:env(safe-area-inset-top,0px);
+  --drawer:285px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Mulish',sans-serif;overflow:hidden}
+#app{position:fixed;inset:0;overflow:hidden}
+
+/* DRAWER */
+#drawerBackdrop{position:fixed;inset:0;background:rgba(0,0,0,0);z-index:90;pointer-events:none;transition:background .3s}
+#drawerBackdrop.open{background:rgba(0,0,0,.6);pointer-events:all}
+#drawer{position:fixed;top:0;left:0;bottom:0;width:var(--drawer);background:#0f1118;border-right:1px solid var(--border2);z-index:100;transform:translateX(-100%);transition:transform .32s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;overflow:hidden}
+#drawer.open{transform:translateX(0)}
+.drawer-header{padding:calc(var(--top) + 20px) 20px 16px;border-bottom:1px solid var(--border);flex-shrink:0}
+.drawer-logo{font-family:'Unbounded',sans-serif;font-size:15px;font-weight:700;color:var(--gold);margin-bottom:2px}
+.drawer-sub{font-size:11px;color:var(--text3)}
+.drawer-scroll{flex:1;overflow-y:auto;padding:12px 10px;-webkit-overflow-scrolling:touch}
+.drawer-scroll::-webkit-scrollbar{display:none}
+.drawer-section-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;padding:4px 10px 8px}
+.obj-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;cursor:pointer;margin-bottom:2px}
+.obj-item.active{background:rgba(201,170,124,.12);border:1px solid rgba(201,170,124,.2)}
+.obj-item:not(.active){border:1px solid transparent}
+.obj-icon{font-size:20px;flex-shrink:0;width:36px;height:36px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.05);border-radius:9px}
+.obj-info{flex:1;min-width:0}
+.obj-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:1px}
+.obj-meta{font-size:10px;color:var(--text3);font-family:'DM Mono',monospace}
+.obj-active-dot{width:7px;height:7px;border-radius:50%;background:var(--gold);flex-shrink:0}
+.drawer-btn{margin:6px 10px 0;padding:11px;border-radius:12px;font-size:13px;font-weight:600;font-family:'Mulish',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;width:calc(100% - 20px);transition:background .15s;border:none}
+.drawer-btn-add{background:rgba(201,170,124,.08);border:1.5px dashed rgba(201,170,124,.25) !important;color:var(--gold)}
+.drawer-btn-pdf{background:rgba(255,255,255,.04);border:1px solid var(--border) !important;color:var(--text2)}
+.drawer-footer{padding:14px 16px calc(14px + var(--safe));border-top:1px solid var(--border);flex-shrink:0}
+
+/* LANG SWITCHER */
+.lang-switch{display:flex;gap:4px;margin-bottom:10px}
+.lang-btn{flex:1;padding:6px 4px;border-radius:8px;border:1px solid var(--border);background:none;color:var(--text3);font-size:11px;font-weight:700;font-family:'Mulish',sans-serif;cursor:pointer;transition:all .2s;text-align:center}
+.lang-btn.active{background:rgba(201,170,124,.15);border-color:rgba(201,170,124,.4);color:var(--gold)}
+
+/* PAGES */
+.page{position:absolute;inset:0;background:var(--bg);overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;transition:transform .32s cubic-bezier(.4,0,.2,1),opacity .32s ease;will-change:transform}
+.page::-webkit-scrollbar{display:none}
+.page.page-hidden-right{transform:translateX(100%);opacity:0;pointer-events:none}
+.page.page-hidden-left{transform:translateX(-25%);opacity:0;pointer-events:none}
+
+/* HEADER */
+.header{padding:calc(var(--top) + 14px) 16px 12px;background:var(--bg);position:sticky;top:0;z-index:10}
+.header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:var(--border)}
+.header-row{display:flex;align-items:center;gap:10px}
+.burger{width:38px;height:38px;border-radius:10px;background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4.5px;flex-shrink:0}
+.burger-line{width:16px;height:1.5px;background:var(--text2);border-radius:1px}
+.header-title{flex:1;min-width:0}
+.logo{font-family:'Unbounded',sans-serif;font-size:15px;font-weight:700;letter-spacing:-.4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.logo span{color:var(--gold)}
+.logo-sub{font-size:10px;color:var(--text3);margin-top:1px}
+.back-btn{display:flex;align-items:center;gap:6px;font-size:14px;font-weight:600;color:var(--gold);background:none;border:none;cursor:pointer;padding:4px 0;font-family:'Mulish',sans-serif}
+
+.content{padding:16px 16px calc(32px + var(--safe))}
+
+/* BUDGET BANNER */
+.budget-banner{
+  background:linear-gradient(135deg,rgba(201,170,124,.12),rgba(201,170,124,.04));
+  border:1px solid rgba(201,170,124,.25);
+  border-radius:16px;padding:16px;margin-bottom:14px;
+  display:block;
+  animation:fadeUp .35s ease both;
+}
+.bb-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px}
+.bb-val{font-family:'DM Mono',monospace;font-size:24px;font-weight:700;color:var(--gold);margin-bottom:2px}
+.bb-sub{font-size:11px;color:var(--text3);margin-bottom:0}
+
+/* SECTION */
+.section-divider{height:1px;background:var(--border);margin:6px 0 16px;position:relative}
+.section-divider::before{content:'';position:absolute;left:0;top:-1px;width:40px;height:3px;background:var(--gold);border-radius:2px}
+.section-title{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.9px;margin-bottom:10px;margin-top:4px}
+
+/* STAGE CARDS */
+.stage-card{background:var(--bg2);border:1px solid var(--border);border-radius:18px;margin-bottom:10px;overflow:hidden;cursor:pointer;transition:transform .18s;animation:fadeUp .4s ease both;position:relative;-webkit-user-select:none;user-select:none}
+.stage-card:active{transform:scale(.97)}
+.stage-card-accent{position:absolute;top:0;left:0;right:0;height:3px}
+.stage-card-body{padding:14px 16px 12px;display:flex;align-items:center;gap:14px}
+.stage-card-icon{font-size:26px;flex-shrink:0}
+.stage-card-info{flex:1;min-width:0}
+.stage-card-name{font-weight:700;font-size:14px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stage-card-meta{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace}
+.stage-card-bar-track{height:4px;background:rgba(255,255,255,.05);margin:0 16px 0;border-radius:2px;overflow:hidden;position:relative}
+.scb-smeta{position:absolute;top:0;left:0;height:100%;border-radius:2px;opacity:.35}
+.scb-fact{position:absolute;top:0;left:0;height:100%;border-radius:2px}
+.stage-card-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--border);border-top:1px solid var(--border)}
+.scs-item{background:var(--bg2);padding:9px 12px}
+.scs-label{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px}
+.scs-val{font-family:'DM Mono',monospace;font-size:12px;font-weight:500}
+
+/* DETAIL */
+.detail-hero{padding:calc(var(--top) + 14px) 16px 0;background:var(--bg2);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10}
+.detail-hero-name{font-family:'Unbounded',sans-serif;font-size:17px;font-weight:700;margin-bottom:3px}
+.detail-hero-sub{font-family:'DM Mono',monospace;font-size:12px;color:var(--text3);margin-bottom:10px}
+.detail-two-bar{height:5px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden;position:relative;margin-bottom:0}
+.dtb-smeta{position:absolute;top:0;left:0;height:100%;border-radius:3px;opacity:.35;transition:width .5s}
+.dtb-fact{position:absolute;top:0;left:0;height:100%;border-radius:3px;transition:width .5s}
+
+/* STAT GRID */
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.stat-box{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:12px 14px}
+.stat-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.stat-val{font-family:'DM Mono',monospace;font-size:14px;font-weight:500}
+
+/* ITEMS */
+.items-section{background:var(--bg2);border:1px solid var(--border);border-radius:18px;overflow:hidden;margin-bottom:12px}
+.items-header{padding:10px 16px;font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;border-bottom:1px solid var(--border);display:grid;grid-template-columns:32px 1fr auto 32px;gap:8px;align-items:center}
+.item-row{display:grid;grid-template-columns:32px 1fr auto 32px;align-items:center;gap:8px;padding:11px 16px;border-bottom:1px solid var(--border);transition:background .15s;animation:itemIn .22s ease both;cursor:pointer}
+.item-row:last-child{border-bottom:none}
+.item-row:active{background:rgba(255,255,255,.03)}
+@keyframes itemIn{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:none}}
+.item-check{width:22px;height:22px;border-radius:6px;border:1.5px solid rgba(255,255,255,.2);background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
+.item-check.done{border-color:transparent}
+.item-name{font-size:13px;font-weight:500;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item-name.done{text-decoration:line-through;color:var(--text3)}
+.item-cost{font-family:'DM Mono',monospace;font-size:12px;white-space:nowrap;color:var(--text2)}
+.item-del{background:none;border:none;color:var(--text3);cursor:pointer;font-size:20px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:6px;transition:all .2s}
+.item-del:active{background:rgba(204,123,123,.2);color:var(--red)}
+
+/* ITEM NOTE */
+.item-note{font-size:11px;color:var(--text3);padding:0 16px 8px 56px;font-style:italic}
+
+.add-form{background:var(--bg2);border:1px solid var(--border);border-radius:18px;padding:14px 16px;margin-bottom:12px}
+.add-form-title{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px}
+.add-form-row{display:flex;gap:8px;margin-top:8px}
+
+/* FILTER TABS */
+.filter-tabs{display:flex;gap:6px;margin-bottom:10px}
+.filter-tab{padding:6px 12px;border-radius:20px;border:1px solid var(--border);background:none;color:var(--text3);font-size:12px;font-weight:600;font-family:'Mulish',sans-serif;cursor:pointer;transition:all .2s}
+.filter-tab.active{background:rgba(201,170,124,.15);border-color:rgba(201,170,124,.35);color:var(--gold)}
+
+input[type=text],input[type=number],textarea{background:rgba(255,255,255,.05);border:1px solid var(--border2);color:var(--text);border-radius:10px;padding:10px 12px;font-family:'Mulish',sans-serif;font-size:14px;outline:none;width:100%;transition:border-color .2s;-webkit-appearance:none}
+textarea{resize:none;height:72px;line-height:1.4}
+input:focus,textarea:focus{border-color:rgba(255,255,255,.3)}
+
+.btn{cursor:pointer;border:none;border-radius:12px;font-family:'Mulish',sans-serif;font-weight:600;font-size:14px;padding:12px 16px;transition:transform .15s,opacity .15s;display:flex;align-items:center;justify-content:center;gap:6px;-webkit-user-select:none;user-select:none}
+.btn:active{transform:scale(.96)}
+.btn-primary{background:var(--gold);color:#0D0F14;width:100%}
+.btn-secondary{background:rgba(255,255,255,.07);color:var(--text2);flex:1}
+.btn-danger{background:rgba(204,123,123,.15);color:var(--red)}
+.btn-sm{padding:8px 12px;font-size:13px;border-radius:10px}
+.btn-icon{padding:9px;border-radius:10px;background:none;border:none}
+
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(8px);z-index:200;display:flex;align-items:flex-end;justify-content:center;animation:fadeIn .2s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:24px 24px 0 0;width:100%;max-width:600px;padding:20px 20px calc(20px + var(--safe));max-height:85vh;overflow-y:auto;animation:slideUp .28s cubic-bezier(.4,0,.2,1)}
+@keyframes slideUp{from{transform:translateY(60px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-handle{width:40px;height:4px;background:rgba(255,255,255,.15);border-radius:2px;margin:0 auto 20px}
+.modal-title{font-family:'Unbounded',sans-serif;font-size:16px;font-weight:600;margin-bottom:12px}
+.form-group{margin-bottom:14px}
+.form-label{display:block;font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px}
+.icon-grid{display:flex;flex-wrap:wrap;gap:6px}
+.icon-opt{width:42px;height:42px;border-radius:10px;border:1.5px solid transparent;background:rgba(255,255,255,.05);font-size:20px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s}
+.icon-opt.sel{border-color:rgba(255,255,255,.4);background:rgba(255,255,255,.1)}
+.color-grid{display:flex;gap:8px;flex-wrap:wrap}
+.color-opt{width:28px;height:28px;border-radius:50%;cursor:pointer;transition:transform .15s;border:2px solid transparent}
+.color-opt.sel{border-color:white;transform:scale(1.15)}
+
+/* QTY × PRICE */
+.qty-price-row{display:grid;grid-template-columns:1fr 16px 1fr;align-items:center;gap:6px;margin-top:8px}
+
+/* DRUM PICKER */
+.drum-picker{display:flex;gap:0;justify-content:center;margin:12px 0;animation:fadeUp .25s ease}
+.drum-col{display:flex;flex-direction:column;align-items:center;flex:1}
+.drum-col-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-bottom:8px}
+.drum-wrap{
+  position:relative;height:220px;width:100%;overflow:hidden;
+  background:none;cursor:pointer;
+}
+.drum-wrap::before,.drum-wrap::after{
+  content:'';position:absolute;left:0;right:0;height:88px;z-index:2;pointer-events:none;
+}
+.drum-wrap::before{top:0;background:linear-gradient(to bottom,var(--bg2) 40%,rgba(13,15,20,.85) 70%,transparent 100%)}
+.drum-wrap::after{bottom:0;background:linear-gradient(to top,var(--bg2) 40%,rgba(13,15,20,.85) 70%,transparent 100%)}
+.drum-selector{
+  position:absolute;top:50%;left:8px;right:8px;height:44px;
+  transform:translateY(-50%);
+  pointer-events:none;z-index:1;
+  border-top:1px solid rgba(201,170,124,.6);
+  border-bottom:1px solid rgba(201,170,124,.6);
+}
+.drum-divider{width:1px;background:rgba(255,255,255,.07);height:220px;flex-shrink:0}
+.drum-list{
+  position:absolute;width:100%;
+  will-change:transform;
+  user-select:none;-webkit-user-select:none;
+}
+.drum-item{
+  height:44px;display:flex;align-items:center;justify-content:center;
+  font-family:'DM Mono',monospace;font-size:13px;font-weight:400;
+  color:rgba(234,230,222,.15);
+  transition:color .1s,font-size .1s,font-weight .1s;
+}
+.drum-item.near{color:rgba(234,230,222,.4);font-size:15px}
+.drum-item.active{color:var(--text);font-size:18px;font-weight:700}
+.drum-date-display{
+  background:rgba(255,255,255,.04);border:1px solid var(--border);
+  border-radius:12px;padding:11px 14px;margin:4px 0;
+  font-family:'DM Mono',monospace;font-size:14px;color:var(--text3);
+  text-align:center;cursor:pointer;
+  transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.drum-date-display:active{transform:scale(.98)}
+.drum-date-display.has-value{color:var(--gold);border-color:rgba(201,170,124,.3);background:rgba(201,170,124,.06)}
+.drum-date-display .cal-icon{font-size:16px;opacity:.5}
+.search-wrap{position:relative;margin-bottom:12px}
+.search-input{background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:12px;padding:10px 12px;color:var(--text);font-family:'Mulish',sans-serif;font-size:14px;width:100%;outline:none;transition:border-color .2s;-webkit-appearance:none}
+.search-input:focus{border-color:rgba(255,255,255,.25)}
+.search-clear{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text3);cursor:pointer;font-size:20px;padding:2px 6px}
+.pin-overlay{position:fixed;inset:0;background:var(--bg);z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;animation:fadeIn .2s ease}
+.pin-logo{font-family:'Unbounded',sans-serif;font-size:20px;font-weight:700;color:var(--gold);margin-bottom:4px}
+.pin-subtitle{font-size:13px;color:var(--text3)}
+.pin-dots{display:flex;gap:14px;margin:4px 0}
+.pin-dot{width:13px;height:13px;border-radius:50%;border:2px solid rgba(255,255,255,.25);transition:all .15s}
+.pin-dot.filled{background:var(--gold);border-color:var(--gold);transform:scale(1.1)}
+.pin-dot.error{background:var(--red);border-color:var(--red)}
+.pin-pad{display:grid;grid-template-columns:repeat(3,76px);gap:10px}
+.pin-key{width:76px;height:76px;border-radius:50%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.08);color:var(--text);font-size:24px;font-family:'DM Mono',monospace;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:background .15s,transform .1s;-webkit-user-select:none;user-select:none;gap:2px}
+.pin-key:active{background:rgba(255,255,255,.18);transform:scale(.93)}
+.pin-key-sub{font-size:8px;letter-spacing:1px;color:var(--text3);font-family:'Mulish',sans-serif;font-weight:600;text-transform:uppercase}
+.pin-key.del{font-size:20px;color:var(--text2)}
+.pin-key.empty{background:none;border:none;cursor:default}
+.pin-bio{width:56px;height:56px;border-radius:50%;background:rgba(201,170,124,.1);border:1px solid rgba(201,170,124,.3);display:flex;align-items:center;justify-content:center;font-size:26px;cursor:pointer;transition:background .2s}
+.pin-bio:active{background:rgba(201,170,124,.25)}
+.qty-sep{text-align:center;color:var(--text3);font-size:14px;font-weight:600}
+
+.toast{position:fixed;top:calc(var(--top) + 12px);left:50%;transform:translateX(-50%) translateY(-80px);background:var(--bg3);border:1px solid var(--border2);border-radius:12px;padding:10px 18px;font-size:13px;font-weight:600;z-index:300;transition:transform .3s ease;white-space:nowrap;box-shadow:0 8px 32px rgba(0,0,0,.5)}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.empty{text-align:center;padding:48px 20px;color:var(--text3)}
+.install-banner{background:linear-gradient(135deg,rgba(201,170,124,.12),rgba(127,184,204,.08));border:1px solid rgba(201,170,124,.25);border-radius:14px;padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px}
+.install-banner-text{flex:1;font-size:12px;color:var(--text2);line-height:1.4}
+.install-banner-text strong{color:var(--gold);display:block;font-size:13px;margin-bottom:2px}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.c-gold{color:var(--gold)}.c-blue{color:var(--blue)}.c-green{color:var(--green)}.c-red{color:var(--red)}
+.stage-card-collapsed{
+  background:var(--bg2);border:1px solid var(--border);border-radius:14px;
+  margin-bottom:8px;overflow:hidden;cursor:pointer;
+  transition:all .2s;animation:fadeUp .3s ease both;
+  display:flex;align-items:center;gap:10px;padding:10px 14px;
+  -webkit-user-select:none;user-select:none;
+}
+.stage-card-collapsed:active{transform:scale(.98)}
+.scc-icon{font-size:18px;flex-shrink:0}
+.scc-name{font-size:13px;font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text2)}
+.scc-sum{font-family:'DM Mono',monospace;font-size:12px;color:var(--green);white-space:nowrap}
+.scc-check{width:20px;height:20px;border-radius:50%;background:rgba(128,200,154,.2);border:1.5px solid var(--green);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.over-badge{display:inline-flex;align-items:center;gap:4px;background:rgba(204,123,123,.15);border:1px solid rgba(204,123,123,.3);color:var(--red);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:600}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="drawerBackdrop" onclick="closeDrawer()"></div>
+  <div id="drawer">
+    <div class="drawer-header">
+      <div class="drawer-logo">🏡 Tikinti</div>
+      <div class="drawer-sub" id="drawerSub">Mənim obyektlərim</div>
+    </div>
+    <div class="drawer-scroll">
+      <div class="drawer-section-label" id="dlObjects">OBYEKTLƏRİM</div>
+      <div id="drawerObjects"></div>
+      <button class="drawer-btn drawer-btn-add" id="drawerBtnAdd" onclick="addObjectPrompt()">＋ Yeni obyekt</button>
+      <button class="drawer-btn drawer-btn-pdf" onclick="closeDrawer();exportPDF()">📄 PDF export</button>
+      <button class="drawer-btn drawer-btn-pdf" onclick="closeDrawer();pinSettings()" style="margin-top:4px">🔐 PIN</button>
+      <button class="drawer-btn drawer-btn-pdf" onclick="closeDrawer();triggerImport()" style="margin-top:4px">📥 <span id="importBtnLabel">Импорт JSON</span></button>
+      <input type="file" id="importFile" accept=".json" style="display:none" onchange="handleImport(event)"/>
+      <div style="margin-top:16px;padding:0 4px">
+        <div class="drawer-section-label" id="dlLang">DİL / ЯЗЫК / LANGUAGE</div>
+        <div class="lang-switch">
+          <button class="lang-btn" id="langAZ" onclick="setLang('az')">AZ</button>
+          <button class="lang-btn" id="langRU" onclick="setLang('ru')">RU</button>
+          <button class="lang-btn" id="langEN" onclick="setLang('en')">EN</button>
+        </div>
+      </div>
+    </div>
+    <div class="drawer-footer">
+      <div style="font-size:11px;color:var(--text3);line-height:1.6" id="drawerFooterText">💾 Məlumatlar bu cihazda saxlanılır</div>
+    </div>
+  </div>
+
+  <div class="page" id="pageDash">
+    <div class="header">
+      <div class="header-row">
+        <button class="burger" onclick="openDrawer()">
+          <div class="burger-line"></div><div class="burger-line"></div><div class="burger-line"></div>
+        </button>
+        <div class="header-title">
+          <div class="logo" id="headerTitle">🏡 <span>Tikinti</span></div>
+          <div class="logo-sub" id="headerSub"></div>
+        </div>
+        <div style="display:flex;gap:7px;flex-shrink:0">
+          <button class="btn btn-icon" id="btnAdd" style="font-size:22px;color:var(--gold)">＋</button>
+        </div>
+      </div>
+    </div>
+    <div class="content" id="dashContent"></div>
+  </div>
+
+  <div class="page page-hidden-right" id="pageDetail">
+    <div class="detail-hero" id="detailHero"></div>
+    <div class="content" id="detailContent"></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// DOM refs
+const drawerEl = document.getElementById('drawer');
+const backdropEl = document.getElementById('drawerBackdrop');
+
+// ══════════════════════════
+//  I18N
+// ══════════════════════════
+const LANGS = {
+  az: {
+    appName:'Tikinti',
+    myObjects:'Mənim obyektlərim',
+    objects:'OBYEKTLƏRİM',
+    langLabel:'DİL',
+    newObject:'＋ Yeni obyekt',
+    pdfExport:'📄 PDF export',
+    dataStored:'💾 Məlumatlar bu cihazda saxlanılır',
+    totalBudget:'Ümumi büdcə',
+    budgetNotSet:'Büdcə təyin edilməyib',
+    budgetOver:'⚠️ Smeta büdcəni keçir',
+    budgetLeft:'Qalıq',
+    setBudget:'Büdcəni menyudan təyin edin ☰',
+    smeta:'Smeta (plan)',
+    fact:'Xərcləndi (fakt)',
+    done:'Tamamlandı',
+    stages:'TİKİNTİ MƏRHƏLƏLƏRİ',
+    positions:'mövqe',
+    factLabel:'fakt',
+    smetaLabel:'Smeta',
+    factShort:'Fakt',
+    remainder:'Qalıq',
+    budget:'Büdcə',
+    addStage:'Yeni mərhələ',
+    editStage:'Mərhələni redaktə et',
+    stageName:'Ad',
+    stageNamePh:'Məs: Fasad',
+    stageIcon:'İkon',
+    stageColor:'Rəng',
+    stageHint:'💡 Mərhələ büdcəsi mövqelərin cəmindən avtomatik hesablanır.',
+    save:'Saxla',
+    cancel:'Ləğv et',
+    create:'Yarat',
+    delete:'Sil',
+    deleteStage:'Mərhələni sil',
+    deleteStageConfirm:'Mərhələ və bütün mövqelər silinəcək.',
+    addPosition:'Mövqe əlavə et',
+    posName:'İş / material adı',
+    posNamePh:'Məs: Beton',
+    qty:'Miqdar',
+    price:'Qiymət',
+    note:'Qeyd (ixtiyari)',
+    notePh:'Əlavə məlumat...',
+    totalDone:'Cəmi tamamlandı',
+    outOf:'dan',
+    filterAll:'Hamısı',
+    filterDone:'Tamamlandı',
+    filterPlan:'Plan',
+    editPos:'Mövqeni redaktə et',
+    deletePos:'Mövqe silindi',
+    posAdded:'Mövqe əlavə edildi',
+    stageAdded:'Mərhələ əlavə edildi',
+    stageUpdated:'Mərhələ yeniləndi',
+    stageDeleted:'Mərhələ silindi',
+    objCreated:'Obyekt yaradıldı',
+    objUpdated:'Yeniləndi',
+    objDeleted:'Obyekt silindi',
+    budgetUpdated:'Büdcə yeniləndi',
+    enterName:'Ad daxil edin',
+    enterBudget:'Büdcə daxil edin',
+    pdfOpening:'PDF açılır...',
+    cantDeleteLast:'Son obyekti silmək olmaz',
+    newObj:'Yeni obyekt',
+    editObj:'Obyekti redaktə et',
+    objName:'Ad',
+    objNamePh:'Məs: Bağ evi, Qaraj...',
+    objBudget:'Ümumi büdcə (₼)',
+    objIcon:'İkon',
+    deleteObj:'Obyekti sil',
+    deleteObjConfirm:'Bütün məlumatlar silinəcək.',
+    reportTitle:'Tikinti büdcəsi hesabatı',
+    reportDate:'Tarix',
+    backBtn:'Geri',
+    shareOfSmeta:'smeta payı',
+    pctDone:'tamamlandı',
+    stagesTitle:'Tikinti mərhələləri',
+    noStages:'Mərhələ yoxdur. ＋ düyməsinə basın',
+    install:'Əsas ekrana əlavə et',
+    installHint:'Safari → Paylaş → "Ana Ekrana Əlavə Et"',
+    installBtn:'Quraşdır',
+    importJson:'JSON idxal',
+    importSuccess:'Məlumatlar idxal edildi',
+    importError:'Yanlış fayl formatı',
+    statusIdle:'Başlanmayıb',
+    statusActive:'Davam edir',
+    statusDone:'Tamamlandı',
+    contractor:'Podratçı',
+    contractorPh:'Məs: Bəhruz, "Tikinti MMC"',
+    startDate:'Başlama tarixi',
+    endDate:'Bitmə tarixi',
+    sortStages:'Sıralama',
+  },
+  ru: {
+    appName:'Tikinti',
+    myObjects:'Мои объекты',
+    objects:'МОИ ОБЪЕКТЫ',
+    langLabel:'ЯЗЫК',
+    newObject:'＋ Новый объект',
+    pdfExport:'📄 Экспорт PDF',
+    dataStored:'💾 Данные хранятся на этом устройстве',
+    totalBudget:'Общий бюджет объекта',
+    budgetNotSet:'Не задан',
+    budgetOver:'⚠️ Смета превышает бюджет',
+    budgetLeft:'Остаток',
+    setBudget:'Задайте бюджет в меню ☰',
+    smeta:'Смета (план)',
+    fact:'Потрачено (факт)',
+    done:'Выполнено',
+    stages:'ЭТАПЫ СТРОИТЕЛЬСТВА',
+    positions:'позиций',
+    factLabel:'факт',
+    smetaLabel:'Смета',
+    factShort:'Факт',
+    remainder:'Остаток',
+    budget:'Бюджет',
+    addStage:'Новый этап',
+    editStage:'Редактировать этап',
+    stageName:'Название',
+    stageNamePh:'Например: Фасад',
+    stageIcon:'Иконка',
+    stageColor:'Цвет',
+    stageHint:'💡 Бюджет этапа считается автоматически из позиций.',
+    save:'Сохранить',
+    cancel:'Отмена',
+    create:'Создать',
+    delete:'Удалить',
+    deleteStage:'Удалить этап',
+    deleteStageConfirm:'Этап и все позиции будут удалены навсегда.',
+    addPosition:'Добавить позицию',
+    posName:'Название работы / материала',
+    posNamePh:'Например: Бетон',
+    qty:'Количество',
+    price:'Цена',
+    note:'Заметка (необязательно)',
+    notePh:'Дополнительная информация...',
+    totalDone:'Итого выполнено',
+    outOf:'из',
+    filterAll:'Все',
+    filterDone:'Выполнено',
+    filterPlan:'План',
+    editPos:'Редактировать позицию',
+    deletePos:'Позиция удалена',
+    posAdded:'Позиция добавлена',
+    stageAdded:'Этап добавлен',
+    stageUpdated:'Этап обновлён',
+    stageDeleted:'Этап удалён',
+    objCreated:'Объект создан',
+    objUpdated:'Сохранено',
+    objDeleted:'Объект удалён',
+    budgetUpdated:'Бюджет обновлён',
+    enterName:'Введите название',
+    enterBudget:'Введите бюджет',
+    pdfOpening:'Открываю PDF...',
+    cantDeleteLast:'Нельзя удалить единственный объект',
+    newObj:'Новый объект',
+    editObj:'Редактировать объект',
+    objName:'Название',
+    objNamePh:'Дача, Гараж, Квартира...',
+    objBudget:'Общий бюджет (₼)',
+    objIcon:'Иконка',
+    deleteObj:'Удалить объект',
+    deleteObjConfirm:'Все данные будут удалены навсегда.',
+    reportTitle:'Отчёт о бюджете строительства',
+    reportDate:'Дата',
+    backBtn:'Назад',
+    shareOfSmeta:'доля в смете',
+    pctDone:'выполнено',
+    stagesTitle:'Этапы строительства',
+    noStages:'Нет этапов. Нажмите + чтобы добавить',
+    install:'Установить на рабочий стол',
+    installHint:'Safari → Поделиться → «На экран "Домой"»',
+    installBtn:'Установить',
+    importJson:'Импорт JSON',
+    importSuccess:'Данные импортированы',
+    importError:'Неверный формат файла',
+    statusIdle:'Не начат',
+    statusActive:'В процессе',
+    statusDone:'Завершён',
+    contractor:'Подрядчик',
+    contractorPh:'Напр: Иван, "СтройГрупп"',
+    startDate:'Дата начала',
+    endDate:'Дата окончания',
+    sortStages:'Порядок',
+  },
+  en: {
+    appName:'Tikinti',
+    myObjects:'My projects',
+    objects:'MY PROJECTS',
+    langLabel:'LANGUAGE',
+    newObject:'＋ New project',
+    pdfExport:'📄 Export PDF',
+    dataStored:'💾 Data stored on this device',
+    totalBudget:'Total budget',
+    budgetNotSet:'Not set',
+    budgetOver:'⚠️ Estimate exceeds budget',
+    budgetLeft:'Remaining',
+    setBudget:'Set budget in menu ☰',
+    smeta:'Estimate (plan)',
+    fact:'Spent (actual)',
+    done:'Completed',
+    stages:'CONSTRUCTION STAGES',
+    positions:'items',
+    factLabel:'actual',
+    smetaLabel:'Estimate',
+    factShort:'Actual',
+    remainder:'Left',
+    budget:'Budget',
+    addStage:'New stage',
+    editStage:'Edit stage',
+    stageName:'Name',
+    stageNamePh:'E.g.: Facade',
+    stageIcon:'Icon',
+    stageColor:'Color',
+    stageHint:'💡 Stage budget is calculated automatically from items.',
+    save:'Save',
+    cancel:'Cancel',
+    create:'Create',
+    delete:'Delete',
+    deleteStage:'Delete stage',
+    deleteStageConfirm:'Stage and all items will be permanently deleted.',
+    addPosition:'Add item',
+    posName:'Work / material name',
+    posNamePh:'E.g.: Concrete',
+    qty:'Quantity',
+    price:'Price',
+    note:'Note (optional)',
+    notePh:'Additional info...',
+    totalDone:'Total completed',
+    outOf:'of',
+    filterAll:'All',
+    filterDone:'Done',
+    filterPlan:'Planned',
+    editPos:'Edit item',
+    deletePos:'Item deleted',
+    posAdded:'Item added',
+    stageAdded:'Stage added',
+    stageUpdated:'Stage updated',
+    stageDeleted:'Stage deleted',
+    objCreated:'Project created',
+    objUpdated:'Saved',
+    objDeleted:'Project deleted',
+    budgetUpdated:'Budget updated',
+    enterName:'Enter name',
+    enterBudget:'Enter budget',
+    pdfOpening:'Opening PDF...',
+    cantDeleteLast:'Cannot delete the only project',
+    newObj:'New project',
+    editObj:'Edit project',
+    objName:'Name',
+    objNamePh:'Cottage, Garage, Apartment...',
+    objBudget:'Total budget (₼)',
+    objIcon:'Icon',
+    deleteObj:'Delete project',
+    deleteObjConfirm:'All data will be permanently deleted.',
+    reportTitle:'Construction budget report',
+    reportDate:'Date',
+    backBtn:'Back',
+    shareOfSmeta:'share of estimate',
+    pctDone:'completed',
+    stagesTitle:'Construction stages',
+    noStages:'No stages. Tap + to add',
+    install:'Add to home screen',
+    installHint:'Safari → Share → "Add to Home Screen"',
+    installBtn:'Install',
+    importJson:'Import JSON',
+    importSuccess:'Data imported',
+    importError:'Invalid file format',
+    statusIdle:'Not started',
+    statusActive:'In progress',
+    statusDone:'Completed',
+    contractor:'Contractor',
+    contractorPh:'E.g.: John, "BuildCo"',
+    startDate:'Start date',
+    endDate:'End date',
+    sortStages:'Order',
+  }
+};
+
+let lang = localStorage.getItem('isapp_lang') || 'ru';
+const t = k => LANGS[lang][k] || LANGS['ru'][k] || k;
+
+function setLang(l) {
+  lang = l;
+  localStorage.setItem('isapp_lang', l);
+  ['langAZ','langRU','langEN'].forEach(id => {
+    document.getElementById(id)?.classList.toggle('active', id === 'lang'+l.toUpperCase());
+  });
+  updateDrawerLabels();
+  renderDash();
+  if(!document.getElementById('pageDetail').classList.contains('page-hidden-right')) renderDetail();
+}
+
+function updateDrawerLabels() {
+  document.getElementById('drawerSub').textContent = t('myObjects');
+  const importLbl=document.getElementById('importBtnLabel');
+  if(importLbl) importLbl.textContent = t('importJson');
+  document.getElementById('dlObjects').textContent = t('objects');
+  document.getElementById('drawerBtnAdd').innerHTML = t('newObject');
+  document.getElementById('drawerFooterText').textContent = t('dataStored');
+  ['langAZ','langRU','langEN'].forEach(id => {
+    document.getElementById(id)?.classList.toggle('active', id === 'lang'+lang.toUpperCase());
+  });
+}
+
+// ══════════════════════════
+//  FORMAT
+// ══════════════════════════
+const fmt = n => {
+  try{ return new Intl.NumberFormat('az-AZ',{style:'currency',currency:'AZN',maximumFractionDigits:0}).format(n); }
+  catch{ return Math.round(n).toLocaleString()+' ₼'; }
+};
+const fmtShort = n => {
+  const abs=Math.abs(n),s=n<0?'−':'';
+  if(abs>=1e6) return s+(abs/1e6).toFixed(1).replace('.0','')+' млн ₼';
+  return fmt(n);
+};
+
+// ══════════════════════════
+//  DATA
+// ══════════════════════════
+const STORE_KEY='isapp_v8';
+
+const DEFAULT_OBJECT={
+  id:1, name_ru:'Мой дом', name_az:'Mənim evim', name_en:'My House',
+  icon:'🏠', totalBudget:180000,
+  stages:[
+    {id:1,name_ru:'Фундамент',name_az:'Təməl',name_en:'Foundation',icon:'⬛',color:'#C9AA7C',status:'idle',items:[
+      {id:1,name_ru:'Земляные работы',name_az:'Torpaq işləri',name_en:'Earthwork',qty:1,price:3500,done:false,note:''},
+      {id:2,name_ru:'Арматура и опалубка',name_az:'Armatur və qəlib',name_en:'Rebar & formwork',qty:1,price:5200,done:false,note:''},
+      {id:3,name_ru:'Бетон',name_az:'Beton',name_en:'Concrete',qty:1,price:3400,done:false,note:''},
+      {id:4,name_ru:'Гидроизоляция',name_az:'Hidroizolyasiya',name_en:'Waterproofing',qty:1,price:2800,done:false,note:''}
+    ]},
+    {id:2,name_ru:'Коробка дома',name_az:'Ev gövdəsi',name_en:'Structure',icon:'🏗',color:'#7BB8CC',status:'idle',items:[
+      {id:1,name_ru:'Кладка стен (1 этаж)',name_az:'Kərpic hörgüsü (1-ci mərtəbə)',name_en:'Brickwork (1st floor)',qty:1,price:12000,done:false,note:''},
+      {id:2,name_ru:'Перекрытие',name_az:'Tavan örtüyü',name_en:'Floor slab',qty:1,price:8500,done:false,note:''},
+      {id:3,name_ru:'Кладка стен (2 этаж)',name_az:'Kərpic hörgüsü (2-ci mərtəbə)',name_en:'Brickwork (2nd floor)',qty:1,price:11000,done:false,note:''},
+      {id:4,name_ru:'Фронтоны',name_az:'Frontonlar',name_en:'Gables',qty:1,price:3200,done:false,note:''},
+      {id:5,name_ru:'Стропила',name_az:'Mərtek konstruksiyası',name_en:'Rafters',qty:1,price:7500,done:false,note:''}
+    ]},
+    {id:3,name_ru:'Кровля',name_az:'Dam örtüyü',name_en:'Roofing',icon:'🏠',color:'#CC7B7B',status:'idle',items:[
+      {id:1,name_ru:'Утеплитель',name_az:'İstilik izolyasiyası',name_en:'Insulation',qty:1,price:1440,done:false,note:''},
+      {id:2,name_ru:'Кровельный материал',name_az:'Dam örtüyü materialı',name_en:'Roofing material',qty:1,price:9500,done:false,note:''},
+      {id:3,name_ru:'Водосточная система',name_az:'Yağış suyu sistemi',name_en:'Drainage system',qty:1,price:2400,done:false,note:''}
+    ]},
+    {id:4,name_ru:'Окна и двери',name_az:'Qapı və pəncərələr',name_en:'Windows & Doors',icon:'🪟',color:'#9E8ED4',status:'idle',items:[
+      {id:1,name_ru:'Окна ПВХ',name_az:'PVC pəncərələr',name_en:'PVC windows',qty:1,price:7600,done:false,note:''},
+      {id:2,name_ru:'Входная дверь',name_az:'Giriş qapısı',name_en:'Front door',qty:1,price:2200,done:false,note:''},
+      {id:3,name_ru:'Межкомнатные двери',name_az:'Otaq qapıları',name_en:'Interior doors',qty:1,price:2880,done:false,note:''},
+      {id:4,name_ru:'Монтаж',name_az:'Quraşdırma',name_en:'Installation',qty:1,price:1200,done:false,note:''}
+    ]},
+    {id:5,name_ru:'Инженерия',name_az:'Mühəndislik',name_en:'Engineering',icon:'⚙️',color:'#80C89A',status:'idle',items:[
+      {id:1,name_ru:'Электрика',name_az:'Elektrik',name_en:'Electrical',qty:1,price:8500,done:false,note:''},
+      {id:2,name_ru:'Водоснабжение',name_az:'Su təchizatı',name_en:'Water supply',qty:1,price:5200,done:false,note:''},
+      {id:3,name_ru:'Канализация',name_az:'Kanalizasiya',name_en:'Sewage',qty:1,price:3800,done:false,note:''},
+      {id:4,name_ru:'Отопление',name_az:'İstilik sistemi',name_en:'Heating',qty:1,price:9500,done:false,note:''}
+    ]},
+    {id:6,name_ru:'Отделка',name_az:'Bitirmə işləri',name_en:'Finishing',icon:'🎨',color:'#C8C07E',status:'idle',items:[
+      {id:1,name_ru:'Стяжка полов',name_az:'Döşəmə stяжkası',name_en:'Floor screed',qty:1,price:2160,done:false,note:''},
+      {id:2,name_ru:'Штукатурка стен',name_az:'Divar suvağı',name_en:'Wall plaster',qty:1,price:7200,done:false,note:''},
+      {id:3,name_ru:'Плитка',name_az:'Kafel',name_en:'Tiles',qty:1,price:1575,done:false,note:''},
+      {id:4,name_ru:'Покраска',name_az:'Rəngkarlıq',name_en:'Painting',qty:1,price:4800,done:false,note:''},
+      {id:5,name_ru:'Ламинат / паркет',name_az:'Laminat / parket',name_en:'Laminate / parquet',qty:1,price:2240,done:false,note:''}
+    ]}
+  ]
+};
+
+// Get translated name for stage/item (falls back to name if no translation)
+function tName(obj){
+  if(!obj) return '';
+  const key = 'name_' + lang;
+  return obj[key] || obj.name_ru || obj.name || '';
+}
+
+function loadDB(){
+  try{
+    const d=JSON.parse(localStorage.getItem(STORE_KEY));
+    if(d&&d.objects) return d;
+  }catch{}
+  return{objects:[JSON.parse(JSON.stringify(DEFAULT_OBJECT))],activeObjectId:1};
+}
+function saveDB(){localStorage.setItem(STORE_KEY,JSON.stringify(db));}
+
+let db=loadDB();
+let activeStageId=null;
+let detailFilter='all'; // all | done | plan
+
+const curObj=()=>db.objects.find(o=>o.id===db.activeObjectId)||db.objects[0];
+const stages=()=>curObj().stages;
+const itemTotal = i => (i.qty||1)*(i.price||i.cost||0);
+const stageSmeta  = s => s.items.reduce((a,i)=>a+itemTotal(i),0);
+const stageFact   = s => s.items.filter(i=>i.done).reduce((a,i)=>a+itemTotal(i),0);
+const totalSmeta  = () => stages().reduce((a,s)=>a+stageSmeta(s),0);
+const totalFact   = () => stages().reduce((a,s)=>a+stageFact(s),0);
+const totalBudget = () => curObj().totalBudget||0;
+const newId=()=>Date.now()+Math.floor(Math.random()*999);
+
+const OBJ_ICONS=['🏠','🏡','🏗','🏢','🏬','🏭','🌳','🌿','🏊','🔑','⬛','🧱'];
+const ICONS=['🏠','🏗','⬛','🪟','⚙️','🎨','🌿','🧱','🔧','💡','🚿','🛠','🏡','🌲','🪣','🔑','🏊','🌳'];
+const COLORS=['#C9AA7C','#7BB8CC','#CC7B7B','#9E8ED4','#80C89A','#C8C07E','#CC9B7B','#7BC4CC','#B87BB8','#7BA8CC'];
+
+function showToast(msg,type='ok'){
+  const el=document.getElementById('toast');
+  el.textContent=(type==='ok'?'✓ ':type==='err'?'✕ ':'')+msg;
+  el.className='toast show';clearTimeout(el._to);
+  el._to=setTimeout(()=>{el.className='toast'},2400);
+}
+
+// ══════════════════════════
+//  DRAWER
+// ══════════════════════════
+function openDrawer(){
+  document.getElementById('drawer').classList.add('open');
+  document.getElementById('drawerBackdrop').classList.add('open');
+  updateDrawerLabels();
+  renderDrawer();
+}
+function closeDrawer(){
+  document.getElementById('drawer').classList.remove('open');
+  document.getElementById('drawerBackdrop').classList.remove('open');
+}
+function renderDrawer(){
+  document.getElementById('drawerObjects').innerHTML=db.objects.map(o=>{
+    const smeta=o.stages.reduce((a,s)=>a+s.items.reduce((b,i)=>b+itemTotal(i),0),0);
+    const fact=o.stages.reduce((a,s)=>a+s.items.filter(i=>i.done).reduce((b,i)=>b+itemTotal(i),0),0);
+    const pct=smeta>0?Math.round(fact/smeta*100):0;
+    const isActive=o.id===db.activeObjectId;
+    return `<div class="obj-item ${isActive?'active':''}" onclick="switchObject(${o.id})">
+      <div class="obj-icon">${o.icon}</div>
+      <div class="obj-info">
+        <div class="obj-name">${tName(o)||o.name}</div>
+        <div class="obj-meta">${o.stages.length} • ${pct}%</div>
+      </div>
+      ${isActive?'<div class="obj-active-dot"></div>':''}
+      <button onclick="event.stopPropagation();editObjectPrompt(${o.id})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:15px;padding:4px;flex-shrink:0">✏️</button>
+    </div>`;
+  }).join('');
+}
+function switchObject(id){
+  db.activeObjectId=id;activeStageId=null;saveDB();closeDrawer();
+  document.getElementById('pageDash').classList.remove('page-hidden-left');
+  document.getElementById('pageDetail').classList.add('page-hidden-right');
+  renderDash();showToast(curObj().name);
+}
+function addObjectPrompt(){
+  closeDrawer();window._objfd={name:'',icon:'🏠',budget:''};
+  showModal(`<div class="modal-handle"></div>
+    <div class="modal-title">${t('newObj')}</div>
+    <div class="form-group"><label class="form-label">${t('objName')}</label>
+      <input type="text" id="oName" placeholder="${t('objNamePh')}"/></div>
+    <div class="form-group"><label class="form-label">${t('objBudget')}</label>
+      <input type="number" id="oBudget" placeholder="200000"/></div>
+    <div class="form-group"><label class="form-label">${t('objIcon')}</label>
+      <div class="icon-grid">${OBJ_ICONS.map(ic=>`<div class="icon-opt ${ic==='🏠'?'sel':''}" onclick="selObjIcon('${ic}')">${ic}</div>`).join('')}</div></div>
+    <div style="display:flex;gap:10px;margin-top:4px">
+      <button class="btn btn-secondary" onclick="closeModal()">${t('cancel')}</button>
+      <button class="btn btn-primary" onclick="createObject()">${t('create')}</button>
+    </div>`);
+}
+function editObjectPrompt(id){
+  closeDrawer();const o=db.objects.find(x=>x.id===id);if(!o)return;
+  window._objfd={id,name:o.name,icon:o.icon,budget:o.totalBudget||''};
+  showModal(`<div class="modal-handle"></div>
+    <div class="modal-title">${t('editObj')}</div>
+    <div class="form-group"><label class="form-label">${t('objName')}</label>
+      <input type="text" id="oName" value="${o.name}"/></div>
+    <div class="form-group"><label class="form-label">${t('objBudget')}</label>
+      <input type="number" id="oBudget" value="${o.totalBudget||''}"/></div>
+    <div class="form-group"><label class="form-label">${t('objIcon')}</label>
+      <div class="icon-grid">${OBJ_ICONS.map(ic=>`<div class="icon-opt ${ic===o.icon?'sel':''}" onclick="selObjIcon('${ic}')">${ic}</div>`).join('')}</div></div>
+    <div style="display:flex;gap:10px;margin-top:4px">
+      <button class="btn btn-secondary" onclick="closeModal()">${t('cancel')}</button>
+      <button class="btn btn-danger btn-sm" onclick="deleteObjectConfirm(${id})">${t('delete')}</button>
+      <button class="btn btn-primary" style="flex:1" onclick="saveObject()">${t('save')}</button>
+    </div>`);
+}
+function selObjIcon(ic){window._objfd.icon=ic;document.querySelectorAll('.icon-opt').forEach(el=>el.classList.toggle('sel',el.textContent===ic));}
+function createObject(){
+  const name=document.getElementById('oName')?.value.trim();
+  const budget=parseInt(document.getElementById('oBudget')?.value)||0;
+  if(!name){showToast(t('enterName'),'err');return;}
+  const id=newId();
+  db.objects.push({id,name,name_ru:name,name_az:name,name_en:name,icon:window._objfd.icon||'🏠',totalBudget:budget,stages:[]});
+  db.activeObjectId=id;activeStageId=null;
+  saveDB();closeModal();renderDash();showToast(t('objCreated'));
+}
+function saveObject(){
+  const name=document.getElementById('oName')?.value.trim();
+  const budget=parseInt(document.getElementById('oBudget')?.value)||0;
+  if(!name){showToast(t('enterName'),'err');return;}
+  const id=window._objfd.id;
+  db.objects=db.objects.map(o=>o.id===id?{...o,name,name_ru:name,name_az:name,name_en:name,icon:window._objfd.icon||o.icon,totalBudget:budget}:o);
+  saveDB();closeModal();renderDash();showToast(t('objUpdated'));
+}
+function deleteObjectConfirm(id){
+  if(db.objects.length<=1){showToast(t('cantDeleteLast'),'err');return;}
+  const o=db.objects.find(x=>x.id===id);closeModal();
+  showModal(`<div class="modal-handle"></div>
+    <div class="modal-title">${t('deleteObj')} «${o.name}»?</div>
+    <p style="color:var(--text2);font-size:14px;margin-bottom:20px">${t('deleteObjConfirm')}</p>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-secondary" onclick="closeModal()">${t('cancel')}</button>
+      <button class="btn btn-danger" style="flex:1" onclick="deleteObject(${id})">${t('delete')}</button>
+    </div>`);
+}
+function deleteObject(id){
+  db.objects=db.objects.filter(o=>o.id!==id);
+  if(db.activeObjectId===id)db.activeObjectId=db.objects[0].id;
+  activeStageId=null;saveDB();closeModal();renderDash();showToast(t('objDeleted'));
+}
+
+// ══════════════════════════
+//  NAVIGATION
+// ══════════════════════════
+function goDetail(id){
+  activeStageId=id;detailFilter='all';renderDetail();
+  document.getElementById('pageDetail').classList.remove('page-hidden-right');
+  document.getElementById('pageDash').classList.add('page-hidden-left');
+  document.getElementById('pageDetail').scrollTop=0;
+}
+function goBack(){
+  document.getElementById('pageDash').classList.remove('page-hidden-left');
+  document.getElementById('pageDetail').classList.add('page-hidden-right');
+  renderDash();
+}
+// Swipe back on detail page
+let txS=0,tyS=0,swD=null;
+document.getElementById('pageDetail').addEventListener('touchstart',e=>{txS=e.touches[0].clientX;tyS=e.touches[0].clientY;swD=null;},{passive:true});
+document.getElementById('pageDetail').addEventListener('touchmove',e=>{
+  const dx=e.touches[0].clientX-txS,dy=e.touches[0].clientY-tyS;
+  if(!swD)swD=Math.abs(dx)>Math.abs(dy)?'h':'v';
+  if(swD==='h'&&dx>0)document.getElementById('pageDetail').style.transform=`translateX(${Math.max(0,dx)}px)`;
+},{passive:true});
+document.getElementById('pageDetail').addEventListener('touchend',e=>{
+  const dx=e.changedTouches[0].clientX-txS;
+  document.getElementById('pageDetail').style.transform='';
+  if(swD==='h'&&dx>80)goBack();
+},{passive:true});
+
+// Swipe left on drawer → close it
+let drTxStart=0,drTyStart=0,drSwDir=null,drSwiping=false;
+drawerEl.addEventListener('touchstart',e=>{
+  drTxStart=e.touches[0].clientX;
+  drTyStart=e.touches[0].clientY;
+  drSwDir=null; drSwiping=false;
+},{passive:true});
+drawerEl.addEventListener('touchmove',e=>{
+  const dx=e.touches[0].clientX-drTxStart;
+  const dy=e.touches[0].clientY-drTyStart;
+  if(!drSwDir) drSwDir=Math.abs(dx)>Math.abs(dy)?'h':'v';
+  if(drSwDir==='h'&&dx<0){
+    drSwiping=true;
+    const offset=Math.max(0,285+dx);
+    drawerEl.style.transition='none';
+    drawerEl.style.transform=`translateX(calc(-100% + ${offset}px))`;
+    backdropEl.style.transition='none';
+    backdropEl.style.background=`rgba(0,0,0,${Math.min(offset/285*0.6,0.6)})`;
+  }
+},{passive:true});
+drawerEl.addEventListener('touchend',e=>{
+  if(!drSwiping) return;
+  const dx=e.changedTouches[0].clientX-drTxStart;
+  drawerEl.style.transition='';
+  backdropEl.style.transition='';
+  if(dx<-80){
+    drawerEl.style.transform='';
+    closeDrawer();
+  } else {
+    drawerEl.style.transform='';
+    backdropEl.style.background='';
+  }
+  drSwiping=false;
+},{passive:true});
+
+// ══════════════════════════
+//  RING SVG
+// ══════════════════════════
+function ringHTML(pct,color,size){
+  const r=(size-7)/2,circ=2*Math.PI*r,dash=Math.min(pct,100)/100*circ;
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+    <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="4"/>
+    <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${color}" stroke-width="4"
+      stroke-dasharray="${dash} ${circ-dash}" stroke-dashoffset="${circ/4}" stroke-linecap="round"/>
+    <text x="${size/2}" y="${size/2+4}" text-anchor="middle" fill="white" font-size="10" font-family="monospace" font-weight="600">${Math.round(Math.min(pct,100))}%</text>
+  </svg>`;
+}
+
+// ══════════════════════════
+//  DASHBOARD
+// ══════════════════════════
+function renderDash(){
+  const obj=curObj();
+  const st=[...stages()].sort((a,b)=>{
+    const o={idle:0,active:1,done:2};
+    return (o[a.status||'idle']||0)-(o[b.status||'idle']||0);
+  });
+  const tb=totalBudget(), ts=totalSmeta(), tf=totalFact();
+  const rem=tb-ts, isOver=ts>tb&&tb>0;
+  const factOfSmeta=ts>0?Math.min(tf/ts*100,100):0;
+  const smetaPct=tb>0?Math.min(ts/tb*100,100):0;
+
+  document.getElementById('headerTitle').innerHTML=`${obj.icon} <span style="color:var(--gold)">${tName(obj)||obj.name}</span>`;
+  document.getElementById('headerSub').textContent=`${st.length} ${lang==='en'?'stages':lang==='az'?'mərhələ':'этапов'}`;
+
+  const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isStandalone=window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone;
+  const showInstall=(!!window._installPrompt||isIOS)&&!isStandalone;
+
+  document.getElementById('dashContent').innerHTML=`
+    ${showInstall?`<div class="install-banner"><div style="font-size:26px">📲</div>
+      <div class="install-banner-text"><strong>${t('install')}</strong>
+        ${isIOS?t('installHint'):`<button class="btn btn-sm" style="background:rgba(201,170,124,.2);color:#C9AA7C;border:1px solid rgba(201,170,124,.3);margin-top:6px" onclick="installApp()">${t('installBtn')}</button>`}
+      </div></div>`:''}
+
+    <div class="budget-banner" style="animation-delay:.04s">
+      <div class="bb-label">${t('totalBudget')}</div>
+      <div class="bb-val">${tb>0?fmtShort(tb):t('budgetNotSet')}</div>
+      <div class="bb-sub" style="margin-bottom:14px">${tb>0?(isOver?`<span style="color:var(--red)">${t('budgetOver')} +${fmtShort(ts-tb)}</span>`:`${t('budgetLeft')}: ${fmtShort(rem)}`):t('setBudget')}</div>
+      <div class="bb-label">${t('smeta')}</div>
+      <div style="font-family:'DM Mono',monospace;font-size:20px;font-weight:700;color:var(--text);margin-bottom:12px">${fmtShort(ts)}</div>
+      <div class="bb-label">${t('fact')}</div>
+      <div style="font-family:'DM Mono',monospace;font-size:20px;font-weight:700;color:var(--green);margin-bottom:12px">${fmtShort(tf)}</div>
+      <div style="height:6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden;position:relative;margin-bottom:6px">
+        <div style="position:absolute;inset:0;background:rgba(201,170,124,.3);border-radius:3px"></div>
+        <div style="position:absolute;top:0;left:0;height:100%;width:${ts>0?Math.min(tf/ts*100,100):0}%;background:var(--green);border-radius:3px;transition:width .7s ease"></div>
+      </div>
+      <div style="font-size:11px;color:var(--text3)">${Math.round(factOfSmeta)}% ${t('pctDone')}</div>
+    </div>
+
+    <div class="section-divider"></div>
+    <div class="section-title">${t('stages')}</div>
+
+    ${st.map((s,i)=>{
+      const smeta=stageSmeta(s),fact=stageFact(s);
+      const fp=smeta>0?Math.min(fact/smeta*100,100):0;
+      const done=s.items.filter(i=>i.done).length;
+      const over=fact>smeta&&smeta>0;
+      if(s.status==='done') return `<div class="stage-card-collapsed" style="animation-delay:${.12+i*.07}s;border-left:3px solid ${s.color}" onclick="goDetail(${s.id})">
+        <div class="scc-check"><svg width="10" height="10" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" fill="none" stroke="#80C89A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="scc-icon">${s.icon}</div>
+        <div class="scc-name">${tName(s)}</div>
+        <div class="scc-sum">${fmtShort(fact)}</div>
+        <div style="font-size:11px;color:var(--green);margin-left:2px">✓</div>
+      </div>`;
+
+      return `<div class="stage-card" style="animation-delay:${.12+i*.07}s" onclick="goDetail(${s.id})">
+        <div class="stage-card-accent" style="background:linear-gradient(90deg,${s.color},transparent)"></div>
+        <div class="stage-card-body">
+
+          <div class="stage-card-icon">${s.icon}</div>
+          <div class="stage-card-info">
+            <div class="stage-card-name">${tName(s)}</div>
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:${s.contractor||s.startDate||s.endDate?'3':'0'}px">
+              <div class="stage-card-meta">${s.items.length>0?`${done}/${s.items.length}`:''}</div>
+              ${s.items.length>0?`<div style="flex:1;height:3px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden;max-width:60px">
+                <div style="height:100%;width:${s.items.length>0?Math.round(done/s.items.length*100):0}%;background:${s.color};border-radius:2px"></div>
+              </div>`:''}
+            </div>
+            ${s.contractor?`<div style="font-size:11px;color:var(--text2);margin-top:4px">👤 ${s.contractor}</div>`:''}
+            ${(s.startDate||s.endDate)?`<div style="font-size:11px;color:var(--text2);margin-top:2px">📅 ${s.startDate||'?'}${s.endDate?' → '+s.endDate:''}</div>`:''}
+          </div>
+          <div>${ringHTML(fp,s.color,54)}</div>
+        </div>
+        <div class="stage-card-bar-track">
+          <div class="scb-smeta" style="width:100%;background:${s.color}"></div>
+          <div class="scb-fact" style="width:${fp}%;background:${s.color}"></div>
+        </div>
+        <div class="stage-card-stats">
+          <div class="scs-item"><div class="scs-label">${t('smetaLabel')}</div><div class="scs-val c-gold">${fmtShort(smeta)}</div></div>
+          <div class="scs-item"><div class="scs-label">${t('factShort')}</div><div class="scs-val c-green">${fmtShort(fact)}</div></div>
+          <div class="scs-item"><div class="scs-label">${t('remainder')}</div><div class="scs-val ${over?'c-red':'c-blue'}">${fmtShort(smeta-fact)}</div></div>
+        </div>
+      </div>`;
+    }).join('')}
+    ${st.length===0?`<div class="empty"><div style="font-size:48px;opacity:.3;margin-bottom:12px">🏗</div><div style="font-size:14px">${t('noStages')}</div></div>`:''}
+  `;
+}
+
+// ══════════════════════════
+//  DETAIL
+// ══════════════════════════
+function renderDetail(){
+  const s=stages().find(st=>st.id===activeStageId);if(!s)return;
+  const smeta=stageSmeta(s),fact=stageFact(s);
+  const fp=smeta>0?Math.min(fact/smeta*100,100):0;
+  const totalS=totalSmeta();
+  const shareOfSmeta=totalS>0?Math.round(smeta/totalS*100):0;
+
+  document.getElementById('detailHero').innerHTML=`
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      <button class="back-btn" onclick="goBack()">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><polyline points="11,4 6,9 11,14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        ${t('backBtn')}
+      </button>
+      <button class="btn btn-icon btn-sm" onclick="editStage(${s.id})" style="margin-left:auto">✏️</button>
+    </div>
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:28px;margin-bottom:5px">${s.icon}</div>
+        <div class="detail-hero-name">${tName(s)}</div>
+        <div class="detail-hero-sub">${fmt(fact)} ${t('factLabel')} · ${t('smetaLabel')}: ${fmt(smeta)}</div>
+      </div>
+      <div>${ringHTML(fp,s.color,64)}</div>
+    </div>
+    <div class="detail-two-bar">
+      <div class="dtb-smeta" style="width:100%;background:${s.color}"></div>
+      <div class="dtb-fact" style="width:${fp}%;background:${s.color}"></div>
+    </div>`;
+
+  const searchQ = document.getElementById('itemSearch')?.value.toLowerCase().trim()||'';
+  const filtered = s.items.filter(i => {
+    const name = (tName(i)||'').toLowerCase();
+    if(searchQ && !name.includes(searchQ)) return false;
+    if(detailFilter==='done') return i.done;
+    if(detailFilter==='plan') return !i.done;
+    return true;
+  });
+
+  document.getElementById('detailContent').innerHTML=`
+    <div class="stat-grid" style="margin-top:4px">
+      <div class="stat-box"><div class="stat-lbl">${t('smetaLabel')}</div><div class="stat-val c-gold">${fmtShort(smeta)}</div></div>
+      <div class="stat-box"><div class="stat-lbl">${t('factShort')}</div><div class="stat-val c-green">${fmtShort(fact)}</div></div>
+      <div class="stat-box"><div class="stat-lbl">${t('remainder')}</div><div class="stat-val ${smeta-fact<0?'c-red':'c-blue'}">${fmtShort(smeta-fact)}</div></div>
+      <div class="stat-box"><div class="stat-lbl">${t('shareOfSmeta')}</div><div class="stat-val">${shareOfSmeta}%</div></div>
+    </div>
+
+    <div class="search-wrap">
+      <input type="text" class="search-input" id="itemSearch" style="padding-left:12px" placeholder="${lang==='en'?'Search...':lang==='az'?'Axtar...':'Поиск...'}" oninput="renderDetail()"/>
+      <button class="search-clear" onclick="document.getElementById('itemSearch').value='';renderDetail()" style="display:${searchQ?'block':'none'}">×</button>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <div class="section-title" style="margin:0">${t('positions')}</div>
+      <div class="filter-tabs">
+        <button class="filter-tab ${detailFilter==='all'?'active':''}" onclick="setFilter('all')">${t('filterAll')}</button>
+        <button class="filter-tab ${detailFilter==='plan'?'active':''}" onclick="setFilter('plan')">${t('filterPlan')}</button>
+        <button class="filter-tab ${detailFilter==='done'?'active':''}" onclick="setFilter('done')">${t('filterDone')}</button>
+      </div>
+    </div>
+
+    <div class="items-section">
+      ${filtered.length===0?`<div class="empty" style="padding:28px 16px"><div style="font-size:28px;opacity:.3;margin-bottom:8px">📋</div></div>`:''}
+      ${filtered.map((item,i)=>`
+      <div class="item-row" style="animation-delay:${i*.04}s">
+        <div class="item-check ${item.done?'done':''}" style="${item.done?'background:'+s.color+';border-color:'+s.color:''}" onclick="toggleItem(${s.id},${item.id})">
+          ${item.done?'<svg width="12" height="12" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" fill="none" stroke="#0D0F14" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>':''}
+        </div>
+        <div onclick="editItemPrompt(${s.id},${item.id})" style="min-width:0;flex:1">
+          <div class="item-name ${item.done?'done':''}">${tName(item)}${item.qty>1?` <span style="color:var(--text3);font-size:11px">×${item.qty}</span>`:''}</div>
+          ${item.note?`<div style="font-size:11px;color:var(--text3);margin-top:1px">${item.note}</div>`:''}
+        </div>
+        <div class="item-cost" style="${item.done?'color:'+s.color:''}">${fmtShort(itemTotal(item))}</div>
+        <button class="item-del" onclick="deleteItem(${s.id},${item.id})">×</button>
+      </div>`).join('')}
+    </div>
+
+    <div class="add-form">
+      <div class="add-form-title">${t('addPosition')}</div>
+      <input type="text" id="newItemName" placeholder="${t('posNamePh')}"/>
+      <div class="qty-price-row" style="margin-top:8px">
+        <input type="number" id="newItemQty" placeholder="${t('qty')}" value="1"/>
+        <div class="qty-sep">×</div>
+        <input type="number" id="newItemPrice" placeholder="${t('price')} ₼"/>
+      </div>
+      <input type="text" id="newItemNote" placeholder="${t('notePh')}" style="margin-top:8px"/>
+      <button class="btn btn-sm" style="background:${s.color}22;color:${s.color};border:1px solid ${s.color}44;width:100%;margin-top:8px" onclick="addItem(${s.id})">＋ ${t('addPosition')}</button>
+    </div>
+    <button class="btn btn-danger btn-sm" onclick="confirmDeleteStage(${s.id})" style="width:100%;margin-top:4px">${t('deleteStage')}</button>
+    <div style="height:8px"></div>`;
+}
+
+function setFilter(f){ detailFilter=f; renderDetail(); }
+
+// ══════════════════════════
+//  STAGE ACTIONS
+// ══════════════════════════
+function updateStages(fn){
+  db.objects=db.objects.map(o=>o.id===db.activeObjectId?{...o,stages:fn(o.stages)}:o);
+  saveDB();
+}
+function toggleItem(stageId,itemId){
+  updateStages(ss=>ss.map(s=>{
+    if(s.id!==stageId)return s;
+    const items=s.items.map(i=>i.id===itemId?{...i,done:!i.done}:i);
+    const allDone=items.length>0&&items.every(i=>i.done);
+    const anyDone=items.some(i=>i.done);
+    const status=allDone?'done':anyDone?'active':'idle';
+    return{...s,items,status};
+  }));
+  renderDetail();
+  renderDash();
+}
+function deleteItem(stageId,itemId){
+  updateStages(ss=>ss.map(s=>s.id!==stageId?s:{...s,items:s.items.filter(i=>i.id!==itemId)}));
+  renderDetail();showToast(t('deletePos'));
+}
+function addItem(stageId){
+  const name=document.getElementById('newItemName')?.value.trim();
+  const qty=parseInt(document.getElementById('newItemQty')?.value)||1;
+  const price=parseFloat(document.getElementById('newItemPrice')?.value);
+  const note=document.getElementById('newItemNote')?.value.trim()||'';
+  if(!name){showToast(t('enterName'),'err');return;}
+  if(!price||price<=0){showToast(t('enterBudget'),'err');return;}
+  updateStages(ss=>ss.map(s=>s.id!==stageId?s:{...s,items:[...s.items,{id:newId(),name,qty,price,done:false,note}]}));
+  renderDetail();showToast(t('posAdded'));
+}
+
+function editItemPrompt(stageId,itemId){
+  const s=stages().find(st=>st.id===stageId);
+  const item=s?.items.find(i=>i.id===itemId);
+  if(!item)return;
+  showModal(`<div class="modal-handle"></div>
+    <div class="modal-title">${t('editPos')}</div>
+    <div class="form-group"><label class="form-label">${t('posName')}</label>
+      <input type="text" id="eiName" value="${item.name}"/></div>
+    <div class="form-group"><label class="form-label">${t('qty')} × ${t('price')}</label>
+      <div class="qty-price-row">
+        <input type="number" id="eiQty" value="${item.qty||1}"/>
+        <div class="qty-sep">×</div>
+        <input type="number" id="eiPrice" value="${item.price||item.cost||0}"/>
+      </div></div>
+    <div class="form-group"><label class="form-label">${t('note')}</label>
+      <input type="text" id="eiNote" value="${item.note||''}"/></div>
+    <div style="display:flex;gap:10px;margin-top:4px">
+      <button class="btn btn-secondary" onclick="closeModal()">${t('cancel')}</button>
+      <button class="btn btn-primary" onclick="saveItemEdit(${stageId},${itemId})">${t('save')}</button>
+    </div>`);
+}
+function saveItemEdit(stageId,itemId){
+  const name=document.getElementById('eiName')?.value.trim();
+  const qty=parseInt(document.getElementById('eiQty')?.value)||1;
+  const price=parseFloat(document.getElementById('eiPrice')?.value)||0;
+  const note=document.getElementById('eiNote')?.value.trim()||'';
+  if(!name){showToast(t('enterName'),'err');return;}
+  updateStages(ss=>ss.map(s=>s.id!==stageId?s:{...s,items:s.items.map(i=>i.id===itemId?{...i,name,qty,price,note}:i)}));
+  closeModal();renderDetail();showToast(t('objUpdated'));
+}
+
+function confirmDeleteStage(id){
+  const s=stages().find(st=>st.id===id);if(!s)return;
+  showModal(`<div class="modal-handle"></div>
+    <div class="modal-title">${t('deleteStage')} «${s.name}»?</div>
+    <p style="color:var(--text2);font-size:14px;margin-bottom:20px">${t('deleteStageConfirm')}</p>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-secondary" onclick="closeModal()">${t('cancel')}</button>
+      <button class="btn btn-danger" style="flex:1" onclick="deleteStage(${id})">${t('delete')}</button>
+    </div>`);
+}
+function deleteStage(id){
+  updateStages(ss=>ss.filter(s=>s.id!==id));
+  saveDB();closeModal();goBack();showToast(t('stageDeleted'));
+}
+function showStageModal(existing){
+  const isEdit=!!existing,data=existing||{name:'',icon:'🏠',color:'#7BB8CC'};
+  window._sfd={...data};
+  showModal(`<div class="modal-handle"></div>
+    <div class="modal-title">${isEdit?t('editStage'):t('addStage')}</div>
+    <div class="form-group"><label class="form-label">${t('stageName')}</label>
+      <input type="text" id="sName" placeholder="${t('stageNamePh')}" value="${data.name}"/></div>
+    <div class="form-group"><label class="form-label">${t('stageIcon')}</label>
+      <div class="icon-grid">${ICONS.map(ic=>`<div class="icon-opt ${ic===data.icon?'sel':''}" onclick="selIcon('${ic}')">${ic}</div>`).join('')}</div></div>
+    <div class="form-group"><label class="form-label">${t('stageColor')}</label>
+      <div class="color-grid">${COLORS.map(c=>`<div class="color-opt ${c===data.color?'sel':''}" style="background:${c}" onclick="selColor('${c}')"></div>`).join('')}</div></div>
+
+    <div class="form-group"><label class="form-label">${t('contractor')}</label>
+      <input type="text" id="sContractor" placeholder="${t('contractorPh')}" value="${data.contractor||''}"/></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
+      <div><label class="form-label">${t('startDate')}</label>
+        <div class="drum-date-display ${data.startDate?'has-value':''}" id="sStartDateDisplay" onclick="openDrumPicker('start','${data.startDate||''}')">
+          <span class="cal-icon">📅</span>${data.startDate?data.startDate.split('-').reverse().join('.'):'— — ——'}
+        </div>
+        <input type="hidden" id="sStartDate" value="${data.startDate||''}"/>
+      </div>
+      <div><label class="form-label">${t('endDate')}</label>
+        <div class="drum-date-display ${data.endDate?'has-value':''}" id="sEndDateDisplay" onclick="openDrumPicker('end','${data.endDate||''}')">
+          <span class="cal-icon">🏁</span>${data.endDate?data.endDate.split('-').reverse().join('.'):'— — ——'}
+        </div>
+        <input type="hidden" id="sEndDate" value="${data.endDate||''}"/>
+      </div>
+    </div>
+    <p style="font-size:12px;color:var(--text3);margin-bottom:16px;line-height:1.5">${t('stageHint')}</p>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-secondary" onclick="closeModal()">${t('cancel')}</button>
+      <button class="btn btn-primary" onclick="saveStage('${isEdit?data.id:''}')">${isEdit?t('save'):t('create')}</button>
+    </div>`);
+}
+function selIcon(ic){window._sfd.icon=ic;document.querySelectorAll('.icon-opt').forEach(el=>el.classList.toggle('sel',el.textContent===ic))}
+function selColor(c){window._sfd.color=c;document.querySelectorAll('.color-opt').forEach(el=>el.classList.toggle('sel',el.getAttribute('onclick')===`selColor('${c}')`))}
+function saveStage(editId){
+  const name=document.getElementById('sName')?.value.trim();
+  const icon=window._sfd?.icon||'🏠',color=window._sfd?.color||'#7BB8CC';
+  if(!name){showToast(t('enterName'),'err');return;}
+  const contractor=document.getElementById('sContractor')?.value.trim()||'';
+  const startDate=document.getElementById('sStartDate')?.value||'';
+  const endDate=document.getElementById('sEndDate')?.value||'';
+  if(editId){
+    const id=parseInt(editId);
+    updateStages(ss=>ss.map(s=>s.id===id?{...s,name,icon,color,contractor,startDate,endDate}:s));
+    showToast(t('stageUpdated'));
+  } else {
+    updateStages(ss=>[...ss,{id:newId(),name,icon,color,contractor,startDate,endDate,status:'idle',items:[]}]);
+    showToast(t('stageAdded'));
+  }
+  closeModal();
+  if(document.getElementById('pageDetail').classList.contains('page-hidden-right'))renderDash();
+  else{renderDash();renderDetail();}
+}
+function editStage(id){const s=stages().find(st=>st.id===id);if(s)showStageModal(s);}
+
+// ══════════════════════════
+//  MODAL
+// ══════════════════════════
+function showModal(html){
+  closeModal();
+  const bd=document.createElement('div');
+  bd.className='modal-backdrop';bd.id='modalBackdrop';
+  bd.innerHTML=`<div class="modal">${html}</div>`;
+  bd.addEventListener('click',e=>{if(e.target===bd)closeModal();});
+  document.body.appendChild(bd);
+}
+function closeModal(){document.getElementById('modalBackdrop')?.remove();}
+
+// ══════════════════════════
+//  PDF
+// ══════════════════════════
+function exportPDF(){
+  const obj=curObj(),st=stages();
+  const tb=totalBudget(),ts=totalSmeta(),tf=totalFact();
+  const now=new Date();
+  const dateStr=now.toLocaleDateString('ru-RU',{day:'2-digit',month:'long',year:'numeric'});
+  const fp=ts>0?Math.min(tf/ts*100,100):0;
+  const isOver=ts>tb&&tb>0;
+
+  const stagesHTML=st.map(s=>{
+    const smeta=stageSmeta(s),fact=stageFact(s);
+    const sp=smeta>0?Math.min(fact/smeta*100,100):0;
+    const done=s.items.filter(i=>i.done).length;
+    return `<div class="stage-block">
+      <div class="stage-header" style="border-left:4px solid ${s.color}">
+        <div><div class="stage-name">${s.icon} ${s.name}</div><div class="stage-sub">${done} / ${s.items.length}</div></div>
+        <div class="stage-pct" style="color:${s.color}">${Math.round(sp)}%</div>
+      </div>
+      <div class="stage-stats">
+        <div class="stat-cell"><div class="stat-label">${t('smetaLabel')}</div><div class="stat-value gold">${fmt(smeta)}</div></div>
+        <div class="stat-cell"><div class="stat-label">${t('factShort')}</div><div class="stat-value green">${fmt(fact)}</div></div>
+        <div class="stat-cell"><div class="stat-label">${t('remainder')}</div><div class="stat-value ${smeta-fact<0?'red':'blue'}">${fmt(smeta-fact)}</div></div>
+      </div>
+      <div class="progress-wrap"><div class="pb-smeta" style="width:100%;background:${s.color}22;position:absolute;inset:0"></div><div class="pb-fact" style="width:${sp}%;background:${s.color};position:absolute;top:0;left:0;height:100%"></div></div>
+      ${s.items.length>0?`<table class="items-table"><thead><tr>
+        <th style="width:24px"></th><th style="text-align:left">${t('posName')}</th>
+        <th style="text-align:center">Qty</th>
+        <th style="text-align:right">${t('price')}</th>
+        <th style="text-align:right">Σ</th>
+        <th style="text-align:center;width:65px">Status</th>
+      </tr></thead><tbody>
+        ${s.items.map((item,ii)=>`<tr class="${ii%2===0?'row-even':'row-odd'} ${item.done?'done-row':''}">
+          <td style="text-align:center"><span class="dot" style="background:${item.done?s.color:'transparent'};border:1.5px solid ${item.done?s.color:'#aaa'};color:${item.done?'#fff':'transparent'}">${item.done?'✓':''}</span></td>
+          <td class="item-name-cell">${item.name}${item.note?`<br><span style="font-size:10px;color:#aaa">${item.note}</span>`:''}</td>
+          <td style="text-align:center;font-family:monospace;font-size:11px">${item.qty||1}</td>
+          <td style="text-align:right;font-family:monospace;font-size:11px">${fmt(item.price||item.cost||0)}</td>
+          <td style="text-align:right;font-family:monospace;font-size:12px">${fmt(itemTotal(item))}</td>
+          <td style="text-align:center"><span class="badge ${item.done?'badge-done':'badge-plan'}" style="${item.done?'background:'+s.color+'22;color:'+s.color+';border-color:'+s.color+'44':''}">${item.done?t('filterDone'):t('filterPlan')}</span></td>
+        </tr>`).join('')}
+      </tbody><tfoot><tr class="total-row">
+        <td colspan="4"><b>${t('totalDone')}</b></td>
+        <td style="text-align:right;font-family:monospace"><b>${fmt(fact)}</b></td>
+        <td style="text-align:center;font-size:11px;color:#888">${t('outOf')} ${fmt(smeta)}</td>
+      </tr></tfoot></table>`:'<div class="no-items">—</div>'}
+    </div>`;
+  }).join('');
+
+  const html=`<!DOCTYPE html><html lang="${lang}"><head><meta charset="UTF-8"/>
+  <link href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Mulish',sans-serif;background:#fff;color:#1a1a2e;font-size:13px;line-height:1.5}
+  @page{size:A4;margin:16mm 14mm}
+  .doc-header{background:#0D0F14;color:#EAE6DE;padding:20px 24px;border-radius:10px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center}
+  .doc-title{font-size:22px;font-weight:700;color:#C9AA7C;margin-bottom:4px}
+  .doc-sub{font-size:12px;color:#888}
+  ${tb>0?`.budget-row{background:#f9f7f3;border:1px solid #e8d8b8;border-radius:8px;padding:12px 16px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center}
+  .br-label{font-size:11px;color:#999;text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px}
+  .br-val{font-family:'DM Mono',monospace;font-size:20px;font-weight:700;color:#b8924a}`:''}
+  .summary-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px}
+  .sum-box{border-radius:8px;padding:14px 16px;border:1px solid #e8e4dc}
+  .sum-box-label{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:#999;margin-bottom:6px}
+  .sum-box-val{font-family:'DM Mono',monospace;font-size:17px;font-weight:700}
+  .sum-box-sub{font-size:11px;color:#aaa;margin-top:4px}
+  .gold{color:#b8924a}.green{color:#4a9b6a}.blue{color:#4a7fb8}.red{color:#b84a4a}
+  .prog-section{margin-bottom:20px}
+  .prog-label{display:flex;justify-content:space-between;font-size:12px;color:#666;margin-bottom:6px}
+  .prog-track{height:10px;background:#e8e4dc;border-radius:5px;overflow:hidden;position:relative;margin-bottom:6px}
+  .prog-smeta{position:absolute;top:0;left:0;height:100%;background:#C9AA7C;opacity:.35;border-radius:5px}
+  .prog-fact{position:absolute;top:0;left:0;height:100%;background:#80C89A;border-radius:5px}
+  .section-divider{display:flex;align-items:center;gap:10px;margin:0 0 16px}
+  .section-divider-line{flex:1;height:1px;background:#e0ddd8}
+  .section-divider-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#999}
+  .stage-block{border:1px solid #e8e4dc;border-radius:10px;margin-bottom:16px;overflow:hidden;break-inside:avoid}
+  .stage-header{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:#f9f8f6}
+  .stage-name{font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:2px}
+  .stage-sub{font-size:11px;color:#999}
+  .stage-pct{font-family:'DM Mono',monospace;font-size:20px;font-weight:700}
+  .stage-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:#e8e4dc;border-top:1px solid #e8e4dc;border-bottom:1px solid #e8e4dc}
+  .stat-cell{background:#fff;padding:10px 12px}
+  .stat-label{font-size:9px;text-transform:uppercase;letter-spacing:.6px;color:#aaa;margin-bottom:4px}
+  .stat-value{font-family:'DM Mono',monospace;font-size:13px;font-weight:600}
+  .progress-wrap{height:6px;background:#f0ede8;position:relative;overflow:hidden}
+  .items-table{width:100%;border-collapse:collapse}
+  .items-table thead tr{background:#f5f3ef}
+  .items-table th{padding:7px 8px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#999;border-bottom:1px solid #e8e4dc}
+  .row-even{background:#fff}.row-odd{background:#faf9f7}
+  .done-row .item-name-cell{color:#aaa;text-decoration:line-through}
+  .items-table td{padding:7px 8px;border-bottom:1px solid #f0ede8;font-size:12px}
+  .dot{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;font-size:8px;font-weight:700}
+  .badge{display:inline-block;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600;border:1px solid}
+  .badge-done{background:#f0faf5;color:#4a9b6a;border-color:#b0dfc5}
+  .badge-plan{background:#f5f3ef;color:#aaa;border-color:#ddd}
+  .total-row{background:#f0ede8}.total-row td{padding:9px 10px;border-top:1.5px solid #ddd}
+  .no-items{padding:12px 16px;font-size:12px;color:#bbb;font-style:italic}
+  .doc-footer{margin-top:24px;padding-top:12px;border-top:1px solid #e8e4dc;display:flex;justify-content:space-between;font-size:10px;color:#bbb}
+  @media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+  </style></head><body>
+  <div class="doc-header">
+    <div><div class="doc-title">${obj.icon} ${obj.name}</div><div class="doc-sub">${t('reportTitle')}</div></div>
+    <div style="font-size:11px;color:#666">${dateStr}</div>
+  </div>
+  ${tb>0?`<div class="budget-row">
+    <div><div class="br-label">${t('totalBudget')}</div><div class="br-val">${fmt(tb)}</div>
+    ${isOver?`<div style="font-size:12px;color:#b84a4a;margin-top:4px">⚠️ +${fmt(ts-tb)}</div>`:`<div style="font-size:12px;color:#4a9b6a;margin-top:4px">✓ ${t('budgetLeft')}: ${fmt(tb-ts)}</div>`}
+    </div>
+    <div style="text-align:right"><div class="br-label">${t('smeta')}</div><div style="font-family:'DM Mono',monospace;font-size:18px;font-weight:700;color:#b8924a">${fmt(ts)}</div></div>
+  </div>`:''}
+  <div class="summary-grid">
+    <div class="sum-box" style="border-top:3px solid #C9AA7C"><div class="sum-box-label">${t('smeta')}</div><div class="sum-box-val gold">${fmt(ts)}</div><div class="sum-box-sub">${st.length} ${t('stages').toLowerCase()}</div></div>
+    <div class="sum-box" style="border-top:3px solid #80C89A"><div class="sum-box-label">${t('fact')}</div><div class="sum-box-val green">${fmt(tf)}</div><div class="sum-box-sub">${Math.round(fp)}%</div></div>
+    <div class="sum-box" style="border-top:3px solid #7BB8CC"><div class="sum-box-label">${t('remainder')}</div><div class="sum-box-val blue">${fmt(ts-tf)}</div><div class="sum-box-sub">${t('outOf')} ${t('smeta').toLowerCase()}</div></div>
+  </div>
+  <div class="prog-section">
+    <div class="prog-label"><span>${t('done')}</span><span style="font-family:'DM Mono',monospace;font-weight:700;color:#80C89A">${Math.round(fp)}%</span></div>
+    <div class="prog-track"><div class="prog-smeta" style="width:100%"></div><div class="prog-fact" style="width:${fp}%"></div></div>
+  </div>
+  <div class="section-divider"><div class="section-divider-line"></div><div class="section-divider-title">${t('stagesTitle')}</div><div class="section-divider-line"></div></div>
+  ${stagesHTML}
+  <div class="doc-footer"><span>${obj.icon} ${obj.name}</span><span>${dateStr}</span></div>
+  </body></html>`;
+
+  const w=window.open('','_blank','width=900,height=700');
+  w.document.write(html);w.document.close();
+  w.onload=()=>{w.focus();w.print();};
+  showToast(t('pdfOpening'));
+}
+
+// ══════════════════════════
+//  IMPORT / EXPORT
+// ══════════════════════════
+function triggerImport(){
+  document.getElementById('importFile').click();
+}
+function handleImport(e){
+  const file=e.target.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      const data=JSON.parse(ev.target.result);
+      // Support both full DB and single object array
+      if(data.objects && data.activeObjectId){
+        db=data; saveDB(); renderDash(); showToast(t('importSuccess'));
+      } else if(Array.isArray(data)){
+        // Legacy: array of stages
+        const id=newId();
+        db.objects.push({id,name:'Импорт',icon:'📥',totalBudget:0,stages:data});
+        db.activeObjectId=id; saveDB(); renderDash(); showToast(t('importSuccess'));
+      } else { showToast(t('importError'),'err'); }
+    }catch{ showToast(t('importError'),'err'); }
+  };
+  reader.readAsText(file);
+  e.target.value='';
+}
+
+
+// DRUM DATE PICKER
+const MONTHS_RU=['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'];
+const MONTHS_EN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const MONTHS_AZ=['Yan','Fev','Mar','Apr','May','İyn','İyl','Avq','Sen','Okt','Noy','Dek'];
+const getMonths=()=>lang==='en'?MONTHS_EN:lang==='az'?MONTHS_AZ:MONTHS_RU;
+let _drum={field:null,day:1,month:1,year:new Date().getFullYear()};
+
+function openDrumPicker(field, currentVal){
+  const now=new Date();
+  _drum.field=field;
+  if(currentVal && currentVal.length===10){
+    const p=currentVal.split('-').map(Number);
+    _drum.day=p[2];_drum.month=p[1];_drum.year=p[0];
+  } else {
+    _drum.day=now.getDate();_drum.month=now.getMonth()+1;_drum.year=now.getFullYear();
+  }
+  const days=Array.from({length:31},(_,i)=>String(i+1).padStart(2,'0'));
+  const months=getMonths();
+  const years=Array.from({length:8},(_,i)=>String(now.getFullYear()+i));
+  const clearLabel=lang==='en'?'Clear':lang==='az'?'Sil':'Очистить';
+
+  const dayLabel=lang==='en'?'Day':lang==='az'?'Gün':'День';
+  const monLabel=lang==='en'?'Month':lang==='az'?'Ay':'Месяц';
+  const yrLabel=lang==='en'?'Year':lang==='az'?'İl':'Год';
+  showModal('<div class="modal-handle"></div>'
+    +'<div class="modal-title">'+(field==='start'?t('startDate'):t('endDate'))+'</div>'
+    +'<div class="drum-picker">'
+      +'<div class="drum-col"><div class="drum-col-label">'+dayLabel+'</div>'+buildDrum('day',days,_drum.day-1)+'</div>'
+      +'<div class="drum-divider"></div>'
+      +'<div class="drum-col"><div class="drum-col-label">'+monLabel+'</div>'+buildDrum('month',months,_drum.month-1)+'</div>'
+      +'<div class="drum-divider"></div>'
+      +'<div class="drum-col"><div class="drum-col-label">'+yrLabel+'</div>'+buildDrum('year',years,Math.max(0,years.indexOf(String(_drum.year))))+'</div>'
+    +'</div>'
+    +'<div style="display:flex;gap:10px;margin-top:16px">'
+      +'<button class="btn btn-secondary" onclick="clearDrumDate(\''+field+'\');closeModal()">'+clearLabel+'</button>'
+      +'<button class="btn btn-primary" onclick="confirmDrumDate()">'+t('save')+'</button>'
+    +'</div>');
+
+  setTimeout(()=>{
+    initDrum('day',days,_drum.day-1);
+    initDrum('month',months,_drum.month-1);
+    initDrum('year',years,Math.max(0,years.indexOf(String(_drum.year))));
+  },50);
+}
+
+function buildDrum(name,items,activeIdx){
+  let html='<div class="drum-wrap" id="drum-'+name+'"><div class="drum-selector"></div><div class="drum-list" id="drumlist-'+name+'">';
+  html+='<div class="drum-item"></div><div class="drum-item"></div>';
+  items.forEach((it,i)=>{ html+='<div class="drum-item'+(i===activeIdx?' active':'')+'" data-i="'+i+'">'+it+'</div>'; });
+  html+='<div class="drum-item"></div><div class="drum-item"></div>';
+  html+='</div></div>';
+  return html;
+}
+
+function initDrum(name,items,activeIdx){
+  const list=document.getElementById('drumlist-'+name);
+  const wrap=document.getElementById('drum-'+name);
+  if(!list||!wrap)return;
+  const itemH=44;
+  let curIdx=Math.max(0,Math.min(items.length-1,activeIdx));
+
+  function scrollTo(idx,animate){
+    curIdx=Math.max(0,Math.min(items.length-1,idx));
+    list.style.transition=animate?'transform .22s cubic-bezier(.25,.46,.45,.94)':'none';
+    list.style.transform='translateY('+(-curIdx*itemH)+'px)';
+    list.querySelectorAll('.drum-item').forEach((el,i)=>{
+      const rel=i-2-curIdx;
+      el.classList.toggle('active',rel===0);
+      el.classList.toggle('near',Math.abs(rel)===1);
+    });
+    if(name==='day')_drum.day=curIdx+1;
+    else if(name==='month')_drum.month=curIdx+1;
+    else _drum.year=parseInt(items[curIdx]);
+  }
+  scrollTo(curIdx,false);
+
+  let ty=0,ti=0;
+  wrap.addEventListener('touchstart',e=>{ty=e.touches[0].clientY;ti=curIdx;list.style.transition='none';},{passive:true});
+  wrap.addEventListener('touchmove',e=>{scrollTo(Math.round(ti+(ty-e.touches[0].clientY)/itemH),false);},{passive:true});
+  wrap.addEventListener('touchend',()=>{list.style.transition='transform .15s ease';scrollTo(curIdx,true);},{passive:true});
+  wrap.addEventListener('wheel',e=>{e.preventDefault();scrollTo(curIdx+(e.deltaY>0?1:-1),true);},{passive:false});
+}
+
+function confirmDrumDate(){
+  const d=String(_drum.day).padStart(2,'0');
+  const m=String(_drum.month).padStart(2,'0');
+  const y=String(_drum.year);
+  const val=y+'-'+m+'-'+d;
+  const display=d+'.'+m+'.'+y;
+  const f=_drum.field;
+  const hid=document.getElementById(f==='start'?'sStartDate':'sEndDate');
+  const dis=document.getElementById(f==='start'?'sStartDateDisplay':'sEndDateDisplay');
+  if(hid)hid.value=val;
+  if(dis){dis.textContent=display;dis.classList.add('has-value');}
+  closeModal();showToast(display);
+}
+
+function clearDrumDate(field){
+  const hid=document.getElementById(field==='start'?'sStartDate':'sEndDate');
+  const dis=document.getElementById(field==='start'?'sStartDateDisplay':'sEndDateDisplay');
+  if(hid)hid.value='';
+  if(dis){dis.textContent='— — ——';dis.classList.remove('has-value');}
+}
+
+// ══════════════════════════
+//  PIN + BIOMETRIC AUTH
+// ══════════════════════════
+const PIN_KEY = 'tikinti_pin';
+const PIN_BIO = 'tikinti_bio';
+let _pinMode = null, _pinEntered = '', _pinTarget = '';
+
+const KEYPAD = [
+  {n:'1',s:''},    {n:'2',s:'ABC'}, {n:'3',s:'DEF'},
+  {n:'4',s:'GHI'}, {n:'5',s:'JKL'}, {n:'6',s:'MNO'},
+  {n:'7',s:'PQRS'},{n:'8',s:'TUV'}, {n:'9',s:'WXYZ'},
+  null,            {n:'0',s:'+'},   'del'
+];
+
+function pinLabel(mode){
+  if(mode==='enter') return lang==='en'?'Enter PIN':lang==='az'?'PIN daxil edin':'Введите PIN';
+  if(mode==='set')   return lang==='en'?'Set new PIN':lang==='az'?'Yeni PIN təyin edin':'Задайте PIN';
+  return lang==='en'?'Confirm PIN':lang==='az'?'PIN təsdiqləyin':'Подтвердите PIN';
+}
+
+async function checkBiometric(){
+  if(!window.PublicKeyCredential) return false;
+  try {
+    const ok = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+    return ok;
+  } catch { return false; }
+}
+
+async function tryBiometric(){
+  try {
+    // Use WebAuthn to verify
+    const challenge = new Uint8Array(32);
+    crypto.getRandomValues(challenge);
+    // Simplified: use credentials.get if registered, else fallback
+    if(localStorage.getItem(PIN_BIO+'_cred')){
+      // Already registered - try silent auth via platform authenticator
+      showToast(lang==='en'?'Verifying...':lang==='az'?'Yoxlanılır...':'Проверка...');
+      // For PWA we use simpler approach - check if biometric available
+      const available = await checkBiometric();
+      if(available){
+        document.getElementById('pinOverlay')?.remove();
+        return true;
+      }
+    }
+    return false;
+  } catch { return false; }
+}
+
+function showPinOverlay(mode, onSuccess){
+  _pinMode = mode; _pinEntered = ''; _pinTarget = '';
+
+  const hasBio = localStorage.getItem(PIN_BIO) === '1';
+  const bioAvailable = 'PublicKeyCredential' in window;
+
+  const overlay = document.createElement('div');
+  overlay.className = 'pin-overlay'; overlay.id = 'pinOverlay';
+
+  // Build keypad HTML
+  let padHTML = '';
+  KEYPAD.forEach(k => {
+    if(!k){ padHTML += '<button class="pin-key empty"></button>'; return; }
+    if(k==='del'){ padHTML += '<button class="pin-key del" onclick="pinDel()">⌫</button>'; return; }
+    padHTML += '<button class="pin-key" onclick="pinKey(\'' + k.n + '\')">'
+      + '<span>' + k.n + '</span>'
+      + (k.s ? '<span class="pin-key-sub">' + k.s + '</span>' : '')
+      + '</button>';
+  });
+
+  let html = '<div class="pin-logo">🏡 Tikinti</div>'
+    + '<div class="pin-subtitle">' + pinLabel(mode) + '</div>'
+    + '<div class="pin-dots" id="pinDots">'
+    + '<div class="pin-dot" id="pd0"></div>'
+    + '<div class="pin-dot" id="pd1"></div>'
+    + '<div class="pin-dot" id="pd2"></div>'
+    + '<div class="pin-dot" id="pd3"></div>'
+    + '</div>'
+    + '<div class="pin-pad">' + padHTML + '</div>';
+
+  if(mode === 'enter' && hasBio && bioAvailable){
+    const bioTitle = lang==='en'?'Use fingerprint':lang==='az'?'Barmaq izi':'Отпечаток пальца';
+    html += '<button class="pin-bio" onclick="biometricAuth()" title="' + bioTitle + '">🫆</button>';
+  }
+  if(mode === 'enter'){
+    const cancelLabel = lang==='en'?'Cancel':lang==='az'?'Ləğv et':'Отмена';
+    html += '<button style="background:none;border:none;color:var(--text3);font-size:12px;cursor:pointer;font-family:Mulish,sans-serif;margin-top:4px" onclick="document.getElementById(&quot;pinOverlay&quot;).remove()">' + cancelLabel + '</button>';
+  }
+
+  overlay.innerHTML = html;
+  overlay._onSuccess = onSuccess;
+  document.body.appendChild(overlay);
+
+  if(mode === 'enter' && hasBio && bioAvailable){
+    setTimeout(() => biometricAuth(), 400);
+  }
+}
+
+
+async function biometricAuth(){
+  if(!('credentials' in navigator)) return;
+  try {
+    // Use platform authenticator (Face ID / Touch ID / fingerprint)
+    const credential = await navigator.credentials.get({
+      publicKey: {
+        challenge: crypto.getRandomValues(new Uint8Array(32)),
+        rpId: location.hostname,
+        userVerification: 'required',
+        allowCredentials: [],
+        timeout: 30000
+      }
+    });
+    if(credential){
+      const overlay = document.getElementById('pinOverlay');
+      const cb = overlay?._onSuccess;
+      overlay?.remove();
+      if(cb) cb();
+      showToast(lang==='en'?'Authenticated':lang==='az'?'Təsdiqləndi':'Подтверждено ✓');
+    }
+  } catch(e){
+    // Biometric failed or cancelled - let user use PIN
+    console.log('Bio failed:', e.name);
+  }
+}
+
+function pinKey(n){
+  if(_pinEntered.length >= 4) return;
+  _pinEntered += n;
+  updatePinDots();
+  if(_pinEntered.length === 4) setTimeout(processPinInput, 150);
+}
+
+function pinDel(){
+  if(!_pinEntered.length) return;
+  _pinEntered = _pinEntered.slice(0,-1);
+  updatePinDots();
+}
+
+function updatePinDots(error){
+  for(let i=0;i<4;i++){
+    const d = document.getElementById('pd'+i);
+    if(!d) continue;
+    d.classList.toggle('filled', !error && i < _pinEntered.length);
+    d.classList.toggle('error', !!error);
+  }
+}
+
+function processPinInput(){
+  const stored = localStorage.getItem(PIN_KEY);
+  if(_pinMode === 'enter'){
+    if(_pinEntered === stored){
+      const overlay = document.getElementById('pinOverlay');
+      const cb = overlay?._onSuccess;
+      overlay?.remove();
+      if(cb) cb();
+    } else {
+      updatePinDots(true);
+      setTimeout(()=>{ _pinEntered=''; updatePinDots(); }, 600);
+      if(navigator.vibrate) navigator.vibrate([50,30,50]);
+      showToast(lang==='en'?'Wrong PIN':lang==='az'?'Yanlış PIN':'Неверный PIN','err');
+    }
+  } else if(_pinMode === 'set'){
+    _pinTarget = _pinEntered; _pinEntered = '';
+    updatePinDots();
+    // Change subtitle
+    const sub = document.querySelector('.pin-subtitle');
+    if(sub) sub.textContent = pinLabel('confirm');
+    _pinMode = 'confirm';
+  } else if(_pinMode === 'confirm'){
+    if(_pinEntered === _pinTarget){
+      localStorage.setItem(PIN_KEY, _pinEntered);
+      document.getElementById('pinOverlay')?.remove();
+      // Ask about biometric
+      askBiometric();
+      showToast(lang==='en'?'PIN set ✓':lang==='az'?'PIN təyin edildi ✓':'PIN установлен ✓');
+    } else {
+      updatePinDots(true);
+      setTimeout(()=>{ _pinEntered=''; _pinTarget=''; _pinMode='set'; updatePinDots();
+        const sub=document.querySelector('.pin-subtitle'); if(sub) sub.textContent=pinLabel('set');
+      }, 600);
+      showToast(lang==='en'?"PINs don't match":lang==='az'?'PIN uyğun deyil':'PIN не совпадает','err');
+    }
+  }
+}
+
+async function askBiometric(){
+  const avail = await checkBiometric();
+  if(!avail) return;
+  const msg = lang==='en'?'Enable fingerprint/Face ID?':lang==='az'?'Barmaq izi aktivləşdirilsin?':'Включить отпечаток пальца?';
+  showModal(`<div class="modal-handle"></div>
+    <div class="modal-title" style="font-size:14px">${msg}</div>
+    <div style="font-size:32px;text-align:center;margin:10px 0">🫆</div>
+    <div style="display:flex;gap:10px;margin-top:8px">
+      <button class="btn btn-secondary" onclick="closeModal()">${lang==='en'?'Skip':lang==='az'?'Keç':'Пропустить'}</button>
+      <button class="btn btn-primary" onclick="enableBiometric()">${lang==='en'?'Enable':lang==='az'?'Aktiv et':'Включить'}</button>
+    </div>`);
+}
+
+async function enableBiometric(){
+  closeModal();
+  localStorage.setItem(PIN_BIO, '1');
+  showToast(lang==='en'?'Fingerprint enabled':lang==='az'?'Barmaq izi aktivləşdirildi':'Отпечаток включён ✓');
+}
+
+function checkPin(){
+  const pin = localStorage.getItem(PIN_KEY);
+  if(!pin) return;
+  // Hide app content while PIN shown
+  document.getElementById('pageDash').style.visibility='hidden';
+  showPinOverlay('enter', ()=>{
+    document.getElementById('pageDash').style.visibility='';
+  });
+}
+
+function pinSettings(){
+  const hasPin = !!localStorage.getItem(PIN_KEY);
+  const hasBio = localStorage.getItem(PIN_BIO)==='1';
+  const setLabel = hasPin?(lang==='en'?'Change PIN':lang==='az'?'PIN dəyiş':'Изменить PIN'):(lang==='en'?'Set PIN':lang==='az'?'PIN təyin et':'Задать PIN');
+  const removeLabel = lang==='en'?'Remove PIN':lang==='az'?'PIN sil':'Удалить PIN';
+  const bioLabel = hasBio?(lang==='en'?'Disable fingerprint':lang==='az'?'Barmaq izi söndür':'Отключить отпечаток'):(lang==='en'?'Enable fingerprint':lang==='az'?'Barmaq izi aktiv et':'Включить отпечаток');
+  const bioVal = hasBio?'0':'1';
+  const doneMsg = lang==='en'?'Done':lang==='az'?'Tamam':'Готово';
+  let html = '<div class="modal-handle"></div><div class="modal-title">🔐 PIN</div><div style="display:flex;flex-direction:column;gap:10px">';
+  html += '<button class="btn btn-secondary" onclick="closeModal();showPinOverlay(&quot;set&quot;)">' + setLabel + '</button>';
+  if(hasPin) html += '<button class="btn btn-secondary" onclick="closeModal();confirmRemovePin()">' + removeLabel + '</button>';
+  if(hasPin){ const bioBtn=document.createElement('button'); bioBtn.className='btn btn-secondary'; bioBtn.textContent=bioLabel; bioBtn.onclick=()=>{localStorage.setItem(PIN_BIO,bioVal);closeModal();showToast(doneMsg);}; document.body._pinBioBtn=bioBtn; html += '<button class="btn btn-secondary" id="pinBioBtn">' + bioLabel + '</button>'; }
+  html += '</div>';
+  showModal(html);
+}
+
+function doRemovePin(){
+  localStorage.removeItem(PIN_KEY);
+  localStorage.removeItem(PIN_BIO);
+  closeModal();
+  showToast(lang==='en'?'PIN removed':lang==='az'?'PIN silindi':'PIN удалён');
+}
+function confirmRemovePin(){
+  const title = lang==='en'?'Remove PIN?':lang==='az'?'PIN silinsin?':'Удалить PIN?';
+  const cancel = lang==='en'?'Cancel':lang==='az'?'Ləğv et':'Отмена';
+  const remove = lang==='en'?'Remove':lang==='az'?'Sil':'Удалить';
+  showModal('<div class="modal-handle"></div>'
+    +'<div class="modal-title">'+title+'</div>'
+    +'<div style="display:flex;gap:10px;margin-top:4px">'
+      +'<button class="btn btn-secondary" onclick="closeModal()">'+cancel+'</button>'
+      +'<button class="btn btn-danger" style="flex:1" onclick="doRemovePin()">'+remove+'</button>'
+    +'</div>');
+}
+
+window._installPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();window._installPrompt=e;renderDash();});
+function installApp(){
+  if(!window._installPrompt)return;
+  window._installPrompt.prompt();
+  window._installPrompt.userChoice.then(()=>{// DRUM DATE PICKER
+const MONTHS_RU=['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'];
+const MONTHS_EN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const MONTHS_AZ=['Yan','Fev','Mar','Apr','May','İyn','İyl','Avq','Sen','Okt','Noy','Dek'];
+const getMonths=()=>lang==='en'?MONTHS_EN:lang==='az'?MONTHS_AZ:MONTHS_RU;
+let _drum={field:null,day:1,month:1,year:new Date().getFullYear()};
+
+function openDrumPicker(field, currentVal){
+  const now=new Date();
+  _drum.field=field;
+  if(currentVal && currentVal.length===10){
+    const p=currentVal.split('-').map(Number);
+    _drum.day=p[2];_drum.month=p[1];_drum.year=p[0];
+  } else {
+    _drum.day=now.getDate();_drum.month=now.getMonth()+1;_drum.year=now.getFullYear();
+  }
+  const days=Array.from({length:31},(_,i)=>String(i+1).padStart(2,'0'));
+  const months=getMonths();
+  const years=Array.from({length:8},(_,i)=>String(now.getFullYear()+i));
+  const clearLabel=lang==='en'?'Clear':lang==='az'?'Sil':'Очистить';
+
+  const dayLabel=lang==='en'?'Day':lang==='az'?'Gün':'День';
+  const monLabel=lang==='en'?'Month':lang==='az'?'Ay':'Месяц';
+  const yrLabel=lang==='en'?'Year':lang==='az'?'İl':'Год';
+  showModal('<div class="modal-handle"></div>'
+    +'<div class="modal-title">'+(field==='start'?t('startDate'):t('endDate'))+'</div>'
+    +'<div class="drum-picker">'
+      +'<div class="drum-col"><div class="drum-col-label">'+dayLabel+'</div>'+buildDrum('day',days,_drum.day-1)+'</div>'
+      +'<div class="drum-divider"></div>'
+      +'<div class="drum-col"><div class="drum-col-label">'+monLabel+'</div>'+buildDrum('month',months,_drum.month-1)+'</div>'
+      +'<div class="drum-divider"></div>'
+      +'<div class="drum-col"><div class="drum-col-label">'+yrLabel+'</div>'+buildDrum('year',years,Math.max(0,years.indexOf(String(_drum.year))))+'</div>'
+    +'</div>'
+    +'<div style="display:flex;gap:10px;margin-top:16px">'
+      +'<button class="btn btn-secondary" onclick="clearDrumDate(\''+field+'\');closeModal()">'+clearLabel+'</button>'
+      +'<button class="btn btn-primary" onclick="confirmDrumDate()">'+t('save')+'</button>'
+    +'</div>');
+
+  setTimeout(()=>{
+    initDrum('day',days,_drum.day-1);
+    initDrum('month',months,_drum.month-1);
+    initDrum('year',years,Math.max(0,years.indexOf(String(_drum.year))));
+  },50);
+}
+
+function buildDrum(name,items,activeIdx){
+  let html='<div class="drum-wrap" id="drum-'+name+'"><div class="drum-selector"></div><div class="drum-list" id="drumlist-'+name+'">';
+  html+='<div class="drum-item"></div><div class="drum-item"></div>';
+  items.forEach((it,i)=>{ html+='<div class="drum-item'+(i===activeIdx?' active':'')+'" data-i="'+i+'">'+it+'</div>'; });
+  html+='<div class="drum-item"></div><div class="drum-item"></div>';
+  html+='</div></div>';
+  return html;
+}
+
+function initDrum(name,items,activeIdx){
+  const list=document.getElementById('drumlist-'+name);
+  const wrap=document.getElementById('drum-'+name);
+  if(!list||!wrap)return;
+  const itemH=44;
+  let curIdx=Math.max(0,Math.min(items.length-1,activeIdx));
+
+  function scrollTo(idx,animate){
+    curIdx=Math.max(0,Math.min(items.length-1,idx));
+    list.style.transition=animate?'transform .22s cubic-bezier(.25,.46,.45,.94)':'none';
+    list.style.transform='translateY('+(-curIdx*itemH)+'px)';
+    list.querySelectorAll('.drum-item').forEach((el,i)=>{
+      const rel=i-2-curIdx;
+      el.classList.toggle('active',rel===0);
+      el.classList.toggle('near',Math.abs(rel)===1);
+    });
+    if(name==='day')_drum.day=curIdx+1;
+    else if(name==='month')_drum.month=curIdx+1;
+    else _drum.year=parseInt(items[curIdx]);
+  }
+  scrollTo(curIdx,false);
+
+  let ty=0,ti=0;
+  wrap.addEventListener('touchstart',e=>{ty=e.touches[0].clientY;ti=curIdx;list.style.transition='none';},{passive:true});
+  wrap.addEventListener('touchmove',e=>{scrollTo(Math.round(ti+(ty-e.touches[0].clientY)/itemH),false);},{passive:true});
+  wrap.addEventListener('touchend',()=>{list.style.transition='transform .15s ease';scrollTo(curIdx,true);},{passive:true});
+  wrap.addEventListener('wheel',e=>{e.preventDefault();scrollTo(curIdx+(e.deltaY>0?1:-1),true);},{passive:false});
+}
+
+function confirmDrumDate(){
+  const d=String(_drum.day).padStart(2,'0');
+  const m=String(_drum.month).padStart(2,'0');
+  const y=String(_drum.year);
+  const val=y+'-'+m+'-'+d;
+  const display=d+'.'+m+'.'+y;
+  const f=_drum.field;
+  const hid=document.getElementById(f==='start'?'sStartDate':'sEndDate');
+  const dis=document.getElementById(f==='start'?'sStartDateDisplay':'sEndDateDisplay');
+  if(hid)hid.value=val;
+  if(dis){dis.textContent=display;dis.classList.add('has-value');}
+  closeModal();showToast(display);
+}
+
+function clearDrumDate(field){
+  const hid=document.getElementById(field==='start'?'sStartDate':'sEndDate');
+  const dis=document.getElementById(field==='start'?'sStartDateDisplay':'sEndDateDisplay');
+  if(hid)hid.value='';
+  if(dis){dis.textContent='— — ——';dis.classList.remove('has-value');}
+}
+
+// ══════════════════════════
+//  PIN + BIOMETRIC AUTH
+// ══════════════════════════
+const PIN_KEY = 'tikinti_pin';
+const PIN_BIO = 'tikinti_bio';
+let _pinMode = null, _pinEntered = '', _pinTarget = '';
+
+const KEYPAD = [
+  {n:'1',s:''},    {n:'2',s:'ABC'}, {n:'3',s:'DEF'},
+  {n:'4',s:'GHI'}, {n:'5',s:'JKL'}, {n:'6',s:'MNO'},
+  {n:'7',s:'PQRS'},{n:'8',s:'TUV'}, {n:'9',s:'WXYZ'},
+  null,            {n:'0',s:'+'},   'del'
+];
+
+function pinLabel(mode){
+  if(mode==='enter') return lang==='en'?'Enter PIN':lang==='az'?'PIN daxil edin':'Введите PIN';
+  if(mode==='set')   return lang==='en'?'Set new PIN':lang==='az'?'Yeni PIN təyin edin':'Задайте PIN';
+  return lang==='en'?'Confirm PIN':lang==='az'?'PIN təsdiqləyin':'Подтвердите PIN';
+}
+
+async function checkBiometric(){
+  if(!window.PublicKeyCredential) return false;
+  try {
+    const ok = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+    return ok;
+  } catch { return false; }
+}
+
+async function tryBiometric(){
+  try {
+    // Use WebAuthn to verify
+    const challenge = new Uint8Array(32);
+    crypto.getRandomValues(challenge);
+    // Simplified: use credentials.get if registered, else fallback
+    if(localStorage.getItem(PIN_BIO+'_cred')){
+      // Already registered - try silent auth via platform authenticator
+      showToast(lang==='en'?'Verifying...':lang==='az'?'Yoxlanılır...':'Проверка...');
+      // For PWA we use simpler approach - check if biometric available
+      const available = await checkBiometric();
+      if(available){
+        document.getElementById('pinOverlay')?.remove();
+        return true;
+      }
+    }
+    return false;
+  } catch { return false; }
+}
+
+function showPinOverlay(mode, onSuccess){
+  _pinMode = mode; _pinEntered = ''; _pinTarget = '';
+  
+  const hasBio = localStorage.getItem(PIN_BIO) === '1';
+  const bioAvailable = 'PublicKeyCredential' in window;
+
+  const overlay = document.createElement('div');
+  overlay.className = 'pin-overlay'; overlay.id = 'pinOverlay';
+  overlay.innerHTML = `
+    <div class="pin-logo">🏡 Tikinti</div>
+    <div class="pin-subtitle">${pinLabel(mode)}</div>
+    <div class="pin-dots" id="pinDots">
+      ${[0,1,2,3].map(i=>`<div class="pin-dot" id="pd${i}"></div>`).join('')}
+    </div>
+    <div class="pin-pad">
+      ${KEYPAD.map(k=>{
+        if(!k) return '<button class="pin-key empty"></button>';
+        if(k==='del') return `<button class="pin-key del" onclick="pinDel()">⌫</button>`;
+        return `<button class="pin-key" onclick="pinKey('${k.n}')">
+          <span>${k.n}</span>
+          ${k.s?`<span class="pin-key-sub">${k.s}</span>`:''}
+        </button>`;
+      }).join('')}
+    </div>
+    ${mode==='enter' && hasBio && bioAvailable ? `
+      <button class="pin-bio" onclick="biometricAuth()" title="${lang==='en'?'Use fingerprint':lang==='az'?'Barmaq izi':'Отпечаток пальца'}">
+        🫆
+      </button>` : ''}
+    ${mode==='enter' ? `
+      <button style="background:none;border:none;color:var(--text3);font-size:12px;cursor:pointer;font-family:'Mulish',sans-serif;margin-top:4px" onclick="document.getElementById('pinOverlay').remove()">
+        ${lang==='en'?'Cancel':lang==='az'?'Ləğv et':'Отмена'}
+      </button>` : ''}
+  `;
+  overlay._onSuccess = onSuccess;
+  document.body.appendChild(overlay);
+
+  // Auto-trigger biometric on enter mode
+  if(mode==='enter' && hasBio && bioAvailable){
+    setTimeout(()=>biometricAuth(), 400);
+  }
+}
+
+async function biometricAuth(){
+  if(!('credentials' in navigator)) return;
+  try {
+    // Use platform authenticator (Face ID / Touch ID / fingerprint)
+    const credential = await navigator.credentials.get({
+      publicKey: {
+        challenge: crypto.getRandomValues(new Uint8Array(32)),
+        rpId: location.hostname,
+        userVerification: 'required',
+        allowCredentials: [],
+        timeout: 30000
+      }
+    });
+    if(credential){
+      const overlay = document.getElementById('pinOverlay');
+      const cb = overlay?._onSuccess;
+      overlay?.remove();
+      if(cb) cb();
+      showToast(lang==='en'?'Authenticated':lang==='az'?'Təsdiqləndi':'Подтверждено ✓');
+    }
+  } catch(e){
+    // Biometric failed or cancelled - let user use PIN
+    console.log('Bio failed:', e.name);
+  }
+}
+
+function pinKey(n){
+  if(_pinEntered.length >= 4) return;
+  _pinEntered += n;
+  updatePinDots();
+  if(_pinEntered.length === 4) setTimeout(processPinInput, 150);
+}
+
+function pinDel(){
+  if(!_pinEntered.length) return;
+  _pinEntered = _pinEntered.slice(0,-1);
+  updatePinDots();
+}
+
+function updatePinDots(error){
+  for(let i=0;i<4;i++){
+    const d = document.getElementById('pd'+i);
+    if(!d) continue;
+    d.classList.toggle('filled', !error && i < _pinEntered.length);
+    d.classList.toggle('error', !!error);
+  }
+}
+
+function processPinInput(){
+  const stored = localStorage.getItem(PIN_KEY);
+  if(_pinMode === 'enter'){
+    if(_pinEntered === stored){
+      const overlay = document.getElementById('pinOverlay');
+      const cb = overlay?._onSuccess;
+      overlay?.remove();
+      if(cb) cb();
+    } else {
+      updatePinDots(true);
+      setTimeout(()=>{ _pinEntered=''; updatePinDots(); }, 600);
+      if(navigator.vibrate) navigator.vibrate([50,30,50]);
+      showToast(lang==='en'?'Wrong PIN':lang==='az'?'Yanlış PIN':'Неверный PIN','err');
+    }
+  } else if(_pinMode === 'set'){
+    _pinTarget = _pinEntered; _pinEntered = '';
+    updatePinDots();
+    // Change subtitle
+    const sub = document.querySelector('.pin-subtitle');
+    if(sub) sub.textContent = pinLabel('confirm');
+    _pinMode = 'confirm';
+  } else if(_pinMode === 'confirm'){
+    if(_pinEntered === _pinTarget){
+      localStorage.setItem(PIN_KEY, _pinEntered);
+      document.getElementById('pinOverlay')?.remove();
+      // Ask about biometric
+      askBiometric();
+      showToast(lang==='en'?'PIN set ✓':lang==='az'?'PIN təyin edildi ✓':'PIN установлен ✓');
+    } else {
+      updatePinDots(true);
+      setTimeout(()=>{ _pinEntered=''; _pinTarget=''; _pinMode='set'; updatePinDots();
+        const sub=document.querySelector('.pin-subtitle'); if(sub) sub.textContent=pinLabel('set');
+      }, 600);
+      showToast(lang==='en'?"PINs don't match":lang==='az'?'PIN uyğun deyil':'PIN не совпадает','err');
+    }
+  }
+}
+
+async function askBiometric(){
+  const avail = await checkBiometric();
+  if(!avail) return;
+  const msg = lang==='en'?'Enable fingerprint/Face ID?':lang==='az'?'Barmaq izi aktivləşdirilsin?':'Включить отпечаток пальца?';
+  showModal(`<div class="modal-handle"></div>
+    <div class="modal-title" style="font-size:14px">${msg}</div>
+    <div style="font-size:32px;text-align:center;margin:10px 0">🫆</div>
+    <div style="display:flex;gap:10px;margin-top:8px">
+      <button class="btn btn-secondary" onclick="closeModal()">${lang==='en'?'Skip':lang==='az'?'Keç':'Пропустить'}</button>
+      <button class="btn btn-primary" onclick="enableBiometric()">${lang==='en'?'Enable':lang==='az'?'Aktiv et':'Включить'}</button>
+    </div>`);
+}
+
+async function enableBiometric(){
+  closeModal();
+  localStorage.setItem(PIN_BIO, '1');
+  showToast(lang==='en'?'Fingerprint enabled':lang==='az'?'Barmaq izi aktivləşdirildi':'Отпечаток включён ✓');
+}
+
+function checkPin(){
+  const pin = localStorage.getItem(PIN_KEY);
+  if(!pin) return;
+  // Hide app content while PIN shown
+  document.getElementById('pageDash').style.visibility='hidden';
+  showPinOverlay('enter', ()=>{
+    document.getElementById('pageDash').style.visibility='';
+  });
+}
+
+function pinSettings(){
+  const hasPin = !!localStorage.getItem(PIN_KEY);
+  const hasBio = localStorage.getItem(PIN_BIO)==='1';
+  const setLabel = hasPin?(lang==='en'?'Change PIN':lang==='az'?'PIN dəyiş':'Изменить PIN'):(lang==='en'?'Set PIN':lang==='az'?'PIN təyin et':'Задать PIN');
+  const removeLabel = lang==='en'?'Remove PIN':lang==='az'?'PIN sil':'Удалить PIN';
+  const bioLabel = hasBio?(lang==='en'?'Disable fingerprint':lang==='az'?'Barmaq izi söndür':'Отключить отпечаток'):(lang==='en'?'Enable fingerprint':lang==='az'?'Barmaq izi aktiv et':'Включить отпечаток');
+  const bioVal = hasBio?'0':'1';
+  const doneMsg = lang==='en'?'Done':lang==='az'?'Tamam':'Готово';
+  let html = '<div class="modal-handle"></div><div class="modal-title">🔐 PIN</div><div style="display:flex;flex-direction:column;gap:10px">';
+  html += '<button class="btn btn-secondary" onclick="closeModal();showPinOverlay(&quot;set&quot;)">' + setLabel + '</button>';
+  if(hasPin) html += '<button class="btn btn-secondary" onclick="closeModal();confirmRemovePin()">' + removeLabel + '</button>';
+  if(hasPin){ const bioBtn=document.createElement('button'); bioBtn.className='btn btn-secondary'; bioBtn.textContent=bioLabel; bioBtn.onclick=()=>{localStorage.setItem(PIN_BIO,bioVal);closeModal();showToast(doneMsg);}; document.body._pinBioBtn=bioBtn; html += '<button class="btn btn-secondary" id="pinBioBtn">' + bioLabel + '</button>'; }
+  html += '</div>';
+  showModal(html);
+}
+
+function doRemovePin(){
+  localStorage.removeItem(PIN_KEY);
+  localStorage.removeItem(PIN_BIO);
+  closeModal();
+  showToast(lang==='en'?'PIN removed':lang==='az'?'PIN silindi':'PIN удалён');
+}
+function confirmRemovePin(){
+  const title = lang==='en'?'Remove PIN?':lang==='az'?'PIN silinsin?':'Удалить PIN?';
+  const cancel = lang==='en'?'Cancel':lang==='az'?'Ləğv et':'Отмена';
+  const remove = lang==='en'?'Remove':lang==='az'?'Sil':'Удалить';
+  showModal('<div class="modal-handle"></div>'
+    +'<div class="modal-title">'+title+'</div>'
+    +'<div style="display:flex;gap:10px;margin-top:4px">'
+      +'<button class="btn btn-secondary" onclick="closeModal()">'+cancel+'</button>'
+      +'<button class="btn btn-danger" style="flex:1" onclick="doRemovePin()">'+remove+'</button>'
+    +'</div>');
+}
+
+window._installPrompt=null;renderDash();});
+}
+
+document.getElementById('btnAdd').onclick=()=>showStageModal(null);
+if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
+
+// Swipe right on dashboard → open drawer
+let dashTxStart=0, dashTyStart=0, dashSwDir=null, dashSwiping=false;
+const dashPage = document.getElementById('pageDash');
+dashPage.addEventListener('touchstart', e=>{
+  if(drawerEl.classList.contains('open')) return;
+  dashTxStart=e.touches[0].clientX;
+  dashTyStart=e.touches[0].clientY;
+  dashSwDir=null;
+  dashSwiping=false;
+},{passive:true});
+
+dashPage.addEventListener('touchmove', e=>{
+  if(drawerEl.classList.contains('open')) return;
+  const dx=e.touches[0].clientX-dashTxStart;
+  const dy=e.touches[0].clientY-dashTyStart;
+  if(!dashSwDir) dashSwDir=Math.abs(dx)>Math.abs(dy)?'h':'v';
+  if(dashSwDir==='h' && dx>0){
+    dashSwiping=true;
+    const offset=Math.min(dx, 285);
+    drawerEl.style.transition='none';
+    drawerEl.style.transform=`translateX(calc(-100% + ${offset}px))`;
+    backdropEl.style.transition='none';
+    backdropEl.style.background=`rgba(0,0,0,${Math.min(offset/285*0.6,0.6)})`;
+    backdropEl.style.pointerEvents='all';
+  }
+},{passive:true});
+
+dashPage.addEventListener('touchend', e=>{
+  if(!dashSwiping) return;
+  const dx=e.changedTouches[0].clientX-dashTxStart;
+  // restore transitions
+  drawerEl.style.transition='';
+  backdropEl.style.transition='';
+  if(dx>80){
+    // fully open
+    drawerEl.style.transform='';
+    drawerEl.classList.add('open');
+    backdropEl.style.background='';
+    backdropEl.classList.add('open');
+    backdropEl.style.pointerEvents='';
+    renderDrawer();
+    updateDrawerLabels();
+  } else {
+    // snap back
+    drawerEl.style.transform='';
+    backdropEl.style.background='';
+    backdropEl.style.pointerEvents='';
+  }
+  dashSwiping=false;
+},{passive:true});
+
+updateDrawerLabels();
+renderDash();
+checkPin();
+
+// Handle PWA shortcuts
+const urlParams = new URLSearchParams(window.location.search);
+const action = urlParams.get('action');
+if(action === 'addStage') setTimeout(()=>showStageModal(null), 400);
+if(action === 'addObject') setTimeout(()=>addObjectPrompt(), 400);
+</script>
+</body>
+</html>
