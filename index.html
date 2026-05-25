@@ -514,31 +514,19 @@ function renderDash(){
 
     <!-- Бюджет объекта -->
     <div class="budget-banner" style="animation-delay:.04s">
-
       <div class="bb-label">Общий бюджет объекта</div>
-      <div class="bb-val" style="margin:4px 0 2px">${tb>0?fmtShort(tb):'Не задан'}</div>
-      <div class="bb-sub" style="margin-bottom:16px">${tb>0?(isOver?`<span style="color:var(--red)">⚠️ Смета превышает на ${fmtShort(ts-tb)}</span>`:`Остаток: ${fmtShort(rem)}`):'Задайте бюджет в меню ☰'}</div>
-
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;margin-bottom:12px">
-        <div>
-          <div class="bb-label">Смета</div>
-          <div style="font-family:'DM Mono',monospace;font-size:14px;font-weight:600;color:var(--gold);white-space:nowrap">${fmtShort(ts)}</div>
-        </div>
-        <div>
-          <div class="bb-label">Факт</div>
-          <div style="font-family:'DM Mono',monospace;font-size:14px;font-weight:600;color:var(--green);white-space:nowrap">${fmtShort(tf)}</div>
-        </div>
-        <div>
-          <div class="bb-label">Выполнено</div>
-          <div style="font-family:'DM Mono',monospace;font-size:14px;font-weight:600;color:var(--text2)">${Math.round(factOfSmeta)}%</div>
-        </div>
-      </div>
-
-      <div style="height:6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden;position:relative">
+      <div class="bb-val">${tb>0?fmtShort(tb):'Не задан'}</div>
+      <div class="bb-sub">${tb>0?(isOver?`<span style="color:var(--red)">⚠️ Смета превышает на ${fmtShort(ts-tb)}</span>`:`Остаток: ${fmtShort(rem)}`):'Задайте бюджет в меню ☰'}</div>
+      <div style="height:1px;background:rgba(255,255,255,.07);margin:12px 0"></div>
+      <div class="bb-label">Смета (план)</div>
+      <div style="font-family:'DM Mono',monospace;font-size:17px;font-weight:600;color:var(--gold);margin-bottom:10px">${fmtShort(ts)}</div>
+      <div class="bb-label">Потрачено (факт)</div>
+      <div style="font-family:'DM Mono',monospace;font-size:17px;font-weight:600;color:var(--green);margin-bottom:12px">${fmtShort(tf)}</div>
+      <div style="height:6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden;position:relative;margin-bottom:6px">
         <div style="position:absolute;inset:0;background:rgba(201,170,124,.3);border-radius:3px"></div>
         <div style="position:absolute;top:0;left:0;height:100%;width:${ts>0?Math.min(tf/ts*100,100):0}%;background:var(--green);border-radius:3px;transition:width .7s ease"></div>
       </div>
-
+      <div style="font-size:11px;color:var(--text3)">${Math.round(factOfSmeta)}% выполнено от сметы</div>
     </div>
 
     <!-- Сводка -->
