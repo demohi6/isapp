@@ -892,8 +892,10 @@ function renderDash(){
           <div class="stage-card-info">
             <div class="stage-card-name">${s.name}</div>
             <div class="stage-card-meta">${done}/${s.items.length} ${t('positions')} · ${t('factLabel')} ${fmt(fact)}</div>
-            ${s.contractor?`<div class="contractor-tag">👤 ${s.contractor}</div>`:''}
-            ${(s.startDate||s.endDate)?`<div style="font-size:10px;color:var(--text3);margin-top:2px">📅 ${s.startDate||'?'} ${s.endDate?'→ '+s.endDate:''}</div>`:''}
+            ${(s.contractor||s.startDate||s.endDate)?`<div style="font-size:10px;color:var(--text3);margin-top:3px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+              ${s.contractor?`<span>👤 ${s.contractor}</span>`:''}
+              ${(s.startDate||s.endDate)?`<span>📅 ${s.startDate||'?'}${s.endDate?' → '+s.endDate:''}</span>`:''}
+            </div>`:''}
           </div>
           <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
             ${ringHTML(fp,s.color,48)}
