@@ -453,6 +453,24 @@ const LANGS = {
     itemTypeMat:'🧱 Material',
     typeWork:'İş',
     typeMat:'Material',
+    addWork:'👷 İş əlavə et',
+    addMat:'🧱 Material əlavə et',
+    contractAmount:'Müqavilə məbləği',
+    paid:'Ödənilib',
+    unpaid:'Qalıq',
+    phone:'Telefon',
+    phonePh:'+994 50 000 00 00',
+    workDone:'İş qəbul edildi',
+    unit:'Ölçü vahidi',
+    unitPcs:'əd',
+    unitM2:'m²',
+    unitM3:'m³',
+    unitLm:'m.p.',
+    unitKg:'kq',
+    unitBag:'kisə',
+    unitL:'l',
+    bought:'Alındı',
+    matTotal:'Cəmi',
   },
   ru: {
     appName:'Tikinti',
@@ -562,6 +580,24 @@ const LANGS = {
     itemTypeMat:'🧱 Материал',
     typeWork:'Работа',
     typeMat:'Материал',
+    addWork:'👷 Добавить работу',
+    addMat:'🧱 Добавить материал',
+    contractAmount:'Сумма договора',
+    paid:'Выплачено',
+    unpaid:'Остаток',
+    phone:'Телефон',
+    phonePh:'+994 50 000 00 00',
+    workDone:'Работа принята',
+    unit:'Ед. изм.',
+    unitPcs:'шт',
+    unitM2:'м²',
+    unitM3:'м³',
+    unitLm:'п.м.',
+    unitKg:'кг',
+    unitBag:'мешок',
+    unitL:'л',
+    bought:'Куплено',
+    matTotal:'Итого',
   },
   en: {
     appName:'Tikinti',
@@ -671,6 +707,24 @@ const LANGS = {
     itemTypeMat:'🧱 Material',
     typeWork:'Labour',
     typeMat:'Material',
+    addWork:'👷 Add labour',
+    addMat:'🧱 Add material',
+    contractAmount:'Contract amount',
+    paid:'Paid',
+    unpaid:'Remaining',
+    phone:'Phone',
+    phonePh:'+994 50 000 00 00',
+    workDone:'Work accepted',
+    unit:'Unit',
+    unitPcs:'pcs',
+    unitM2:'m²',
+    unitM3:'m³',
+    unitLm:'l.m.',
+    unitKg:'kg',
+    unitBag:'bag',
+    unitL:'l',
+    bought:'Bought',
+    matTotal:'Total',
   }
 };
 
@@ -777,7 +831,17 @@ function tName(obj){
 function loadDB(){
   try{
     const d=JSON.parse(localStorage.getItem(STORE_KEY));
-    if(d&&d.objects) return d;
+    if(d&&d.objects){
+      // migrate old items: add type='work' and contractAmount from price
+      d.objects.forEach(o=>o.stages.forEach(s=>s.items.forEach(i=>{
+        if(!i.type){
+          i.type='work';
+          if(!i.contractAmount) i.contractAmount=i.price||0;
+          if(!i.paid) i.paid=i.done?(i.price||0):0;
+        }
+      })));
+      return d;
+    }
   }catch{}
   return{objects:[JSON.parse(JSON.stringify(DEFAULT_OBJECT))],activeObjectId:1};
 }
@@ -789,12 +853,20 @@ let detailFilter='all'; // all | done | plan
 
 const curObj=()=>db.objects.find(o=>o.id===db.activeObjectId)||db.objects[0];
 const stages=()=>curObj().stages;
-const itemTotal = i => (i.qty||1)*(i.price||i.cost||0);
+const itemTotal = i => {
+  if(i.type==='mat') return (i.qty||1)*(i.price||0);
+  // work: contract amount is the total
+  return i.contractAmount||i.price||(i.qty||1)*(i.price||0)||0;
+};
 const stageSmeta  = s => s.items.reduce((a,i)=>a+itemTotal(i),0);
-const stageFact   = s => s.items.filter(i=>i.done).reduce((a,i)=>a+itemTotal(i),0);
+const stageFact   = s => s.items.reduce((a,i)=>{
+  if(i.type==='mat') return a+(i.bought?itemTotal(i):0);
+  // work: fact = paid amount
+  return a+(i.paid||0);
+},0);
 const overdueCount = s => {
   const today = new Date(); today.setHours(0,0,0,0);
-  return s.items.filter(i=>!i.done && i.endDate && new Date(i.endDate) < today).length;
+  return s.items.filter(i=>i.type!=='mat' && !i.done && i.endDate && new Date(i.endDate) < today).length;
 };
 const totalSmeta  = () => stages().reduce((a,s)=>a+stageSmeta(s),0);
 const totalFact   = () => stages().reduce((a,s)=>a+stageFact(s),0);
@@ -1432,54 +1504,97 @@ function renderDetail(){
 
     <div class="items-section">
       ${filtered.length===0?`<div class="empty" style="padding:28px 16px"><div style="font-size:28px;opacity:.3;margin-bottom:8px">📋</div></div>`:''}
-      ${filtered.map((item,i)=>`
-      <div class="item-row" style="animation-delay:${i*.04}s">
-        <div class="item-check ${item.done?'done':''}" style="${item.done?'background:'+s.color+';border-color:'+s.color:''}" onclick="toggleItem(${s.id},${item.id})">
-          ${item.done?'<svg width="12" height="12" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" fill="none" stroke="#0D0F14" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>':''}
-        </div>
-        <div onclick="editItemPrompt(${s.id},${item.id})" style="min-width:0;flex:1">
-          <div class="item-name ${item.done?'done':''}">${tName(item)}${item.qty>1?` <span style="color:var(--text3);font-size:11px">×${item.qty}</span>`:''}<span class="item-type-badge">${item.type==='mat'?'🧱':item.type==='work'?'👷':''}</span></div>
-          ${item.contractor?`<div style="font-size:10px;color:var(--text3);margin-top:1px">👤 ${item.contractor}</div>`:''}
-          ${(item.startDate||item.endDate)?`<div style="font-size:10px;color:var(--text3);margin-top:1px">📅 ${item.startDate?item.startDate.split('-').reverse().join('.'):'?'}${item.endDate?' → '+item.endDate.split('-').reverse().join('.'):''}${item.endDate&&new Date(item.endDate)<new Date()&&!item.done?' <span style="color:var(--red)">⚠️</span>':''}</div>`:''}
-          ${item.note?`<div style="font-size:11px;color:var(--text3);margin-top:1px">${item.note}</div>`:''}
-        </div>
-        <div class="item-cost" style="${item.done?'color:'+s.color:''}">${fmtShort(itemTotal(item))}</div>
-        <button class="item-del" onclick="deleteItem(${s.id},${item.id})">×</button>
-      </div>`).join('')}
+      ${filtered.map((item,idx)=>{
+        const isMat = item.type==='mat';
+        const isBought = isMat && item.bought;
+        const isDone = !isMat && item.done;
+        const accentColor = isMat ? 'var(--gold)' : 'var(--blue)';
+        const today = new Date(); today.setHours(0,0,0,0);
+        const isOverdue = !isMat && !isDone && item.endDate && new Date(item.endDate)<today;
+        // work: unpaid = contractAmount - paid
+        const unpaid = !isMat ? Math.max(0,(item.contractAmount||0)-(item.paid||0)) : 0;
+
+        return `<div class="item-row" style="animation-delay:${idx*.04}s;border-left:3px solid ${accentColor}22">
+          <div class="item-check ${isBought||isDone?'done':''}"
+            style="${isBought||isDone?'background:'+accentColor+';border-color:'+accentColor:''}"
+            onclick="${isMat?`toggleMatBought(${s.id},${item.id})`:`toggleItem(${s.id},${item.id})`}">
+            ${isBought||isDone?'<svg width="12" height="12" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" fill="none" stroke="#0D0F14" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>':''}
+          </div>
+          <div onclick="editItemPrompt(${s.id},${item.id})" style="min-width:0;flex:1">
+            <div class="item-name ${isBought||isDone?'done':''}" style="display:flex;align-items:center;gap:4px">
+              <span style="font-size:11px">${isMat?'🧱':'👷'}</span>
+              <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${tName(item)}</span>
+              ${isOverdue?'<span style="color:var(--red);font-size:10px">⚠️</span>':''}
+            </div>
+            ${isMat?`
+              <div style="font-size:10px;color:var(--text3);margin-top:1px">
+                ${item.qty||1} ${item.unit||t('unitPcs')} × ${fmtShort(item.price||0)} = <span style="color:var(--gold)">${fmtShort(itemTotal(item))}</span>
+              </div>`:`
+              <div style="font-size:10px;color:var(--text3);margin-top:1px;display:flex;gap:8px;flex-wrap:wrap">
+                ${item.contractAmount?`<span>📋 ${fmtShort(item.contractAmount)}</span>`:''}
+                ${item.paid?`<span style="color:var(--green)">✓ ${fmtShort(item.paid)}</span>`:''}
+                ${unpaid>0?`<span style="color:var(--red)">⏳ ${fmtShort(unpaid)}</span>`:''}
+              </div>`}
+            ${item.contractor?`<div style="font-size:10px;color:var(--text3);margin-top:1px">👤 ${item.contractor}${item.phone?' · 📞 '+item.phone:''}</div>`:''}
+            ${(item.startDate||item.endDate)?`<div style="font-size:10px;color:${isOverdue?'var(--red)':'var(--text3)'};margin-top:1px">📅 ${item.startDate?item.startDate.split('-').reverse().join('.'):'?'}${item.endDate?' → '+item.endDate.split('-').reverse().join('.'):''}${isOverdue?' ⚠️':''}</div>`:''}
+            ${item.note?`<div style="font-size:11px;color:var(--text3);margin-top:1px">${item.note}</div>`:''}
+          </div>
+          <div class="item-cost" style="color:${isBought||isDone?accentColor:'var(--text2)'}">${fmtShort(itemTotal(item))}</div>
+          <button class="item-del" onclick="deleteItem(${s.id},${item.id})">×</button>
+        </div>`;
+      }).join('')}
     </div>
 
-    <div class="add-form">
-      <div class="add-form-title">${t('addPosition')}</div>
-      <input type="text" id="newItemName" placeholder="${t('posNamePh')}"/>
-      <div class="qty-price-row" style="margin-top:8px">
-        <input type="number" id="newItemQty" placeholder="${t('qty')}" value="1"/>
-        <div class="qty-sep">×</div>
-        <input type="number" id="newItemPrice" placeholder="${t('price')} ₼"/>
-      </div>
-      <input type="text" id="newItemContractor" placeholder="👤 ${t('contractorPh')}" style="margin-top:8px"/>
+    <div class="add-form" id="addFormWork">
+      <div class="add-form-title">👷 ${t('addWork')}</div>
+      <input type="text" id="newWorkName" placeholder="${t('posNamePh')}"/>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
         <div>
-          <div class="drum-date-display" id="newItemStartDisplay" onclick="openDrumPicker('newStart','')" style="padding:8px 10px;font-size:12px">
-            📅 ${t('startDate')}
-          </div>
+          <div class="form-label" style="font-size:10px;margin-bottom:4px">${t('contractAmount')} ₼</div>
+          <input type="number" id="newWorkContract" placeholder="0"/>
+        </div>
+        <div>
+          <div class="form-label" style="font-size:10px;margin-bottom:4px">${t('paid')} ₼</div>
+          <input type="number" id="newWorkPaid" placeholder="0"/>
+        </div>
+      </div>
+      <input type="text" id="newWorkContractor" placeholder="👤 ${t('contractorPh')}" style="margin-top:8px"/>
+      <input type="text" id="newWorkPhone" placeholder="📞 ${t('phonePh')}" style="margin-top:8px"/>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+        <div>
+          <div class="drum-date-display" id="newItemStartDisplay" onclick="openDrumPicker('newStart','')" style="padding:8px 10px;font-size:12px">📅 ${t('startDate')}</div>
           <input type="hidden" id="newItemStart"/>
         </div>
         <div>
-          <div class="drum-date-display" id="newItemEndDisplay" onclick="openDrumPicker('newEnd','')" style="padding:8px 10px;font-size:12px">
-            🏁 ${t('endDate')}
-          </div>
+          <div class="drum-date-display" id="newItemEndDisplay" onclick="openDrumPicker('newEnd','')" style="padding:8px 10px;font-size:12px">🏁 ${t('endDate')}</div>
           <input type="hidden" id="newItemEnd"/>
         </div>
       </div>
-      <input type="text" id="newItemNote" placeholder="${t('notePh')}" style="margin-top:8px"/>
-      <div class="type-toggle">
-        <button class="type-btn active-work" id="newTypeBtnWork" onclick="setNewItemType('work')">${t('itemTypeWork')}</button>
-        <button class="type-btn" id="newTypeBtnMat" onclick="setNewItemType('mat')">${t('itemTypeMat')}</button>
-      </div>
-      <input type="hidden" id="newItemType" value="work"/>
-      <button class="btn btn-sm" style="background:${s.color}22;color:${s.color};border:1px solid ${s.color}44;width:100%;margin-top:8px" onclick="addItem(${s.id})">＋ ${t('addPosition')}</button>
+      <input type="text" id="newWorkNote" placeholder="${t('notePh')}" style="margin-top:8px"/>
+      <button class="btn btn-sm" style="background:rgba(123,184,204,.12);color:var(--blue);border:1px solid rgba(123,184,204,.3);width:100%;margin-top:8px" onclick="addWorkItem(${s.id})">＋ ${t('addWork')}</button>
     </div>
-    <button class="btn btn-danger btn-sm" onclick="confirmDeleteStage(${s.id})" style="width:100%;margin-top:4px">${t('deleteStage')}</button>
+
+    <div class="add-form" style="margin-top:10px" id="addFormMat">
+      <div class="add-form-title">🧱 ${t('addMat')}</div>
+      <input type="text" id="newMatName" placeholder="${t('posNamePh')}"/>
+      <div style="display:grid;grid-template-columns:1fr 80px 1fr;align-items:center;gap:6px;margin-top:8px">
+        <input type="number" id="newMatQty" placeholder="${t('qty')}" value="1"/>
+        <select id="newMatUnit" style="background:rgba(255,255,255,.05);border:1px solid var(--border2);color:var(--text);border-radius:10px;padding:10px 6px;font-family:'Mulish',sans-serif;font-size:13px;outline:none;-webkit-appearance:none;text-align:center">
+          <option value="шт">${t('unitPcs')}</option>
+          <option value="м²">${t('unitM2')}</option>
+          <option value="м³">${t('unitM3')}</option>
+          <option value="п.м.">${t('unitLm')}</option>
+          <option value="кг">${t('unitKg')}</option>
+          <option value="мешок">${t('unitBag')}</option>
+          <option value="л">${t('unitL')}</option>
+        </select>
+        <input type="number" id="newMatPrice" placeholder="${t('price')} ₼"/>
+      </div>
+      <input type="text" id="newMatNote" placeholder="${t('notePh')}" style="margin-top:8px"/>
+      <button class="btn btn-sm" style="background:rgba(201,170,124,.12);color:var(--gold);border:1px solid rgba(201,170,124,.3);width:100%;margin-top:8px" onclick="addMatItem(${s.id})">＋ ${t('addMat')}</button>
+    </div>
+
+    <button class="btn btn-danger btn-sm" onclick="confirmDeleteStage(${s.id})" style="width:100%;margin-top:10px">${t('deleteStage')}</button>
     <div style="height:8px"></div>`;
 }
 
@@ -1496,13 +1611,62 @@ function toggleItem(stageId,itemId){
   updateStages(ss=>ss.map(s=>{
     if(s.id!==stageId)return s;
     const items=s.items.map(i=>i.id===itemId?{...i,done:!i.done}:i);
-    const allDone=items.length>0&&items.every(i=>i.done);
-    const anyDone=items.some(i=>i.done);
+    const allDone=items.length>0&&items.filter(i=>i.type!=='mat').every(i=>i.done)&&items.filter(i=>i.type==='mat').every(i=>i.bought);
+    const anyDone=items.some(i=>i.done||i.bought);
     const status=allDone?'done':anyDone?'active':'idle';
     return{...s,items,status};
   }));
-  renderDetail();
-  renderDash();
+  renderDetail(); renderDash();
+}
+function toggleMatBought(stageId,itemId){
+  updateStages(ss=>ss.map(s=>{
+    if(s.id!==stageId)return s;
+    const items=s.items.map(i=>i.id===itemId?{...i,bought:!i.bought}:i);
+    const allDone=items.filter(i=>i.type!=='mat').every(i=>i.done)&&items.filter(i=>i.type==='mat').every(i=>i.bought);
+    const anyDone=items.some(i=>i.done||i.bought);
+    return{...s,items,status:allDone?'done':anyDone?'active':'idle'};
+  }));
+  if(navigator.vibrate) navigator.vibrate(30);
+  renderDetail(); renderDash();
+}
+function addWorkItem(stageId){
+  const name=document.getElementById('newWorkName')?.value.trim();
+  const contractAmount=parseFloat(document.getElementById('newWorkContract')?.value)||0;
+  const paid=parseFloat(document.getElementById('newWorkPaid')?.value)||0;
+  const contractor=document.getElementById('newWorkContractor')?.value.trim()||'';
+  const phone=document.getElementById('newWorkPhone')?.value.trim()||'';
+  const startDate=document.getElementById('newItemStart')?.value||'';
+  const endDate=document.getElementById('newItemEnd')?.value||'';
+  const note=document.getElementById('newWorkNote')?.value.trim()||'';
+  if(!name){showToast(t('enterName'),'err');return;}
+  if(!contractAmount){showToast(t('enterBudget'),'err');return;}
+  updateStages(ss=>ss.map(s=>s.id!==stageId?s:{...s,items:[...s.items,{
+    id:newId(),name,type:'work',contractAmount,paid,contractor,phone,
+    startDate,endDate,note,done:false
+  }]}));
+  ['newWorkName','newWorkContract','newWorkPaid','newWorkContractor','newWorkPhone','newWorkNote'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const sd=document.getElementById('newItemStartDisplay');if(sd){sd.textContent='📅 '+t('startDate');sd.classList.remove('has-value');}
+  const ed=document.getElementById('newItemEndDisplay');if(ed){ed.textContent='🏁 '+t('endDate');ed.classList.remove('has-value');}
+  const si=document.getElementById('newItemStart');if(si)si.value='';
+  const ei=document.getElementById('newItemEnd');if(ei)ei.value='';
+  if(navigator.vibrate) navigator.vibrate(30);
+  renderDetail(); showToast(t('posAdded'));
+}
+function addMatItem(stageId){
+  const name=document.getElementById('newMatName')?.value.trim();
+  const qty=parseFloat(document.getElementById('newMatQty')?.value)||1;
+  const unit=document.getElementById('newMatUnit')?.value||'шт';
+  const price=parseFloat(document.getElementById('newMatPrice')?.value)||0;
+  const note=document.getElementById('newMatNote')?.value.trim()||'';
+  if(!name){showToast(t('enterName'),'err');return;}
+  if(!price){showToast(t('enterBudget'),'err');return;}
+  updateStages(ss=>ss.map(s=>s.id!==stageId?s:{...s,items:[...s.items,{
+    id:newId(),name,type:'mat',qty,unit,price,note,bought:false
+  }]}));
+  ['newMatName','newMatPrice','newMatNote'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const qEl=document.getElementById('newMatQty');if(qEl)qEl.value='1';
+  if(navigator.vibrate) navigator.vibrate(30);
+  renderDetail(); showToast(t('posAdded'));
 }
 function deleteItem(stageId,itemId){
   updateStages(ss=>ss.map(s=>s.id!==stageId?s:{...s,items:s.items.filter(i=>i.id!==itemId)}));
@@ -1540,43 +1704,50 @@ function editItemPrompt(stageId,itemId){
   const s=stages().find(st=>st.id===stageId);
   const item=s?.items.find(i=>i.id===itemId);
   if(!item)return;
-  window._editItemId={stageId,itemId};
-  const startDisp=item.startDate?'📅 '+item.startDate.split('-').reverse().join('.'):'📅 '+t('startDate');
-  const endDisp=item.endDate?'🏁 '+item.endDate.split('-').reverse().join('.'):'🏁 '+t('endDate');
+  const isMat=item.type==='mat';
+  const sDisp=item.startDate?'📅 '+item.startDate.split('-').reverse().join('.'):'📅 '+t('startDate');
+  const eDisp=item.endDate?'🏁 '+item.endDate.split('-').reverse().join('.'):'🏁 '+t('endDate');
   const sHas=item.startDate?'has-value':'';
   const eHas=item.endDate?'has-value':'';
+  const UNITS=['шт','м²','м³','п.м.','кг','мешок','л'];
+  const unitOpts=UNITS.map(u=>`<option value="${u}"${(item.unit||'шт')===u?' selected':''}>${u}</option>`).join('');
 
   let html='<div class="modal-handle"></div>'
-    +'<div class="modal-title">'+t('editPos')+'</div>'
+    +'<div class="modal-title">'+(isMat?'🧱 ':'👷 ')+t('editPos')+'</div>'
     +'<div class="form-group"><label class="form-label">'+t('posName')+'</label>'
-      +'<input type="text" id="eiName" value="'+tName(item).replace(/"/g,'&quot;')+'"/></div>'
-    +'<div class="form-group"><label class="form-label">'+t('qty')+' × '+t('price')+'</label>'
-      +'<div class="qty-price-row">'
+      +'<input type="text" id="eiName" value="'+tName(item).replace(/"/g,'&quot;')+'"/></div>';
+
+  if(isMat){
+    html+='<div class="form-group"><label class="form-label">'+t('qty')+' / '+t('unit')+'</label>'
+      +'<div style="display:grid;grid-template-columns:1fr 80px 1fr;align-items:center;gap:6px">'
         +'<input type="number" id="eiQty" value="'+(item.qty||1)+'"/>'
-        +'<div class="qty-sep">×</div>'
-        +'<input type="number" id="eiPrice" value="'+(item.price||item.cost||0)+'"/>'
-      +'</div></div>'
+        +'<select id="eiUnit" style="background:rgba(255,255,255,.05);border:1px solid var(--border2);color:var(--text);border-radius:10px;padding:10px 6px;font-family:\'Mulish\',sans-serif;font-size:13px;outline:none;-webkit-appearance:none;text-align:center">'+unitOpts+'</select>'
+        +'<input type="number" id="eiPrice" placeholder="'+t('price')+' ₼" value="'+(item.price||0)+'"/>'
+      +'</div></div>';
+  } else {
+    html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">'
+      +'<div><label class="form-label">'+t('contractAmount')+' ₼</label>'
+        +'<input type="number" id="eiContract" value="'+(item.contractAmount||0)+'"/></div>'
+      +'<div><label class="form-label">'+t('paid')+' ₼</label>'
+        +'<input type="number" id="eiPaid" value="'+(item.paid||0)+'"/></div>'
+    +'</div>'
     +'<div class="form-group"><label class="form-label">'+t('contractor')+'</label>'
-      +'<input type="text" id="eiContractor" placeholder="'+t('contractorPh')+'" value="'+(item.contractor||'').replace(/"/g,'&quot;')+'"/></div>'
+      +'<input type="text" id="eiContractor" value="'+(item.contractor||'').replace(/"/g,'&quot;')+'"/></div>'
+    +'<div class="form-group"><label class="form-label">'+t('phone')+'</label>'
+      +'<input type="text" id="eiPhone" value="'+(item.phone||'').replace(/"/g,'&quot;')+'"/></div>'
     +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">'
-      +'<div><label class="form-label" style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:6px">'+t('startDate')+'</label>'
-        +'<div class="drum-date-display '+sHas+'" id="eiStartDisplay" onclick="pickEiDate(&quot;eiStart&quot;)" style="padding:8px 10px;font-size:12px;cursor:pointer">'+startDisp+'</div>'
-        +'<input type="hidden" id="eiStartDate" value="'+(item.startDate||'')+'"/>'
-      +'</div>'
-      +'<div><label class="form-label" style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:6px">'+t('endDate')+'</label>'
-        +'<div class="drum-date-display '+eHas+'" id="eiEndDisplay" onclick="pickEiDate(&quot;eiEnd&quot;)" style="padding:8px 10px;font-size:12px;cursor:pointer">'+endDisp+'</div>'
-        +'<input type="hidden" id="eiEndDate" value="'+(item.endDate||'')+'"/>'
-      +'</div>'
-    +'</div>'
-    +'<div class="form-group"><label class="form-label">'+t('note')+'</label>'
-      +'<input type="text" id="eiNote" value="'+(item.note||'').replace(/"/g,'&quot;')+'"/></div>'
-    +'<div class="form-group"><label class="form-label">'+t('itemType')+'</label>'
-      +'<div class="type-toggle">'
-        +'<button class="type-btn'+((!item.type||item.type==='work')?' active-work':'')+'" id="eiTypeBtnWork" onclick="setEiType(\'work\')">'+t('itemTypeWork')+'</button>'
-        +'<button class="type-btn'+(item.type==='mat'?' active-mat':'')+'" id="eiTypeBtnMat" onclick="setEiType(\'mat\')">'+t('itemTypeMat')+'</button>'
-      +'</div>'
-      +'<input type="hidden" id="eiType" value="'+(item.type||'work')+'"/>'
-    +'</div>'
+      +'<div><label class="form-label" style="font-size:10px;display:block;margin-bottom:6px">'+t('startDate')+'</label>'
+        +'<div class="drum-date-display '+sHas+'" id="eiStartDisplay" onclick="pickEiDate(\'eiStart\')" style="padding:8px 10px;font-size:12px;cursor:pointer">'+sDisp+'</div>'
+        +'<input type="hidden" id="eiStartDate" value="'+(item.startDate||'')+'"/></div>'
+      +'<div><label class="form-label" style="font-size:10px;display:block;margin-bottom:6px">'+t('endDate')+'</label>'
+        +'<div class="drum-date-display '+eHas+'" id="eiEndDisplay" onclick="pickEiDate(\'eiEnd\')" style="padding:8px 10px;font-size:12px;cursor:pointer">'+eDisp+'</div>'
+        +'<input type="hidden" id="eiEndDate" value="'+(item.endDate||'')+'"/></div>'
+    +'</div>';
+  }
+
+  html+='<div class="form-group"><label class="form-label">'+t('note')+'</label>'
+    +'<input type="text" id="eiNote" value="'+(item.note||'').replace(/"/g,'&quot;')+'"/></div>'
+    +'<input type="hidden" id="eiType" value="'+(item.type||'work')+'"/>'
     +'<div style="display:flex;gap:10px;margin-top:4px">'
       +'<button class="btn btn-secondary" onclick="closeModal()">'+t('cancel')+'</button>'
       +'<button class="btn btn-primary" onclick="saveItemEdit('+stageId+','+itemId+')">'+t('save')+'</button>'
@@ -1585,28 +1756,29 @@ function editItemPrompt(stageId,itemId){
 }
 
 function pickEiDate(field){
-  const hidId = field==='eiStart'?'eiStartDate':'eiEndDate';
-  const val = document.getElementById(hidId)?.value||'';
-  openDrumPicker(field, val);
-}
-
-function setEiType(type){
-  document.getElementById('eiType').value=type;
-  document.getElementById('eiTypeBtnWork').className='type-btn'+(type==='work'?' active-work':'');
-  document.getElementById('eiTypeBtnMat').className='type-btn'+(type==='mat'?' active-mat':'');
+  const hidId=field==='eiStart'?'eiStartDate':'eiEndDate';
+  openDrumPicker(field, document.getElementById(hidId)?.value||'');
 }
 
 function saveItemEdit(stageId,itemId){
   const name=document.getElementById('eiName')?.value.trim();
-  const qty=parseInt(document.getElementById('eiQty')?.value)||1;
-  const price=parseFloat(document.getElementById('eiPrice')?.value)||0;
   const note=document.getElementById('eiNote')?.value.trim()||'';
-  const contractor=document.getElementById('eiContractor')?.value.trim()||'';
-  const startDate=document.getElementById('eiStartDate')?.value||'';
-  const endDate=document.getElementById('eiEndDate')?.value||'';
   const type=document.getElementById('eiType')?.value||'work';
   if(!name){showToast(t('enterName'),'err');return;}
-  updateStages(ss=>ss.map(s=>s.id!==stageId?s:{...s,items:s.items.map(i=>i.id===itemId?{...i,name,qty,price,note,contractor,startDate,endDate,type}:i)}));
+  let patch={name,note,type};
+  if(type==='mat'){
+    patch.qty=parseFloat(document.getElementById('eiQty')?.value)||1;
+    patch.unit=document.getElementById('eiUnit')?.value||'шт';
+    patch.price=parseFloat(document.getElementById('eiPrice')?.value)||0;
+  } else {
+    patch.contractAmount=parseFloat(document.getElementById('eiContract')?.value)||0;
+    patch.paid=parseFloat(document.getElementById('eiPaid')?.value)||0;
+    patch.contractor=document.getElementById('eiContractor')?.value.trim()||'';
+    patch.phone=document.getElementById('eiPhone')?.value.trim()||'';
+    patch.startDate=document.getElementById('eiStartDate')?.value||'';
+    patch.endDate=document.getElementById('eiEndDate')?.value||'';
+  }
+  updateStages(ss=>ss.map(s=>s.id!==stageId?s:{...s,items:s.items.map(i=>i.id===itemId?{...i,...patch}:i)}));
   closeModal();renderDetail();showToast(t('objUpdated'));
 }
 
