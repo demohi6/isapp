@@ -1299,6 +1299,34 @@ function handleImport(e){
 }
 
 // ══════════════════════════
+//  IMPORT / EXPORT
+// ══════════════════════════
+function triggerImport(){
+  document.getElementById('importFile').click();
+}
+function handleImport(e){
+  const file=e.target.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      const data=JSON.parse(ev.target.result);
+      // Support both full DB and single object array
+      if(data.objects && data.activeObjectId){
+        db=data; saveDB(); renderDash(); showToast(t('importSuccess'));
+      } else if(Array.isArray(data)){
+        // Legacy: array of stages
+        const id=newId();
+        db.objects.push({id,name:'Импорт',icon:'📥',totalBudget:0,stages:data});
+        db.activeObjectId=id; saveDB(); renderDash(); showToast(t('importSuccess'));
+      } else { showToast(t('importError'),'err'); }
+    }catch{ showToast(t('importError'),'err'); }
+  };
+  reader.readAsText(file);
+  e.target.value='';
+}
+
+// ══════════════════════════
 //  DRAG TO SORT
 // ══════════════════════════
 let _lpTimer=null, _sd=null;
