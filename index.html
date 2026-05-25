@@ -992,8 +992,7 @@ function renderDash(){
                 <div style="height:100%;width:${s.items.length>0?Math.round(done/s.items.length*100):0}%;background:${s.color};border-radius:2px"></div>
               </div>`:''}
             </div>
-            ${s.contractor?`<div style="font-size:11px;color:var(--text2);margin-top:4px">👤 ${s.contractor}</div>`:''}
-            ${(s.startDate||s.endDate)?`<div style="font-size:11px;color:var(--text2);margin-top:2px">📅 ${s.startDate||'?'}${s.endDate?' → '+s.endDate:''}</div>`:''}
+
           </div>
           <div>${ringHTML(fp,s.color,54)}</div>
         </div>
@@ -1082,6 +1081,8 @@ function renderDetail(){
         </div>
         <div onclick="editItemPrompt(${s.id},${item.id})" style="min-width:0;flex:1">
           <div class="item-name ${item.done?'done':''}">${tName(item)}${item.qty>1?` <span style="color:var(--text3);font-size:11px">×${item.qty}</span>`:''}</div>
+          ${item.contractor?`<div style="font-size:10px;color:var(--text3);margin-top:1px">👤 ${item.contractor}</div>`:''}
+          ${(item.startDate||item.endDate)?`<div style="font-size:10px;color:var(--text3);margin-top:1px">📅 ${item.startDate?item.startDate.split('-').reverse().join('.'):'?'}${item.endDate?' → '+item.endDate.split('-').reverse().join('.'):''}${item.endDate&&new Date(item.endDate)<new Date()&&!item.done?' <span style="color:var(--red)">⚠️</span>':''}</div>`:''}
           ${item.note?`<div style="font-size:11px;color:var(--text3);margin-top:1px">${item.note}</div>`:''}
         </div>
         <div class="item-cost" style="${item.done?'color:'+s.color:''}">${fmtShort(itemTotal(item))}</div>
@@ -1096,6 +1097,21 @@ function renderDetail(){
         <input type="number" id="newItemQty" placeholder="${t('qty')}" value="1"/>
         <div class="qty-sep">×</div>
         <input type="number" id="newItemPrice" placeholder="${t('price')} ₼"/>
+      </div>
+      <input type="text" id="newItemContractor" placeholder="👤 ${t('contractorPh')}" style="margin-top:8px"/>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+        <div>
+          <div class="drum-date-display" id="newItemStartDisplay" onclick="openDrumPicker('newStart','')" style="padding:8px 10px;font-size:12px">
+            📅 ${t('startDate')}
+          </div>
+          <input type="hidden" id="newItemStart"/>
+        </div>
+        <div>
+          <div class="drum-date-display" id="newItemEndDisplay" onclick="openDrumPicker('newEnd','')" style="padding:8px 10px;font-size:12px">
+            🏁 ${t('endDate')}
+          </div>
+          <input type="hidden" id="newItemEnd"/>
+        </div>
       </div>
       <input type="text" id="newItemNote" placeholder="${t('notePh')}" style="margin-top:8px"/>
       <button class="btn btn-sm" style="background:${s.color}22;color:${s.color};border:1px solid ${s.color}44;width:100%;margin-top:8px" onclick="addItem(${s.id})">＋ ${t('addPosition')}</button>
@@ -1134,9 +1150,17 @@ function addItem(stageId){
   const qty=parseInt(document.getElementById('newItemQty')?.value)||1;
   const price=parseFloat(document.getElementById('newItemPrice')?.value);
   const note=document.getElementById('newItemNote')?.value.trim()||'';
+  const contractor=document.getElementById('newItemContractor')?.value.trim()||'';
+  const startDate=document.getElementById('newItemStart')?.value||'';
+  const endDate=document.getElementById('newItemEnd')?.value||'';
   if(!name){showToast(t('enterName'),'err');return;}
   if(!price||price<=0){showToast(t('enterBudget'),'err');return;}
-  updateStages(ss=>ss.map(s=>s.id!==stageId?s:{...s,items:[...s.items,{id:newId(),name,qty,price,done:false,note}]}));
+  updateStages(ss=>ss.map(s=>s.id!==stageId?s:{...s,items:[...s.items,{id:newId(),name,qty,price,done:false,note,contractor,startDate,endDate}]}));
+  // Reset date displays
+  const sd=document.getElementById('newItemStartDisplay');if(sd){sd.textContent='📅 '+t('startDate');sd.classList.remove('has-value');}
+  const ed=document.getElementById('newItemEndDisplay');if(ed){ed.textContent='🏁 '+t('endDate');ed.classList.remove('has-value');}
+  const si=document.getElementById('newItemStart');if(si)si.value='';
+  const ei=document.getElementById('newItemEnd');if(ei)ei.value='';
   renderDetail();showToast(t('posAdded'));
 }
 
@@ -1197,22 +1221,7 @@ function showStageModal(existing){
     <div class="form-group"><label class="form-label">${t('stageColor')}</label>
       <div class="color-grid">${COLORS.map(c=>`<div class="color-opt ${c===data.color?'sel':''}" style="background:${c}" onclick="selColor('${c}')"></div>`).join('')}</div></div>
 
-    <div class="form-group"><label class="form-label">${t('contractor')}</label>
-      <input type="text" id="sContractor" placeholder="${t('contractorPh')}" value="${data.contractor||''}"/></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
-      <div><label class="form-label">${t('startDate')}</label>
-        <div class="drum-date-display ${data.startDate?'has-value':''}" id="sStartDateDisplay" onclick="openDrumPicker('start','${data.startDate||''}')">
-          <span class="cal-icon">📅</span>${data.startDate?data.startDate.split('-').reverse().join('.'):'— — ——'}
-        </div>
-        <input type="hidden" id="sStartDate" value="${data.startDate||''}"/>
-      </div>
-      <div><label class="form-label">${t('endDate')}</label>
-        <div class="drum-date-display ${data.endDate?'has-value':''}" id="sEndDateDisplay" onclick="openDrumPicker('end','${data.endDate||''}')">
-          <span class="cal-icon">🏁</span>${data.endDate?data.endDate.split('-').reverse().join('.'):'— — ——'}
-        </div>
-        <input type="hidden" id="sEndDate" value="${data.endDate||''}"/>
-      </div>
-    </div>
+
     <p style="font-size:12px;color:var(--text3);margin-bottom:16px;line-height:1.5">${t('stageHint')}</p>
     <div style="display:flex;gap:10px">
       <button class="btn btn-secondary" onclick="closeModal()">${t('cancel')}</button>
@@ -1225,15 +1234,12 @@ function saveStage(editId){
   const name=document.getElementById('sName')?.value.trim();
   const icon=window._sfd?.icon||'🏠',color=window._sfd?.color||'#7BB8CC';
   if(!name){showToast(t('enterName'),'err');return;}
-  const contractor=document.getElementById('sContractor')?.value.trim()||'';
-  const startDate=document.getElementById('sStartDate')?.value||'';
-  const endDate=document.getElementById('sEndDate')?.value||'';
   if(editId){
     const id=parseInt(editId);
-    updateStages(ss=>ss.map(s=>s.id===id?{...s,name,icon,color,contractor,startDate,endDate}:s));
+    updateStages(ss=>ss.map(s=>s.id===id?{...s,name,icon,color}:s));
     showToast(t('stageUpdated'));
   } else {
-    updateStages(ss=>[...ss,{id:newId(),name,icon,color,contractor,startDate,endDate,status:'idle',items:[]}]);
+    updateStages(ss=>[...ss,{id:newId(),name,icon,color,status:'idle',items:[]}]);
     showToast(t('stageAdded'));
   }
   closeModal();
@@ -1504,10 +1510,15 @@ function confirmDrumDate(){
   const val=y+'-'+m+'-'+d;
   const display=d+'.'+m+'.'+y;
   const f=_drum.field;
-  const hid=document.getElementById(f==='start'?'sStartDate':'sEndDate');
-  const dis=document.getElementById(f==='start'?'sStartDateDisplay':'sEndDateDisplay');
+  let hidId, disId;
+  if(f==='start'){hidId='sStartDate';disId='sStartDateDisplay';}
+  else if(f==='end'){hidId='sEndDate';disId='sEndDateDisplay';}
+  else if(f==='newStart'){hidId='newItemStart';disId='newItemStartDisplay';}
+  else if(f==='newEnd'){hidId='newItemEnd';disId='newItemEndDisplay';}
+  const hid=document.getElementById(hidId);
+  const dis=document.getElementById(disId);
   if(hid)hid.value=val;
-  if(dis){dis.textContent=display;dis.classList.add('has-value');}
+  if(dis){dis.textContent=(f.includes('Start')||f==='start'?'📅 ':'🏁 ')+display;dis.classList.add('has-value');}
   closeModal();showToast(display);
 }
 
@@ -1859,10 +1870,15 @@ function confirmDrumDate(){
   const val=y+'-'+m+'-'+d;
   const display=d+'.'+m+'.'+y;
   const f=_drum.field;
-  const hid=document.getElementById(f==='start'?'sStartDate':'sEndDate');
-  const dis=document.getElementById(f==='start'?'sStartDateDisplay':'sEndDateDisplay');
+  let hidId, disId;
+  if(f==='start'){hidId='sStartDate';disId='sStartDateDisplay';}
+  else if(f==='end'){hidId='sEndDate';disId='sEndDateDisplay';}
+  else if(f==='newStart'){hidId='newItemStart';disId='newItemStartDisplay';}
+  else if(f==='newEnd'){hidId='newItemEnd';disId='newItemEndDisplay';}
+  const hid=document.getElementById(hidId);
+  const dis=document.getElementById(disId);
   if(hid)hid.value=val;
-  if(dis){dis.textContent=display;dis.classList.add('has-value');}
+  if(dis){dis.textContent=(f.includes('Start')||f==='start'?'📅 ':'🏁 ')+display;dis.classList.add('has-value');}
   closeModal();showToast(display);
 }
 
