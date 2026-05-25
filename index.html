@@ -255,6 +255,18 @@ input:focus,textarea:focus{border-color:rgba(255,255,255,.3)}
 .scc-sum{font-family:'DM Mono',monospace;font-size:12px;color:var(--green);white-space:nowrap}
 .scc-check{width:20px;height:20px;border-radius:50%;background:rgba(128,200,154,.2);border:1.5px solid var(--green);display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .over-badge{display:inline-flex;align-items:center;gap:4px;background:rgba(204,123,123,.15);border:1px solid rgba(204,123,123,.3);color:var(--red);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:600}
+
+/* TEMPLATE PICKER */
+.tpl-section-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;padding:10px 2px 6px;display:flex;align-items:center;gap:6px}
+.tpl-section-label span{font-size:14px}
+.tpl-card{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:12px;margin-bottom:6px;cursor:pointer;transition:all .15s;background:var(--bg3);-webkit-user-select:none;user-select:none}
+.tpl-card:active{transform:scale(.97);background:rgba(255,255,255,.06)}
+.tpl-card-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.tpl-card-info{flex:1;min-width:0}
+.tpl-card-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:1px}
+.tpl-card-meta{font-size:11px;color:var(--text3)}
+.tpl-save-btn{display:flex;align-items:center;gap:6px;background:rgba(201,170,124,.08);border:1px solid rgba(201,170,124,.2);color:var(--gold);border-radius:10px;padding:8px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Mulish',sans-serif;transition:all .15s;width:100%;justify-content:center;margin-top:4px}
+.tpl-save-btn:active{transform:scale(.97)}
 </style>
 </head>
 <body>
@@ -411,6 +423,18 @@ const LANGS = {
     startDate:'Başlama tarixi',
     endDate:'Bitmə tarixi',
     sortStages:'Sıralama',
+    fromTemplate:'📋 Şablondan',
+    templates:'Şablonlar',
+    builtinTemplates:'Hazır şablonlar',
+    myTemplates:'Mənim şablonlarım',
+    saveAsTemplate:'Şablon kimi saxla',
+    templateSaved:'Şablon saxlanıldı',
+    templateDeleted:'Şablon silindi',
+    templateApplied:'Şablon tətbiq edildi',
+    templateName:'Şablon adı',
+    noMyTemplates:'Hələ şablon yoxdur',
+    applyTemplate:'Tətbiq et',
+    templateHint:'Bütün mövqelər yeni mərhələyə əlavə ediləcək',
   },
   ru: {
     appName:'Tikinti',
@@ -503,6 +527,18 @@ const LANGS = {
     startDate:'Дата начала',
     endDate:'Дата окончания',
     sortStages:'Порядок',
+    fromTemplate:'📋 Из шаблона',
+    templates:'Шаблоны',
+    builtinTemplates:'Встроенные шаблоны',
+    myTemplates:'Мои шаблоны',
+    saveAsTemplate:'Сохранить как шаблон',
+    templateSaved:'Шаблон сохранён',
+    templateDeleted:'Шаблон удалён',
+    templateApplied:'Шаблон применён',
+    templateName:'Название шаблона',
+    noMyTemplates:'Нет сохранённых шаблонов',
+    applyTemplate:'Применить',
+    templateHint:'Все позиции будут добавлены в новый этап',
   },
   en: {
     appName:'Tikinti',
@@ -595,6 +631,18 @@ const LANGS = {
     startDate:'Start date',
     endDate:'End date',
     sortStages:'Order',
+    fromTemplate:'📋 From template',
+    templates:'Templates',
+    builtinTemplates:'Built-in templates',
+    myTemplates:'My templates',
+    saveAsTemplate:'Save as template',
+    templateSaved:'Template saved',
+    templateDeleted:'Template deleted',
+    templateApplied:'Template applied',
+    templateName:'Template name',
+    noMyTemplates:'No saved templates yet',
+    applyTemplate:'Apply',
+    templateHint:'All items will be added to the new stage',
   }
 };
 
@@ -719,6 +767,280 @@ const newId=()=>Date.now()+Math.floor(Math.random()*999);
 const OBJ_ICONS=['🏠','🏡','🏗','🏢','🏬','🏭','🌳','🌿','🏊','🔑','⬛','🧱'];
 const ICONS=['🏠','🏗','⬛','🪟','⚙️','🎨','🌿','🧱','🔧','💡','🚿','🛠','🏡','🌲','🪣','🔑','🏊','🌳'];
 const COLORS=['#C9AA7C','#7BB8CC','#CC7B7B','#9E8ED4','#80C89A','#C8C07E','#CC9B7B','#7BC4CC','#B87BB8','#7BA8CC'];
+
+// ══════════════════════════
+//  TEMPLATES
+// ══════════════════════════
+const TEMPLATE_STORE = 'isapp_templates_v1';
+
+const BUILTIN_TEMPLATES = [
+  // ── СТРОИТЕЛЬНЫЕ ──
+  {
+    id:'tpl_foundation', cat:'build',
+    name_ru:'Фундамент', name_az:'Təməl', name_en:'Foundation',
+    icon:'⬛', color:'#C9AA7C',
+    items:[
+      {name_ru:'Земляные работы',name_az:'Torpaq işləri',name_en:'Earthwork',qty:1,price:3500},
+      {name_ru:'Арматура',name_az:'Armatur',name_en:'Rebar',qty:1,price:4200},
+      {name_ru:'Опалубка',name_az:'Qəlib',name_en:'Formwork',qty:1,price:1800},
+      {name_ru:'Бетон (заливка)',name_az:'Beton tökmə',name_en:'Concrete pour',qty:1,price:5400},
+      {name_ru:'Гидроизоляция',name_az:'Hidroizolyasiya',name_en:'Waterproofing',qty:1,price:2800},
+    ]
+  },
+  {
+    id:'tpl_walls', cat:'build',
+    name_ru:'Коробка / Стены', name_az:'Ev gövdəsi', name_en:'Structure / Walls',
+    icon:'🏗', color:'#7BB8CC',
+    items:[
+      {name_ru:'Кладка стен (1 этаж)',name_az:'Divar hörgüsü (1 mərtəbə)',name_en:'Brickwork (1st floor)',qty:1,price:12000},
+      {name_ru:'Перекрытие',name_az:'Tavan örtüyü',name_en:'Floor slab',qty:1,price:8500},
+      {name_ru:'Кладка стен (2 этаж)',name_az:'Divar hörgüsü (2 mərtəbə)',name_en:'Brickwork (2nd floor)',qty:1,price:11000},
+      {name_ru:'Фронтоны',name_az:'Frontonlar',name_en:'Gables',qty:1,price:3200},
+      {name_ru:'Стропила и обрешётка',name_az:'Mərtek konstruksiyası',name_en:'Rafters & sheathing',qty:1,price:7500},
+    ]
+  },
+  {
+    id:'tpl_roof', cat:'build',
+    name_ru:'Кровля', name_az:'Dam örtüyü', name_en:'Roofing',
+    icon:'🏠', color:'#CC7B7B',
+    items:[
+      {name_ru:'Утеплитель кровли',name_az:'Dam istilik izolyasiyası',name_en:'Roof insulation',qty:1,price:2400},
+      {name_ru:'Кровельный материал',name_az:'Dam örtüyü materialı',name_en:'Roofing material',qty:1,price:9500},
+      {name_ru:'Водосточная система',name_az:'Yağış suyu sistemi',name_en:'Gutter system',qty:1,price:2400},
+      {name_ru:'Конёк и доборные элементы',name_az:'Tac və əlavə elementlər',name_en:'Ridge & accessories',qty:1,price:1200},
+    ]
+  },
+  {
+    id:'tpl_windows', cat:'build',
+    name_ru:'Окна и двери', name_az:'Qapı və pəncərələr', name_en:'Windows & Doors',
+    icon:'🪟', color:'#9E8ED4',
+    items:[
+      {name_ru:'Окна ПВХ',name_az:'PVC pəncərələr',name_en:'PVC windows',qty:1,price:7600},
+      {name_ru:'Входная дверь',name_az:'Giriş qapısı',name_en:'Front door',qty:1,price:2200},
+      {name_ru:'Межкомнатные двери',name_az:'Otaq qapıları',name_en:'Interior doors',qty:1,price:2880},
+      {name_ru:'Монтаж окон и дверей',name_az:'Pəncərə və qapı quraşdırması',name_en:'Installation',qty:1,price:1200},
+    ]
+  },
+  // ── ИНЖЕНЕРИЯ ──
+  {
+    id:'tpl_electric', cat:'engineering',
+    name_ru:'Электрика', name_az:'Elektrik işləri', name_en:'Electrical',
+    icon:'💡', color:'#C8C07E',
+    items:[
+      {name_ru:'Разработка проекта',name_az:'Layihə hazırlanması',name_en:'Project design',qty:1,price:1500},
+      {name_ru:'Кабель и материалы',name_az:'Kabel və materiallar',name_en:'Cable & materials',qty:1,price:4500},
+      {name_ru:'Монтаж проводки',name_az:'Kabel çəkilməsi',name_en:'Wiring installation',qty:1,price:3500},
+      {name_ru:'Щиток и автоматы',name_az:'Elektrik paneli',name_en:'Distribution board',qty:1,price:2200},
+      {name_ru:'Розетки и выключатели',name_az:'Rozetlər və açarlar',name_en:'Outlets & switches',qty:1,price:1800},
+    ]
+  },
+  {
+    id:'tpl_plumbing', cat:'engineering',
+    name_ru:'Сантехника', name_az:'Santexnika', name_en:'Plumbing',
+    icon:'🚿', color:'#7BB8CC',
+    items:[
+      {name_ru:'Трубы водоснабжения',name_az:'Su boruları',name_en:'Water pipes',qty:1,price:3200},
+      {name_ru:'Трубы канализации',name_az:'Kanalizasiya boruları',name_en:'Drainage pipes',qty:1,price:2800},
+      {name_ru:'Монтаж сантехники',name_az:'Santexnika quraşdırması',name_en:'Plumbing installation',qty:1,price:4500},
+      {name_ru:'Унитаз, умывальник, ванна',name_az:'Tualet, lavabo, vanna',name_en:'Toilet, sink, bath',qty:1,price:3600},
+    ]
+  },
+  {
+    id:'tpl_heating', cat:'engineering',
+    name_ru:'Отопление', name_az:'İstilik sistemi', name_en:'Heating',
+    icon:'⚙️', color:'#CC9B7B',
+    items:[
+      {name_ru:'Котёл отопления',name_az:'İstilik qazanı',name_en:'Heating boiler',qty:1,price:6500},
+      {name_ru:'Радиаторы',name_az:'Radiatorlar',name_en:'Radiators',qty:1,price:4200},
+      {name_ru:'Трубы отопления',name_az:'İstilik boruları',name_en:'Heating pipes',qty:1,price:2800},
+      {name_ru:'Монтаж системы',name_az:'Sistem quraşdırması',name_en:'System installation',qty:1,price:3500},
+    ]
+  },
+  // ── ОТДЕЛКА ──
+  {
+    id:'tpl_roughfinish', cat:'finish',
+    name_ru:'Черновая отделка', name_az:'Kobud bitirmə', name_en:'Rough finishing',
+    icon:'🧱', color:'#80C89A',
+    items:[
+      {name_ru:'Стяжка полов',name_az:'Döşəmə stяжkası',name_en:'Floor screed',qty:1,price:3200},
+      {name_ru:'Штукатурка стен',name_az:'Divar suvağı',name_en:'Wall plaster',qty:1,price:7200},
+      {name_ru:'Штукатурка потолков',name_az:'Tavan suvağı',name_en:'Ceiling plaster',qty:1,price:3800},
+      {name_ru:'Грунтовка',name_az:'Primer',name_en:'Primer coat',qty:1,price:1200},
+    ]
+  },
+  {
+    id:'tpl_cleanfinish', cat:'finish',
+    name_ru:'Чистовая отделка', name_az:'Təmiz bitirmə', name_en:'Fine finishing',
+    icon:'🎨', color:'#B87BB8',
+    items:[
+      {name_ru:'Плитка (ванная, кухня)',name_az:'Kafel (vanna, mətbəx)',name_en:'Tiles (bath, kitchen)',qty:1,price:5500},
+      {name_ru:'Покраска стен',name_az:'Divar rənglənməsi',name_en:'Wall painting',qty:1,price:4800},
+      {name_ru:'Натяжной потолок',name_az:'Gərgin tavan',name_en:'Stretch ceiling',qty:1,price:3600},
+      {name_ru:'Ламинат / паркет',name_az:'Laminat / parket',name_en:'Laminate / parquet',qty:1,price:4200},
+      {name_ru:'Плинтусы и пороги',name_az:'Plintus və eşiklər',name_en:'Skirting & thresholds',qty:1,price:1400},
+    ]
+  },
+  // ── РЕМОНТ КВАРТИРЫ ──
+  {
+    id:'tpl_demolition', cat:'renovation',
+    name_ru:'Демонтаж', name_az:'Sökülmə işləri', name_en:'Demolition',
+    icon:'🔧', color:'#CC7B7B',
+    items:[
+      {name_ru:'Снос перегородок',name_az:'Bölmə divarlarının sökülməsi',name_en:'Partition demolition',qty:1,price:2500},
+      {name_ru:'Демонтаж полов',name_az:'Döşəmənin sökülməsi',name_en:'Floor removal',qty:1,price:1800},
+      {name_ru:'Демонтаж сантехники',name_az:'Santexnikanın sökülməsi',name_en:'Plumbing removal',qty:1,price:1200},
+      {name_ru:'Вывоз мусора',name_az:'Zibil daşınması',name_en:'Debris removal',qty:1,price:2000},
+    ]
+  },
+  {
+    id:'tpl_bathroom', cat:'renovation',
+    name_ru:'Ванная комната', name_az:'Vanna otağı', name_en:'Bathroom',
+    icon:'🚿', color:'#7BC4CC',
+    items:[
+      {name_ru:'Гидроизоляция',name_az:'Hidroizolyasiya',name_en:'Waterproofing',qty:1,price:2200},
+      {name_ru:'Плитка стены',name_az:'Divar kafelı',name_en:'Wall tiles',qty:1,price:3500},
+      {name_ru:'Плитка пол',name_az:'Döşəmə kafelı',name_en:'Floor tiles',qty:1,price:2200},
+      {name_ru:'Сантехника',name_az:'Santexnika',name_en:'Plumbing fixtures',qty:1,price:4500},
+      {name_ru:'Смесители и душ',name_az:'Kranllar və duş',name_en:'Faucets & shower',qty:1,price:2800},
+    ]
+  },
+  {
+    id:'tpl_kitchen', cat:'renovation',
+    name_ru:'Кухня', name_az:'Mətbəx', name_en:'Kitchen',
+    icon:'🌿', color:'#80C89A',
+    items:[
+      {name_ru:'Плитка фартук',name_az:'Mətbəx kafelı',name_en:'Backsplash tiles',qty:1,price:2800},
+      {name_ru:'Кухонный гарнитур',name_az:'Mətbəx mebeli',name_en:'Kitchen cabinets',qty:1,price:12000},
+      {name_ru:'Столешница',name_az:'İş səthi',name_en:'Countertop',qty:1,price:3500},
+      {name_ru:'Монтаж гарнитура',name_az:'Mebel quraşdırması',name_en:'Cabinet installation',qty:1,price:2500},
+      {name_ru:'Встроенная техника',name_az:'Quraşdırılmış texnika',name_en:'Built-in appliances',qty:1,price:8000},
+    ]
+  },
+];
+
+const CAT_META = {
+  build:       {label_ru:'Строительство',  label_az:'Tikinti',          label_en:'Construction', icon:'🏗'},
+  engineering: {label_ru:'Инженерия',      label_az:'Mühəndislik',      label_en:'Engineering',  icon:'⚙️'},
+  finish:      {label_ru:'Отделка',         label_az:'Bitirmə',          label_en:'Finishing',    icon:'🎨'},
+  renovation:  {label_ru:'Ремонт',          label_az:'Təmir',            label_en:'Renovation',   icon:'🔧'},
+  custom:      {label_ru:'Мои шаблоны',     label_az:'Mənim şablonlarım',label_en:'My templates', icon:'⭐'},
+};
+
+function loadMyTemplates(){
+  try{ const d=JSON.parse(localStorage.getItem(TEMPLATE_STORE)); if(Array.isArray(d)) return d; }catch{}
+  return[];
+}
+function saveMyTemplates(arr){ localStorage.setItem(TEMPLATE_STORE, JSON.stringify(arr)); }
+
+// Show template picker modal (called from stage modal or separate btn)
+function showTemplatePicker(onApply){
+  const myTpls = loadMyTemplates();
+  const cats = [...new Set(BUILTIN_TEMPLATES.map(t=>t.cat))];
+
+  const renderTplCard = (tpl, isCustom) => {
+    const name = tpl['name_'+lang] || tpl.name_ru || tpl.name || '';
+    const count = tpl.items.length;
+    const del = isCustom
+      ? `<button onclick="deleteMyTemplate('${tpl.id}',event)" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:17px;padding:4px 6px;flex-shrink:0;line-height:1" title="Удалить">×</button>`
+      : '';
+    return `<div class="tpl-card" onclick="applyTplCard('${tpl.id}',${isCustom})">
+      <div class="tpl-card-icon" style="background:${tpl.color}18;color:${tpl.color}">${tpl.icon}</div>
+      <div class="tpl-card-info">
+        <div class="tpl-card-name">${name}</div>
+        <div class="tpl-card-meta">${count} ${lang==='en'?'items':lang==='az'?'mövqe':'позиций'}</div>
+      </div>
+      ${del}
+    </div>`;
+  };
+
+  let html = '<div class="modal-handle"></div>'
+    + `<div class="modal-title">${t('templates')}</div>`;
+
+  // My templates section
+  if(myTpls.length > 0){
+    html += `<div class="tpl-section-label"><span>${CAT_META.custom.icon}</span> ${t('myTemplates')}</div>`;
+    html += myTpls.map(tpl => renderTplCard(tpl, true)).join('');
+    html += '<div style="height:6px"></div>';
+  }
+
+  // Built-in by category
+  cats.forEach(cat => {
+    const items = BUILTIN_TEMPLATES.filter(t=>t.cat===cat);
+    const meta = CAT_META[cat];
+    const label = meta['label_'+lang] || meta.label_ru;
+    html += `<div class="tpl-section-label"><span>${meta.icon}</span> ${label}</div>`;
+    html += items.map(tpl => renderTplCard(tpl, false)).join('');
+  });
+
+  html += `<div style="height:4px"></div>`;
+  html += `<button class="btn btn-secondary" style="margin-top:8px" onclick="closeModal()">${t('cancel')}</button>`;
+
+  window._tplOnApply = onApply;
+  showModal(html);
+}
+
+function applyTplCard(tplId, isCustom){
+  const tpl = isCustom
+    ? loadMyTemplates().find(t=>t.id===tplId)
+    : BUILTIN_TEMPLATES.find(t=>t.id===tplId);
+  if(!tpl) return;
+
+  closeModal();
+  if(typeof window._tplOnApply === 'function'){
+    window._tplOnApply(tpl);
+  }
+}
+
+function deleteMyTemplate(tplId, e){
+  e.stopPropagation();
+  const arr = loadMyTemplates().filter(t=>t.id!==tplId);
+  saveMyTemplates(arr);
+  showToast(t('templateDeleted'));
+  // Re-render modal in place
+  const onApply = window._tplOnApply;
+  closeModal();
+  showTemplatePicker(onApply);
+}
+
+function saveCurrentStageAsTemplate(stageId){
+  const s = stages().find(st=>st.id===stageId);
+  if(!s) return;
+  const name = tName(s);
+  // Ask for template name
+  showModal(`<div class="modal-handle"></div>
+    <div class="modal-title">⭐ ${t('saveAsTemplate')}</div>
+    <div class="form-group">
+      <label class="form-label">${t('templateName')}</label>
+      <input type="text" id="tplNameInput" value="${name.replace(/"/g,'&quot;')}"/>
+    </div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:16px">${t('templateHint')}</div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-secondary" onclick="closeModal()">${t('cancel')}</button>
+      <button class="btn btn-primary" onclick="confirmSaveTemplate(${stageId})">${t('save')}</button>
+    </div>`);
+}
+
+function confirmSaveTemplate(stageId){
+  const name = document.getElementById('tplNameInput')?.value.trim();
+  if(!name){ showToast(t('enterName'),'err'); return; }
+  const s = stages().find(st=>st.id===stageId);
+  if(!s) return;
+  const arr = loadMyTemplates();
+  const tpl = {
+    id: 'custom_'+Date.now(),
+    cat: 'custom',
+    name_ru: name, name_az: name, name_en: name,
+    icon: s.icon, color: s.color,
+    items: s.items.map(i=>({
+      name_ru: i.name_ru||i.name||'', name_az: i.name_az||i.name||'', name_en: i.name_en||i.name||'',
+      qty: i.qty||1, price: i.price||0
+    }))
+  };
+  arr.unshift(tpl);
+  saveMyTemplates(arr);
+  closeModal();
+  showToast(t('templateSaved'));
+}
 
 function showToast(msg,type='ok'){
   const el=document.getElementById('toast');
@@ -1222,22 +1544,66 @@ function showStageModal(existing){
   window._sfd={...data};
   showModal(`<div class="modal-handle"></div>
     <div class="modal-title">${isEdit?t('editStage'):t('addStage')}</div>
+    ${!isEdit?`<button class="tpl-save-btn" style="margin-bottom:14px" onclick="closeModal();showTemplatePicker(tpl=>{window._sfd={icon:tpl.icon,color:tpl.color};showStageModalWithTpl(tpl);})">${t('fromTemplate')}</button>`:''}
     <div class="form-group"><label class="form-label">${t('stageName')}</label>
       <input type="text" id="sName" placeholder="${t('stageNamePh')}" value="${data.name}"/></div>
     <div class="form-group"><label class="form-label">${t('stageIcon')}</label>
       <div class="icon-grid">${ICONS.map(ic=>`<div class="icon-opt ${ic===data.icon?'sel':''}" onclick="selIcon('${ic}')">${ic}</div>`).join('')}</div></div>
     <div class="form-group"><label class="form-label">${t('stageColor')}</label>
       <div class="color-grid">${COLORS.map(c=>`<div class="color-opt ${c===data.color?'sel':''}" style="background:${c}" onclick="selColor('${c}')"></div>`).join('')}</div></div>
-
-
     <p style="font-size:12px;color:var(--text3);margin-bottom:16px;line-height:1.5">${t('stageHint')}</p>
     <div style="display:flex;gap:10px">
       <button class="btn btn-secondary" onclick="closeModal()">${t('cancel')}</button>
       <button class="btn btn-primary" onclick="saveStage('${isEdit?data.id:''}')">${isEdit?t('save'):t('create')}</button>
-    </div>`);
+    </div>
+    ${isEdit?`<button class="tpl-save-btn" style="margin-top:10px" onclick="saveCurrentStageAsTemplate(${data.id})">⭐ ${t('saveAsTemplate')}</button>`:''}
+  `);
 }
-function selIcon(ic){window._sfd.icon=ic;document.querySelectorAll('.icon-opt').forEach(el=>el.classList.toggle('sel',el.textContent===ic))}
+
+function showStageModalWithTpl(tpl){
+  // Pre-fill name from template, create stage, then add items
+  const tplName = tpl['name_'+lang] || tpl.name_ru || '';
+  window._sfd = {icon: tpl.icon, color: tpl.color, _tpl: tpl};
+  showModal(`<div class="modal-handle"></div>
+    <div class="modal-title">${t('addStage')}</div>
+    <div style="display:flex;align-items:center;gap:8px;background:rgba(201,170,124,.08);border:1px solid rgba(201,170,124,.2);border-radius:10px;padding:10px 12px;margin-bottom:14px">
+      <div style="width:32px;height:32px;border-radius:8px;background:${tpl.color}18;display:flex;align-items:center;justify-content:center;font-size:16px">${tpl.icon}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;font-weight:600;color:var(--gold)">${t('fromTemplate')}</div>
+        <div style="font-size:11px;color:var(--text3)">${tplName} · ${tpl.items.length} ${lang==='en'?'items':lang==='az'?'mövqe':'позиций'}</div>
+      </div>
+    </div>
+    <div class="form-group"><label class="form-label">${t('stageName')}</label>
+      <input type="text" id="sName" value="${tplName.replace(/"/g,'&quot;')}" placeholder="${t('stageNamePh')}"/></div>
+    <div class="form-group"><label class="form-label">${t('stageIcon')}</label>
+      <div class="icon-grid">${ICONS.map(ic=>`<div class="icon-opt ${ic===tpl.icon?'sel':''}" onclick="selIcon('${ic}')">${ic}</div>`).join('')}</div></div>
+    <div class="form-group"><label class="form-label">${t('stageColor')}</label>
+      <div class="color-grid">${COLORS.map(c=>`<div class="color-opt ${c===tpl.color?'sel':''}" style="background:${c}" onclick="selColor('${c}')"></div>`).join('')}</div></div>
+    <p style="font-size:12px;color:var(--text3);margin-bottom:16px;line-height:1.5">${t('templateHint')}</p>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-secondary" onclick="closeModal()">${t('cancel')}</button>
+      <button class="btn btn-primary" onclick="saveStageFromTpl()">${t('create')}</button>
+    </div>
+  `);
+}
+function saveStageFromTpl(){
+  const name=document.getElementById('sName')?.value.trim();
+  const icon=window._sfd?.icon||'🏠', color=window._sfd?.color||'#7BB8CC';
+  const tpl=window._sfd?._tpl;
+  if(!name){showToast(t('enterName'),'err');return;}
+  const items = tpl ? tpl.items.map(i=>({
+    id:newId(),
+    name: i['name_'+lang]||i.name_ru||i.name||'',
+    name_ru:i.name_ru||i.name||'', name_az:i.name_az||i.name||'', name_en:i.name_en||i.name||'',
+    qty:i.qty||1, price:i.price||0, done:false, note:'', contractor:'', startDate:'', endDate:''
+  })) : [];
+  updateStages(ss=>[...ss,{id:newId(),name,icon,color,status:'idle',items}]);
+  showToast(t('templateApplied'));
+  closeModal();
+  renderDash();
+}
 function selColor(c){window._sfd.color=c;document.querySelectorAll('.color-opt').forEach(el=>el.classList.toggle('sel',el.getAttribute('onclick')===`selColor('${c}')`))}
+function selIcon(ic){window._sfd.icon=ic;document.querySelectorAll('.icon-opt').forEach(el=>el.classList.toggle('sel',el.textContent===ic))}
 function saveStage(editId){
   const name=document.getElementById('sName')?.value.trim();
   const icon=window._sfd?.icon||'🏠',color=window._sfd?.color||'#7BB8CC';
@@ -2010,3 +2376,4 @@ if(action === 'addObject') setTimeout(()=>addObjectPrompt(), 400);
 </script>
 </body>
 </html>
+
