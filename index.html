@@ -255,6 +255,7 @@ input:focus,textarea:focus{border-color:rgba(255,255,255,.3)}
 .scc-sum{font-family:'DM Mono',monospace;font-size:12px;color:var(--green);white-space:nowrap}
 .scc-check{width:20px;height:20px;border-radius:50%;background:rgba(128,200,154,.2);border:1.5px solid var(--green);display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .over-badge{display:inline-flex;align-items:center;gap:4px;background:rgba(204,123,123,.15);border:1px solid rgba(204,123,123,.3);color:var(--red);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:600}
+.overdue-badge{display:inline-flex;align-items:center;gap:3px;background:rgba(204,123,123,.15);border:1px solid rgba(204,123,123,.35);color:var(--red);border-radius:8px;padding:2px 7px;font-size:11px;font-weight:700;flex-shrink:0;white-space:nowrap}
 
 /* adjust dash content bottom padding when widget visible */
 #pageDash .content{padding-bottom:calc(32px + var(--safe));}
@@ -753,6 +754,10 @@ const stages=()=>curObj().stages;
 const itemTotal = i => (i.qty||1)*(i.price||i.cost||0);
 const stageSmeta  = s => s.items.reduce((a,i)=>a+itemTotal(i),0);
 const stageFact   = s => s.items.filter(i=>i.done).reduce((a,i)=>a+itemTotal(i),0);
+const overdueCount = s => {
+  const today = new Date(); today.setHours(0,0,0,0);
+  return s.items.filter(i=>!i.done && i.endDate && new Date(i.endDate) < today).length;
+};
 const totalSmeta  = () => stages().reduce((a,s)=>a+stageSmeta(s),0);
 const totalFact   = () => stages().reduce((a,s)=>a+stageFact(s),0);
 const totalBudget = () => curObj().totalBudget||0;
@@ -1273,6 +1278,8 @@ function renderDash(){
       const fp=smeta>0?Math.min(fact/smeta*100,100):0;
       const done=s.items.filter(i=>i.done).length;
       const over=fact>smeta&&smeta>0;
+      const overdue=overdueCount(s);
+      const overdueBadge=overdue>0?`<div class="overdue-badge">⚠️ ${overdue}</div>`:'';
       if(s.status==='done') return `<div class="stage-card-collapsed" style="animation-delay:${.12+i*.07}s;border-left:3px solid ${s.color}" onclick="goDetail(${s.id})">
         <div class="scc-check"><svg width="10" height="10" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" fill="none" stroke="#80C89A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
         <div class="scc-icon">${s.icon}</div>
@@ -1281,20 +1288,21 @@ function renderDash(){
         <div style="font-size:11px;color:var(--green);margin-left:2px">✓</div>
       </div>`;
 
-      return `<div class="stage-card" style="animation-delay:${.12+i*.07}s" onclick="goDetail(${s.id})">
+      return `<div class="stage-card" style="animation-delay:${.12+i*.07}s${overdue>0?';border-color:rgba(204,123,123,.35)':''}" onclick="goDetail(${s.id})">
         <div class="stage-card-accent" style="background:linear-gradient(90deg,${s.color},transparent)"></div>
         <div class="stage-card-body">
-
           <div class="stage-card-icon">${s.icon}</div>
           <div class="stage-card-info">
-            <div class="stage-card-name">${tName(s)}</div>
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px">
+              <div class="stage-card-name" style="flex:1;min-width:0">${tName(s)}</div>
+              ${overdueBadge}
+            </div>
             <div style="display:flex;align-items:center;gap:6px;margin-bottom:${s.contractor||s.startDate||s.endDate?'3':'0'}px">
               <div class="stage-card-meta">${s.items.length>0?`${done}/${s.items.length}`:''}</div>
               ${s.items.length>0?`<div style="flex:1;height:3px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden;max-width:60px">
                 <div style="height:100%;width:${s.items.length>0?Math.round(done/s.items.length*100):0}%;background:${s.color};border-radius:2px"></div>
               </div>`:''}
             </div>
-
           </div>
           <div>${ringHTML(fp,s.color,54)}</div>
         </div>
