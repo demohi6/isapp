@@ -639,7 +639,7 @@ const DEFAULT_OBJECT={
 function tName(obj){
   if(!obj) return '';
   const key = 'name_' + lang;
-  return obj[key] || obj.name || obj.name_ru || '';
+  return obj[key] || obj.name_ru || obj.name || '';
 }
 
 function loadDB(){
@@ -750,7 +750,7 @@ function createObject(){
   const budget=parseInt(document.getElementById('oBudget')?.value)||0;
   if(!name){showToast(t('enterName'),'err');return;}
   const id=newId();
-  db.objects.push({id,name,icon:window._objfd.icon||'🏠',totalBudget:budget,stages:[]});
+  db.objects.push({id,name,name_ru:name,name_az:name,name_en:name,icon:window._objfd.icon||'🏠',totalBudget:budget,stages:[]});
   db.activeObjectId=id;activeStageId=null;
   saveDB();closeModal();renderDash();showToast(t('objCreated'));
 }
@@ -759,7 +759,7 @@ function saveObject(){
   const budget=parseInt(document.getElementById('oBudget')?.value)||0;
   if(!name){showToast(t('enterName'),'err');return;}
   const id=window._objfd.id;
-  db.objects=db.objects.map(o=>o.id===id?{...o,name,icon:window._objfd.icon||o.icon,totalBudget:budget}:o);
+  db.objects=db.objects.map(o=>o.id===id?{...o,name,name_ru:name,name_az:name,name_en:name,icon:window._objfd.icon||o.icon,totalBudget:budget}:o);
   saveDB();closeModal();renderDash();showToast(t('objUpdated'));
 }
 function deleteObjectConfirm(id){
