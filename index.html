@@ -1306,12 +1306,13 @@ function handleImport(e){
 // ══════════════════════════
 //  DRAG TO SORT STAGES
 // ══════════════════════════
-let _pt=null,_drag=null;
+let _pt=null, _drag=null;
 
 function sortPressStart(e,id){
   if(e.type==='touchstart'&&e.touches.length>1)return;
   clearTimeout(_pt);
-  _pt=setTimeout(()=>{ _pt=null; _startDrag(id,e); },420);
+  const startY=e.type==='touchstart'?e.touches[0].clientY:e.clientY;
+  _pt=setTimeout(()=>{ _pt=null; _startDrag(id,startY,e.type==='touchstart'); },420);
 }
 function sortPressCancel(){ clearTimeout(_pt); _pt=null; }
 function sortCardClick(e,id){
@@ -1320,53 +1321,55 @@ function sortCardClick(e,id){
   goDetail(id);
 }
 
-function _startDrag(id,triggerEvent){
+function _startDrag(id, startY, isTouch){
   const card=document.querySelector(`.stage-card[data-sid="${id}"]`);
   if(!card)return;
   if(navigator.vibrate)navigator.vibrate(40);
-  _drag={id};
-  const rect=card.getBoundingClientRect();
-  const isTouch=triggerEvent.type==='touchstart';
-  const startY=isTouch?triggerEvent.touches[0].clientY:triggerEvent.clientY;
 
-  // Shrink original
+  const rect=card.getBoundingClientRect();
   card.style.cssText='transform:scale(0.95);opacity:0.35;transition:transform .15s,opacity .15s';
 
-  // Floating clone
   const clone=card.cloneNode(true);
   clone.style.cssText=`position:fixed;left:${rect.left}px;top:${rect.top}px;width:${rect.width}px;
-    z-index:999;pointer-events:none;transform:scale(1.02);
-    box-shadow:0 24px 64px rgba(0,0,0,.75);border-radius:18px;
-    border:1px solid rgba(201,170,124,.4);opacity:.96;transition:none`;
+    z-index:999;pointer-events:none;transform:scale(1.02);opacity:.96;transition:none;
+    box-shadow:0 24px 64px rgba(0,0,0,.75);border-radius:18px;border:1px solid rgba(201,170,124,.4)`;
   document.body.appendChild(clone);
-  _drag.clone=clone; _drag.card=card;
-  _drag.startY=startY; _drag.cloneTop=rect.top;
+
+  _drag = { id, clone, card, startY, cloneTop:rect.top, lastOverId:null };
 
   const onMove=ev=>{
     if(!_drag)return;
     const cy=ev.type.startsWith('touch')?ev.touches[0].clientY:ev.clientY;
+    const cx=ev.type.startsWith('touch')?ev.touches[0].clientX:ev.clientX;
     _drag.clone.style.top=(_drag.cloneTop+(cy-_drag.startY))+'px';
-    // hit-test
+
+    // hit-test under clone
     _drag.clone.style.visibility='hidden';
-    const ex=ev.type.startsWith('touch')?ev.touches[0].clientX:ev.clientX;
-    const el=document.elementFromPoint(ex,cy);
+    const el=document.elementFromPoint(cx,cy);
     _drag.clone.style.visibility='';
+
     const over=el?.closest('.stage-card[data-sid]');
     if(over){
       const oid=parseInt(over.dataset.sid);
-      if(oid!==_drag.id){
+      if(oid!==_drag.id && oid!==_drag.lastOverId){
+        _drag.lastOverId=oid;
+        // swap in data only
         updateStages(ss=>{
-          const fi=ss.findIndex(s=>s.id===_drag.id),ti=ss.findIndex(s=>s.id===oid);
+          const fi=ss.findIndex(s=>s.id===_drag.id);
+          const ti=ss.findIndex(s=>s.id===oid);
           if(fi<0||ti<0)return ss;
-          const a=[...ss];const[it]=a.splice(fi,1);a.splice(ti,0,it);return a;
+          const a=[...ss];
+          const[it]=a.splice(fi,1);
+          a.splice(ti,0,it);
+          return a;
         });
-        // update cards in DOM only
-        const st=stages();
+        // reorder DOM cards only (no re-render)
         const cont=document.getElementById('dashContent');
-        const oldCards=[...cont.querySelectorAll('.stage-card')];
-        const newOrder=st.map(s=>oldCards.find(c=>parseInt(c.dataset.sid)===s.id)).filter(Boolean);
-        newOrder.forEach(c=>cont.appendChild(c));
-        // re-apply dim to dragged card
+        const allCards=[...cont.querySelectorAll('.stage-card[data-sid]')];
+        const ordered=stages().map(s=>allCards.find(c=>parseInt(c.dataset.sid)===s.id)).filter(Boolean);
+        // find insertion point - append after last non-card element or just reorder
+        ordered.forEach(c=>cont.appendChild(c));
+        // restore dim on dragged card
         const nc=cont.querySelector(`.stage-card[data-sid="${_drag.id}"]`);
         if(nc){nc.style.cssText='transform:scale(0.95);opacity:0.35';_drag.card=nc;}
       }
@@ -1375,12 +1378,12 @@ function _startDrag(id,triggerEvent){
 
   const onEnd=()=>{
     if(!_drag)return;
-    _drag.clone.style.transition='opacity .15s';
     _drag.clone.style.opacity='0';
-    setTimeout(()=>_drag?.clone.remove(),150);
-    if(_drag.card){_drag.card.style.cssText='';}
+    setTimeout(()=>_drag?.clone.remove(),120);
+    if(_drag.card) _drag.card.style.cssText='';
+    saveDB();
     _drag=null;
-    saveDB();renderDash();
+    renderDash();
     document.removeEventListener('mousemove',onMove);
     document.removeEventListener('mouseup',onEnd);
     document.removeEventListener('touchmove',onMove);
