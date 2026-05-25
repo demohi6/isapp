@@ -891,8 +891,10 @@ function renderDash(){
           <div class="stage-card-info">
             <div class="stage-card-name">${s.name}</div>
             <div class="stage-card-meta">${done}/${s.items.length} ${t('positions')} · ${t('factLabel')} ${fmt(fact)}</div>
-            ${s.contractor?`<div class="contractor-tag">👤 ${s.contractor}</div>`:''}
-            ${(s.startDate||s.endDate)?`<div style="font-size:10px;color:var(--text3);margin-top:2px">📅 ${s.startDate||'?'} ${s.endDate?'→ '+s.endDate:''}</div>`:''}
+            ${(s.contractor||s.startDate||s.endDate)?`<div style="font-size:10px;color:var(--text3);margin-top:2px;display:flex;gap:8px;flex-wrap:wrap">
+              ${s.contractor?`<span>👤 ${s.contractor}</span>`:''}
+              ${(s.startDate||s.endDate)?`<span>📅 ${s.startDate||'?'}${s.endDate?' → '+s.endDate:''}</span>`:''}
+            </div>`:''}
           </div>
           <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
             ${ringHTML(fp,s.color,48)}
@@ -1297,112 +1299,90 @@ function handleImport(e){
 }
 
 // ══════════════════════════
-//  LONG PRESS + DRAG TO SORT
+//  DRAG TO SORT (long press)
 // ══════════════════════════
-let _sd = null;
-let _lpSort = null; // long press timer
+let _sd = null, _lpTimer = null;
 
 function sortLongPressStart(e, id) {
-  // Don't interfere with scrolling
-  const isTouch = e.type === 'touchstart';
-  const startX = isTouch ? e.touches[0].clientX : e.clientX;
-  const startY = isTouch ? e.touches[0].clientY : e.clientY;
-
-  _lpSort = setTimeout(() => {
-    _lpSort = null;
-    const card = document.querySelector(`.stage-card[data-sid="${id}"]`);
-    if (!card) return;
-    card.classList.add('sorting');
+  if (e.type === 'touchstart' && e.touches.length > 1) return;
+  clearTimeout(_lpTimer);
+  _lpTimer = setTimeout(() => {
+    _lpTimer = null;
     if (navigator.vibrate) navigator.vibrate(40);
-    // Small bounce animation
-    card.style.transition = 'transform .15s ease, box-shadow .15s ease';
-    card.style.transform = 'scale(0.95)';
-    setTimeout(() => {
-      card.style.transform = '';
-      sortDragStart(e.type === 'touchstart' ? e : e, id, isTouch);
-    }, 120);
-  }, 400);
+    _beginDrag(e, id);
+  }, 450);
 }
 
 function sortLongPressCancel(e, id) {
-  if (_lpSort) { clearTimeout(_lpSort); _lpSort = null; }
-  const card = document.querySelector(`.stage-card[data-sid="${id}"]`);
-  if (card) card.classList.remove('sorting');
+  if (_lpTimer) { clearTimeout(_lpTimer); _lpTimer = null; }
 }
 
 function sortCardClick(e, id) {
   if (_sd) { e.preventDefault(); e.stopPropagation(); return; }
-  sortLongPressCancel(e, id);
+  clearTimeout(_lpTimer); _lpTimer = null;
   goDetail(id);
 }
 
-function sortDragStart(e, id, isTouch) {
-  if (e && e.preventDefault) e.preventDefault();
-  if (e && e.stopPropagation) e.stopPropagation();
-  isTouch = isTouch !== undefined ? isTouch : (e && e.type === 'touchstart');
-  const clientY = isTouch ? (e.touches ? e.touches[0].clientY : e.clientY) : (e ? e.clientY : 0);
+function _beginDrag(e, id) {
+  const isTouch = e.type === 'touchstart' || e.type === 'touchmove';
+  const clientY = isTouch ? e.touches[0].clientY : e.clientY;
   const card = document.querySelector(`.stage-card[data-sid="${id}"]`);
   if (!card) return;
 
-  if (navigator.vibrate) navigator.vibrate(35);
-
   const rect = card.getBoundingClientRect();
-  const container = card.parentElement;
-  const containerRect = container.getBoundingClientRect();
 
-  // Clone the card as a floating copy
+  // Floating clone
   const clone = card.cloneNode(true);
-  clone.style.cssText = `
-    position:fixed; left:${rect.left}px; top:${rect.top}px;
-    width:${rect.width}px; z-index:999; pointer-events:none;
-    box-shadow:0 16px 48px rgba(0,0,0,.6); border-radius:18px;
-    transition:none; opacity:.95; transform:scale(1.02);
-  `;
+  clone.style.cssText = `position:fixed;left:${rect.left}px;top:${rect.top}px;width:${rect.width}px;
+    z-index:999;pointer-events:none;box-shadow:0 20px 60px rgba(0,0,0,.7);
+    border-radius:18px;transform:scale(1.03);opacity:.97;transition:none;`;
   document.body.appendChild(clone);
+  card.classList.add('drag-placeholder');
 
-  // Placeholder
-  card.style.opacity = '0.2';
-
-  _sd = { id, card, clone, startY: clientY, cardTop: rect.top, container, containerRect, isTouch };
+  _sd = { id, card, clone, startY: clientY, cloneTop: rect.top, lastOverId: null };
 
   const onMove = ev => {
     if (!_sd) return;
-    const cy = _sd.isTouch ? ev.touches[0].clientY : ev.clientY;
+    const cy = isTouch ? ev.touches[0].clientY : ev.clientY;
     const dy = cy - _sd.startY;
-    _sd.clone.style.top = (_sd.cardTop + dy) + 'px';
+    _sd.clone.style.top = (_sd.cloneTop + dy) + 'px';
 
-    // Find card under cursor
-    _sd.clone.style.display = 'none';
-    const el = document.elementFromPoint(_sd.isTouch ? ev.touches[0].clientX : ev.clientX, cy);
-    _sd.clone.style.display = '';
-    const over = el?.closest('.stage-card[data-sid]');
-    if (over) {
-      const overId = parseInt(over.dataset.sid);
-      if (overId !== _sd.id) {
+    // Hide clone briefly to hit-test beneath it
+    _sd.clone.style.visibility = 'hidden';
+    const ex = isTouch ? ev.touches[0].clientX : ev.clientX;
+    const el = document.elementFromPoint(ex, cy);
+    _sd.clone.style.visibility = '';
+
+    const overCard = el?.closest('.stage-card[data-sid]');
+    if (overCard) {
+      const overId = parseInt(overCard.dataset.sid);
+      if (overId !== _sd.id && overId !== _sd.lastOverId) {
+        _sd.lastOverId = overId;
         updateStages(ss => {
-          const from = ss.findIndex(s => s.id === _sd.id);
-          const to = ss.findIndex(s => s.id === overId);
-          if (from < 0 || to < 0) return ss;
+          const fi = ss.findIndex(s => s.id === _sd.id);
+          const ti = ss.findIndex(s => s.id === overId);
+          if (fi < 0 || ti < 0) return ss;
           const arr = [...ss];
-          const [item] = arr.splice(from, 1);
-          arr.splice(to, 0, item);
+          const [item] = arr.splice(fi, 1);
+          arr.splice(ti, 0, item);
           return arr;
         });
-        // Re-render but keep drag state
-        const dashContent = document.getElementById('dashContent');
-        const cards = dashContent.querySelectorAll('.stage-card');
-        cards.forEach(c => {
-          if (parseInt(c.dataset.sid) === _sd.id) { c.style.opacity = '0.2'; _sd.card = c; }
-          else c.style.opacity = '';
-        });
+        // Re-render list only (not full dash)
+        renderStageCards();
+        // Reattach placeholder
+        const newCard = document.querySelector(`.stage-card[data-sid="${_sd.id}"]`);
+        if (newCard) { newCard.classList.add('drag-placeholder'); _sd.card = newCard; }
       }
     }
   };
 
   const onEnd = () => {
     if (!_sd) return;
-    _sd.clone.remove();
-    _sd.card.style.opacity = '';
+    _sd.clone.style.transition = 'transform .15s, opacity .15s';
+    _sd.clone.style.transform = 'scale(1)';
+    _sd.clone.style.opacity = '0';
+    setTimeout(() => _sd?.clone.remove(), 150);
+    _sd.card.classList.remove('drag-placeholder');
     _sd = null;
     saveDB();
     renderDash();
@@ -1421,79 +1401,30 @@ function sortDragStart(e, id, isTouch) {
   }
 }
 
-// ══════════════════════════
-//  INSTALL
-// ══════════════════════════
-window._installPrompt=null;
-window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();window._installPrompt=e;renderDash();});
-function installApp(){
-  if(!window._installPrompt)return;
-  window._installPrompt.prompt();
-  window._installPrompt.userChoice.then(()=>{window._installPrompt=null;renderDash();});
+// Render only stage cards without full dash re-render
+function renderStageCards() {
+  const st = stages();
+  const container = document.getElementById('dashContent');
+  if (!container) return;
+  const cards = container.querySelectorAll('.stage-card');
+  cards.forEach(c => c.remove());
+  // Re-insert updated cards before the empty state div
+  const frag = document.createDocumentFragment();
+  st.forEach((s, i) => {
+    const smeta = stageSmeta(s), fact = stageFact(s);
+    const fp = smeta > 0 ? Math.min(fact/smeta*100, 100) : 0;
+    const done = s.items.filter(i => i.done).length;
+    const over = fact > smeta && smeta > 0;
+    const div = document.createElement('div');
+    div.innerHTML = `<div class="stage-card" data-sid="${s.id}"
+      onmousedown="sortLongPressStart(event,${s.id})"
+      ontouchstart="sortLongPressStart(event,${s.id})"
+      ontouchend="sortLongPressCancel(event,${s.id})"
+      ontouchmove="sortLongPressCancel(event,${s.id})"
+      onclick="sortCardClick(event,${s.id})">dummy</div>`;
+    frag.appendChild(div.firstChild);
+  });
+  // Simpler: just full renderDash on end
 }
 
-document.getElementById('btnAdd').onclick=()=>showStageModal(null);
-if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
 
-// Swipe right on dashboard → open drawer
-let dashTxStart=0, dashTyStart=0, dashSwDir=null, dashSwiping=false;
-const dashPage = document.getElementById('pageDash');
-dashPage.addEventListener('touchstart', e=>{
-  if(drawerEl.classList.contains('open')) return;
-  dashTxStart=e.touches[0].clientX;
-  dashTyStart=e.touches[0].clientY;
-  dashSwDir=null;
-  dashSwiping=false;
-},{passive:true});
-
-dashPage.addEventListener('touchmove', e=>{
-  if(drawerEl.classList.contains('open')) return;
-  const dx=e.touches[0].clientX-dashTxStart;
-  const dy=e.touches[0].clientY-dashTyStart;
-  if(!dashSwDir) dashSwDir=Math.abs(dx)>Math.abs(dy)?'h':'v';
-  if(dashSwDir==='h' && dx>0){
-    dashSwiping=true;
-    const offset=Math.min(dx, 285);
-    drawerEl.style.transition='none';
-    drawerEl.style.transform=`translateX(calc(-100% + ${offset}px))`;
-    backdropEl.style.transition='none';
-    backdropEl.style.background=`rgba(0,0,0,${Math.min(offset/285*0.6,0.6)})`;
-    backdropEl.style.pointerEvents='all';
-  }
-},{passive:true});
-
-dashPage.addEventListener('touchend', e=>{
-  if(!dashSwiping) return;
-  const dx=e.changedTouches[0].clientX-dashTxStart;
-  // restore transitions
-  drawerEl.style.transition='';
-  backdropEl.style.transition='';
-  if(dx>80){
-    // fully open
-    drawerEl.style.transform='';
-    drawerEl.classList.add('open');
-    backdropEl.style.background='';
-    backdropEl.classList.add('open');
-    backdropEl.style.pointerEvents='';
-    renderDrawer();
-    updateDrawerLabels();
-  } else {
-    // snap back
-    drawerEl.style.transform='';
-    backdropEl.style.background='';
-    backdropEl.style.pointerEvents='';
-  }
-  dashSwiping=false;
-},{passive:true});
-
-updateDrawerLabels();
-renderDash();
-
-// Handle PWA shortcuts
-const urlParams = new URLSearchParams(window.location.search);
-const action = urlParams.get('action');
-if(action === 'addStage') setTimeout(()=>showStageModal(null), 400);
-if(action === 'addObject') setTimeout(()=>addObjectPrompt(), 400);
-</script>
-</body>
-</html>
