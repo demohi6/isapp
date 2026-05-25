@@ -879,10 +879,14 @@ function renderDash(){
       const fp=smeta>0?Math.min(fact/smeta*100,100):0;
       const done=s.items.filter(i=>i.done).length;
       const over=fact>smeta&&smeta>0;
-      return `<div class="stage-card" style="animation-delay:${.12+i*.07}s" data-sid="${s.id}" onclick="goDetail(${s.id})">
+      return `<div class="stage-card" style="animation-delay:${.12+i*.07}s" data-sid="${s.id}"
+        onmousedown="sortLongPressStart(event,${s.id})"
+        ontouchstart="sortLongPressStart(event,${s.id})"
+        ontouchend="sortLongPressCancel(event,${s.id})"
+        ontouchmove="sortLongPressCancel(event,${s.id})"
+        onclick="sortCardClick(event,${s.id})">
         <div class="stage-card-accent" style="background:linear-gradient(90deg,${s.color},transparent)"></div>
         <div class="stage-card-body">
-          <div class="drag-handle" id="dh-${s.id}" onmousedown="sortDragStart(event,${s.id})" ontouchstart="sortDragStart(event,${s.id})" onclick="event.stopPropagation()">⠿</div>
           <div class="stage-card-icon">${s.icon}</div>
           <div class="stage-card-info">
             <div class="stage-card-name">${s.name}</div>
@@ -1293,15 +1297,50 @@ function handleImport(e){
 }
 
 // ══════════════════════════
-//  SMOOTH DRAG TO SORT
+//  LONG PRESS + DRAG TO SORT
 // ══════════════════════════
-let _sd = null; // sort drag state
+let _sd = null;
+let _lpSort = null; // long press timer
 
-function sortDragStart(e, id) {
-  e.preventDefault();
-  e.stopPropagation();
+function sortLongPressStart(e, id) {
+  // Don't interfere with scrolling
   const isTouch = e.type === 'touchstart';
-  const clientY = isTouch ? e.touches[0].clientY : e.clientY;
+  const startX = isTouch ? e.touches[0].clientX : e.clientX;
+  const startY = isTouch ? e.touches[0].clientY : e.clientY;
+
+  _lpSort = setTimeout(() => {
+    _lpSort = null;
+    const card = document.querySelector(`.stage-card[data-sid="${id}"]`);
+    if (!card) return;
+    card.classList.add('sorting');
+    if (navigator.vibrate) navigator.vibrate(40);
+    // Small bounce animation
+    card.style.transition = 'transform .15s ease, box-shadow .15s ease';
+    card.style.transform = 'scale(0.95)';
+    setTimeout(() => {
+      card.style.transform = '';
+      sortDragStart(e.type === 'touchstart' ? e : e, id, isTouch);
+    }, 120);
+  }, 400);
+}
+
+function sortLongPressCancel(e, id) {
+  if (_lpSort) { clearTimeout(_lpSort); _lpSort = null; }
+  const card = document.querySelector(`.stage-card[data-sid="${id}"]`);
+  if (card) card.classList.remove('sorting');
+}
+
+function sortCardClick(e, id) {
+  if (_sd) { e.preventDefault(); e.stopPropagation(); return; }
+  sortLongPressCancel(e, id);
+  goDetail(id);
+}
+
+function sortDragStart(e, id, isTouch) {
+  if (e && e.preventDefault) e.preventDefault();
+  if (e && e.stopPropagation) e.stopPropagation();
+  isTouch = isTouch !== undefined ? isTouch : (e && e.type === 'touchstart');
+  const clientY = isTouch ? (e.touches ? e.touches[0].clientY : e.clientY) : (e ? e.clientY : 0);
   const card = document.querySelector(`.stage-card[data-sid="${id}"]`);
   if (!card) return;
 
