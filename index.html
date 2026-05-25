@@ -1180,35 +1180,57 @@ document.getElementById('btnAdd').onclick=()=>showStageModal(null);
 if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
 
 // Swipe right on dashboard → open drawer
-let dashTxStart=0, dashTyStart=0, dashSwDir=null;
+let dashTxStart=0, dashTyStart=0, dashSwDir=null, dashSwiping=false;
 const dashPage = document.getElementById('pageDash');
+const drawerEl = document.getElementById('drawer');
+const backdropEl = document.getElementById('drawerBackdrop');
+
 dashPage.addEventListener('touchstart', e=>{
+  if(drawerEl.classList.contains('open')) return;
   dashTxStart=e.touches[0].clientX;
   dashTyStart=e.touches[0].clientY;
   dashSwDir=null;
+  dashSwiping=false;
 },{passive:true});
+
 dashPage.addEventListener('touchmove', e=>{
+  if(drawerEl.classList.contains('open')) return;
   const dx=e.touches[0].clientX-dashTxStart;
   const dy=e.touches[0].clientY-dashTyStart;
   if(!dashSwDir) dashSwDir=Math.abs(dx)>Math.abs(dy)?'h':'v';
-  if(dashSwDir==='h' && dx>0 && !document.getElementById('drawer').classList.contains('open')){
-    const offset=Math.min(dx, parseInt(getComputedStyle(document.documentElement).getPropertyValue('--drawer')));
-    document.getElementById('drawer').style.transition='none';
-    document.getElementById('drawer').style.transform=`translateX(calc(-100% + ${offset}px))`;
-    document.getElementById('drawerBackdrop').style.background=`rgba(0,0,0,${Math.min(offset/280*0.6, 0.6)})`;
-    document.getElementById('drawerBackdrop').style.pointerEvents='all';
+  if(dashSwDir==='h' && dx>0){
+    dashSwiping=true;
+    const offset=Math.min(dx, 285);
+    drawerEl.style.transition='none';
+    drawerEl.style.transform=`translateX(calc(-100% + ${offset}px))`;
+    backdropEl.style.transition='none';
+    backdropEl.style.background=`rgba(0,0,0,${Math.min(offset/285*0.6,0.6)})`;
+    backdropEl.style.pointerEvents='all';
   }
 },{passive:true});
+
 dashPage.addEventListener('touchend', e=>{
+  if(!dashSwiping) return;
   const dx=e.changedTouches[0].clientX-dashTxStart;
-  document.getElementById('drawer').style.transition='';
-  document.getElementById('drawerBackdrop').style.background='';
-  document.getElementById('drawerBackdrop').style.pointerEvents='';
-  if(dashSwDir==='h' && dx>80){
-    openDrawer();
+  // restore transitions
+  drawerEl.style.transition='';
+  backdropEl.style.transition='';
+  if(dx>80){
+    // fully open
+    drawerEl.style.transform='';
+    drawerEl.classList.add('open');
+    backdropEl.style.background='';
+    backdropEl.classList.add('open');
+    backdropEl.style.pointerEvents='';
+    renderDrawer();
+    updateDrawerLabels();
   } else {
-    document.getElementById('drawer').style.transform='';
+    // snap back
+    drawerEl.style.transform='';
+    backdropEl.style.background='';
+    backdropEl.style.pointerEvents='';
   }
+  dashSwiping=false;
 },{passive:true});
 
 updateDrawerLabels();
