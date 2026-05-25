@@ -191,6 +191,17 @@ input:focus,textarea:focus{border-color:rgba(255,255,255,.3)}
 .install-banner-text strong{color:var(--gold);display:block;font-size:13px;margin-bottom:2px}
 @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
 .c-gold{color:var(--gold)}.c-blue{color:var(--blue)}.c-green{color:var(--green)}.c-red{color:var(--red)}
+.stage-card-collapsed{
+  background:var(--bg2);border:1px solid var(--border);border-radius:14px;
+  margin-bottom:8px;overflow:hidden;cursor:pointer;
+  transition:all .2s;animation:fadeUp .3s ease both;
+  display:flex;align-items:center;gap:10px;padding:10px 14px;
+}
+.stage-card-collapsed:active{transform:scale(.98)}
+.scc-icon{font-size:18px;flex-shrink:0}
+.scc-name{font-size:13px;font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text2)}
+.scc-sum{font-family:'DM Mono',monospace;font-size:12px;color:var(--green);white-space:nowrap}
+.scc-check{width:20px;height:20px;border-radius:50%;background:rgba(128,200,154,.2);border:1.5px solid var(--green);display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .over-badge{display:inline-flex;align-items:center;gap:4px;background:rgba(204,123,123,.15);border:1px solid rgba(204,123,123,.3);color:var(--red);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:600}
 </style>
 </head>
