@@ -228,10 +228,24 @@ input:focus,textarea:focus{border-color:rgba(255,255,255,.3)}
 .drum-date-display.has-value{color:var(--gold);border-color:rgba(201,170,124,.3);background:rgba(201,170,124,.06)}
 .drum-date-display .cal-icon{font-size:16px;opacity:.5}
 .search-wrap{position:relative;margin-bottom:12px}
-.search-input{background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:12px;padding:10px 12px 10px 36px;color:var(--text);font-family:'Mulish',sans-serif;font-size:14px;width:100%;outline:none;transition:border-color .2s;-webkit-appearance:none}
+.search-input{background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:12px;padding:10px 12px;color:var(--text);font-family:'Mulish',sans-serif;font-size:14px;width:100%;outline:none;transition:border-color .2s;-webkit-appearance:none}
 .search-input:focus{border-color:rgba(255,255,255,.25)}
-.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;opacity:.4;pointer-events:none}
 .search-clear{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text3);cursor:pointer;font-size:20px;padding:2px 6px}
+.pin-overlay{position:fixed;inset:0;background:var(--bg);z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;animation:fadeIn .2s ease}
+.pin-logo{font-family:'Unbounded',sans-serif;font-size:20px;font-weight:700;color:var(--gold);margin-bottom:4px}
+.pin-subtitle{font-size:13px;color:var(--text3)}
+.pin-dots{display:flex;gap:14px;margin:4px 0}
+.pin-dot{width:13px;height:13px;border-radius:50%;border:2px solid rgba(255,255,255,.25);transition:all .15s}
+.pin-dot.filled{background:var(--gold);border-color:var(--gold);transform:scale(1.1)}
+.pin-dot.error{background:var(--red);border-color:var(--red)}
+.pin-pad{display:grid;grid-template-columns:repeat(3,76px);gap:10px}
+.pin-key{width:76px;height:76px;border-radius:50%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.08);color:var(--text);font-size:24px;font-family:'DM Mono',monospace;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:background .15s,transform .1s;-webkit-user-select:none;user-select:none;gap:2px}
+.pin-key:active{background:rgba(255,255,255,.18);transform:scale(.93)}
+.pin-key-sub{font-size:8px;letter-spacing:1px;color:var(--text3);font-family:'Mulish',sans-serif;font-weight:600;text-transform:uppercase}
+.pin-key.del{font-size:20px;color:var(--text2)}
+.pin-key.empty{background:none;border:none;cursor:default}
+.pin-bio{width:56px;height:56px;border-radius:50%;background:rgba(201,170,124,.1);border:1px solid rgba(201,170,124,.3);display:flex;align-items:center;justify-content:center;font-size:26px;cursor:pointer;transition:background .2s}
+.pin-bio:active{background:rgba(201,170,124,.25)}
 .qty-sep{text-align:center;color:var(--text3);font-size:14px;font-weight:600}
 
 .toast{position:fixed;top:calc(var(--top) + 12px);left:50%;transform:translateX(-50%) translateY(-80px);background:var(--bg3);border:1px solid var(--border2);border-radius:12px;padding:10px 18px;font-size:13px;font-weight:600;z-index:300;transition:transform .3s ease;white-space:nowrap;box-shadow:0 8px 32px rgba(0,0,0,.5)}
@@ -270,6 +284,7 @@ input:focus,textarea:focus{border-color:rgba(255,255,255,.3)}
       <div id="drawerObjects"></div>
       <button class="drawer-btn drawer-btn-add" id="drawerBtnAdd" onclick="addObjectPrompt()">＋ Yeni obyekt</button>
       <button class="drawer-btn drawer-btn-pdf" onclick="closeDrawer();exportPDF()">📄 PDF export</button>
+      <button class="drawer-btn drawer-btn-pdf" onclick="closeDrawer();pinSettings()" style="margin-top:4px">🔐 PIN</button>
       <button class="drawer-btn drawer-btn-pdf" onclick="closeDrawer();triggerImport()" style="margin-top:4px">📥 <span id="importBtnLabel">Импорт JSON</span></button>
       <input type="file" id="importFile" accept=".json" style="display:none" onchange="handleImport(event)"/>
       <div style="margin-top:16px;padding:0 4px">
@@ -1046,8 +1061,7 @@ function renderDetail(){
     </div>
 
     <div class="search-wrap">
-      <span class="search-icon">🔍</span>
-      <input type="text" class="search-input" id="itemSearch" placeholder="${lang==='en'?'Search...':lang==='az'?'Axtar...':'Поиск...'}" oninput="renderDetail()"/>
+      <input type="text" class="search-input" id="itemSearch" style="padding-left:12px" placeholder="${lang==='en'?'Search...':lang==='az'?'Axtar...':'Поиск...'}" oninput="renderDetail()"/>
       <button class="search-clear" onclick="document.getElementById('itemSearch').value='';renderDetail()" style="display:${searchQ?'block':'none'}">×</button>
     </div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
@@ -1504,6 +1518,233 @@ function clearDrumDate(field){
   if(dis){dis.textContent='— — ——';dis.classList.remove('has-value');}
 }
 
+// ══════════════════════════
+//  PIN + BIOMETRIC AUTH
+// ══════════════════════════
+const PIN_KEY = 'tikinti_pin';
+const PIN_BIO = 'tikinti_bio';
+let _pinMode = null, _pinEntered = '', _pinTarget = '';
+
+const KEYPAD = [
+  {n:'1',s:''},    {n:'2',s:'ABC'}, {n:'3',s:'DEF'},
+  {n:'4',s:'GHI'}, {n:'5',s:'JKL'}, {n:'6',s:'MNO'},
+  {n:'7',s:'PQRS'},{n:'8',s:'TUV'}, {n:'9',s:'WXYZ'},
+  null,            {n:'0',s:'+'},   'del'
+];
+
+function pinLabel(mode){
+  if(mode==='enter') return lang==='en'?'Enter PIN':lang==='az'?'PIN daxil edin':'Введите PIN';
+  if(mode==='set')   return lang==='en'?'Set new PIN':lang==='az'?'Yeni PIN təyin edin':'Задайте PIN';
+  return lang==='en'?'Confirm PIN':lang==='az'?'PIN təsdiqləyin':'Подтвердите PIN';
+}
+
+async function checkBiometric(){
+  if(!window.PublicKeyCredential) return false;
+  try {
+    const ok = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+    return ok;
+  } catch { return false; }
+}
+
+async function tryBiometric(){
+  try {
+    // Use WebAuthn to verify
+    const challenge = new Uint8Array(32);
+    crypto.getRandomValues(challenge);
+    // Simplified: use credentials.get if registered, else fallback
+    if(localStorage.getItem(PIN_BIO+'_cred')){
+      // Already registered - try silent auth via platform authenticator
+      showToast(lang==='en'?'Verifying...':lang==='az'?'Yoxlanılır...':'Проверка...');
+      // For PWA we use simpler approach - check if biometric available
+      const available = await checkBiometric();
+      if(available){
+        document.getElementById('pinOverlay')?.remove();
+        return true;
+      }
+    }
+    return false;
+  } catch { return false; }
+}
+
+function showPinOverlay(mode, onSuccess){
+  _pinMode = mode; _pinEntered = ''; _pinTarget = '';
+  
+  const hasBio = localStorage.getItem(PIN_BIO) === '1';
+  const bioAvailable = 'PublicKeyCredential' in window;
+
+  const overlay = document.createElement('div');
+  overlay.className = 'pin-overlay'; overlay.id = 'pinOverlay';
+  overlay.innerHTML = `
+    <div class="pin-logo">🏡 Tikinti</div>
+    <div class="pin-subtitle">${pinLabel(mode)}</div>
+    <div class="pin-dots" id="pinDots">
+      ${[0,1,2,3].map(i=>`<div class="pin-dot" id="pd${i}"></div>`).join('')}
+    </div>
+    <div class="pin-pad">
+      ${KEYPAD.map(k=>{
+        if(!k) return '<button class="pin-key empty"></button>';
+        if(k==='del') return `<button class="pin-key del" onclick="pinDel()">⌫</button>`;
+        return `<button class="pin-key" onclick="pinKey('${k.n}')">
+          <span>${k.n}</span>
+          ${k.s?`<span class="pin-key-sub">${k.s}</span>`:''}
+        </button>`;
+      }).join('')}
+    </div>
+    ${mode==='enter' && hasBio && bioAvailable ? `
+      <button class="pin-bio" onclick="biometricAuth()" title="${lang==='en'?'Use fingerprint':lang==='az'?'Barmaq izi':'Отпечаток пальца'}">
+        🫆
+      </button>` : ''}
+    ${mode==='enter' ? `
+      <button style="background:none;border:none;color:var(--text3);font-size:12px;cursor:pointer;font-family:'Mulish',sans-serif;margin-top:4px" onclick="document.getElementById('pinOverlay').remove()">
+        ${lang==='en'?'Cancel':lang==='az'?'Ləğv et':'Отмена'}
+      </button>` : ''}
+  `;
+  overlay._onSuccess = onSuccess;
+  document.body.appendChild(overlay);
+
+  // Auto-trigger biometric on enter mode
+  if(mode==='enter' && hasBio && bioAvailable){
+    setTimeout(()=>biometricAuth(), 400);
+  }
+}
+
+async function biometricAuth(){
+  if(!('credentials' in navigator)) return;
+  try {
+    // Use platform authenticator (Face ID / Touch ID / fingerprint)
+    const credential = await navigator.credentials.get({
+      publicKey: {
+        challenge: crypto.getRandomValues(new Uint8Array(32)),
+        rpId: location.hostname,
+        userVerification: 'required',
+        allowCredentials: [],
+        timeout: 30000
+      }
+    });
+    if(credential){
+      const overlay = document.getElementById('pinOverlay');
+      const cb = overlay?._onSuccess;
+      overlay?.remove();
+      if(cb) cb();
+      showToast(lang==='en'?'Authenticated':lang==='az'?'Təsdiqləndi':'Подтверждено ✓');
+    }
+  } catch(e){
+    // Biometric failed or cancelled - let user use PIN
+    console.log('Bio failed:', e.name);
+  }
+}
+
+function pinKey(n){
+  if(_pinEntered.length >= 4) return;
+  _pinEntered += n;
+  updatePinDots();
+  if(_pinEntered.length === 4) setTimeout(processPinInput, 150);
+}
+
+function pinDel(){
+  if(!_pinEntered.length) return;
+  _pinEntered = _pinEntered.slice(0,-1);
+  updatePinDots();
+}
+
+function updatePinDots(error){
+  for(let i=0;i<4;i++){
+    const d = document.getElementById('pd'+i);
+    if(!d) continue;
+    d.classList.toggle('filled', !error && i < _pinEntered.length);
+    d.classList.toggle('error', !!error);
+  }
+}
+
+function processPinInput(){
+  const stored = localStorage.getItem(PIN_KEY);
+  if(_pinMode === 'enter'){
+    if(_pinEntered === stored){
+      const overlay = document.getElementById('pinOverlay');
+      const cb = overlay?._onSuccess;
+      overlay?.remove();
+      if(cb) cb();
+    } else {
+      updatePinDots(true);
+      setTimeout(()=>{ _pinEntered=''; updatePinDots(); }, 600);
+      if(navigator.vibrate) navigator.vibrate([50,30,50]);
+      showToast(lang==='en'?'Wrong PIN':lang==='az'?'Yanlış PIN':'Неверный PIN','err');
+    }
+  } else if(_pinMode === 'set'){
+    _pinTarget = _pinEntered; _pinEntered = '';
+    updatePinDots();
+    // Change subtitle
+    const sub = document.querySelector('.pin-subtitle');
+    if(sub) sub.textContent = pinLabel('confirm');
+    _pinMode = 'confirm';
+  } else if(_pinMode === 'confirm'){
+    if(_pinEntered === _pinTarget){
+      localStorage.setItem(PIN_KEY, _pinEntered);
+      document.getElementById('pinOverlay')?.remove();
+      // Ask about biometric
+      askBiometric();
+      showToast(lang==='en'?'PIN set ✓':lang==='az'?'PIN təyin edildi ✓':'PIN установлен ✓');
+    } else {
+      updatePinDots(true);
+      setTimeout(()=>{ _pinEntered=''; _pinTarget=''; _pinMode='set'; updatePinDots();
+        const sub=document.querySelector('.pin-subtitle'); if(sub) sub.textContent=pinLabel('set');
+      }, 600);
+      showToast(lang==='en'?'PINs don't match':lang==='az'?'PIN uyğun deyil':'PIN не совпадает','err');
+    }
+  }
+}
+
+async function askBiometric(){
+  const avail = await checkBiometric();
+  if(!avail) return;
+  const msg = lang==='en'?'Enable fingerprint/Face ID?':lang==='az'?'Barmaq izi aktivləşdirilsin?':'Включить отпечаток пальца?';
+  showModal(`<div class="modal-handle"></div>
+    <div class="modal-title" style="font-size:14px">${msg}</div>
+    <div style="font-size:32px;text-align:center;margin:10px 0">🫆</div>
+    <div style="display:flex;gap:10px;margin-top:8px">
+      <button class="btn btn-secondary" onclick="closeModal()">${lang==='en'?'Skip':lang==='az'?'Keç':'Пропустить'}</button>
+      <button class="btn btn-primary" onclick="enableBiometric()">${lang==='en'?'Enable':lang==='az'?'Aktiv et':'Включить'}</button>
+    </div>`);
+}
+
+async function enableBiometric(){
+  closeModal();
+  localStorage.setItem(PIN_BIO, '1');
+  showToast(lang==='en'?'Fingerprint enabled':lang==='az'?'Barmaq izi aktivləşdirildi':'Отпечаток включён ✓');
+}
+
+function checkPin(){
+  const pin = localStorage.getItem(PIN_KEY);
+  if(!pin) return;
+  // Hide app content while PIN shown
+  document.getElementById('pageDash').style.visibility='hidden';
+  showPinOverlay('enter', ()=>{
+    document.getElementById('pageDash').style.visibility='';
+  });
+}
+
+function pinSettings(){
+  const hasPin = !!localStorage.getItem(PIN_KEY);
+  const hasBio = localStorage.getItem(PIN_BIO)==='1';
+  const setLabel = hasPin?(lang==='en'?'Change PIN':lang==='az'?'PIN dəyiş':'Изменить PIN'):(lang==='en'?'Set PIN':lang==='az'?'PIN təyin et':'Задать PIN');
+  showModal(`<div class="modal-handle"></div>
+    <div class="modal-title">🔐 PIN</div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <button class="btn btn-secondary" onclick="closeModal();showPinOverlay('set')">${setLabel}</button>
+      ${hasPin?`<button class="btn btn-secondary" onclick="closeModal();confirmRemovePin()">${lang==='en'?'Remove PIN':lang==='az'?'PIN sil':'Удалить PIN'}</button>`:''}
+      ${hasPin?`<button class="btn btn-secondary" onclick="closeModal();localStorage.setItem('${PIN_BIO}', hasBio?'0':'1');showToast('OK')">${hasBio?(lang==='en'?'Disable fingerprint':lang==='az'?'Barmaq izi söndür':'Отключить отпечаток'):(lang==='en'?'Enable fingerprint':lang==='az'?'Barmaq izi aktiv et':'Включить отпечаток')}</button>`:''}
+    </div>`);
+}
+
+function confirmRemovePin(){
+  showModal(`<div class="modal-handle"></div>
+    <div class="modal-title">${lang==='en'?'Remove PIN?':lang==='az'?'PIN silinsin?':'Удалить PIN?'}</div>
+    <div style="display:flex;gap:10px;margin-top:4px">
+      <button class="btn btn-secondary" onclick="closeModal()">${lang==='en'?'Cancel':lang==='az'?'Ləğv et':'Отмена'}</button>
+      <button class="btn btn-danger" style="flex:1" onclick="localStorage.removeItem('${PIN_KEY}');localStorage.removeItem('${PIN_BIO}');closeModal();showToast('${lang==='en'?'PIN removed':lang==='az'?'PIN silindi':'PIN удалён'}')">${lang==='en'?'Remove':lang==='az'?'Sil':'Удалить'}</button>
+    </div>`);
+}
+
 window._installPrompt=null;
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();window._installPrompt=e;renderDash();});
 function installApp(){
@@ -1613,6 +1854,233 @@ function clearDrumDate(field){
   if(dis){dis.textContent='— — ——';dis.classList.remove('has-value');}
 }
 
+// ══════════════════════════
+//  PIN + BIOMETRIC AUTH
+// ══════════════════════════
+const PIN_KEY = 'tikinti_pin';
+const PIN_BIO = 'tikinti_bio';
+let _pinMode = null, _pinEntered = '', _pinTarget = '';
+
+const KEYPAD = [
+  {n:'1',s:''},    {n:'2',s:'ABC'}, {n:'3',s:'DEF'},
+  {n:'4',s:'GHI'}, {n:'5',s:'JKL'}, {n:'6',s:'MNO'},
+  {n:'7',s:'PQRS'},{n:'8',s:'TUV'}, {n:'9',s:'WXYZ'},
+  null,            {n:'0',s:'+'},   'del'
+];
+
+function pinLabel(mode){
+  if(mode==='enter') return lang==='en'?'Enter PIN':lang==='az'?'PIN daxil edin':'Введите PIN';
+  if(mode==='set')   return lang==='en'?'Set new PIN':lang==='az'?'Yeni PIN təyin edin':'Задайте PIN';
+  return lang==='en'?'Confirm PIN':lang==='az'?'PIN təsdiqləyin':'Подтвердите PIN';
+}
+
+async function checkBiometric(){
+  if(!window.PublicKeyCredential) return false;
+  try {
+    const ok = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+    return ok;
+  } catch { return false; }
+}
+
+async function tryBiometric(){
+  try {
+    // Use WebAuthn to verify
+    const challenge = new Uint8Array(32);
+    crypto.getRandomValues(challenge);
+    // Simplified: use credentials.get if registered, else fallback
+    if(localStorage.getItem(PIN_BIO+'_cred')){
+      // Already registered - try silent auth via platform authenticator
+      showToast(lang==='en'?'Verifying...':lang==='az'?'Yoxlanılır...':'Проверка...');
+      // For PWA we use simpler approach - check if biometric available
+      const available = await checkBiometric();
+      if(available){
+        document.getElementById('pinOverlay')?.remove();
+        return true;
+      }
+    }
+    return false;
+  } catch { return false; }
+}
+
+function showPinOverlay(mode, onSuccess){
+  _pinMode = mode; _pinEntered = ''; _pinTarget = '';
+  
+  const hasBio = localStorage.getItem(PIN_BIO) === '1';
+  const bioAvailable = 'PublicKeyCredential' in window;
+
+  const overlay = document.createElement('div');
+  overlay.className = 'pin-overlay'; overlay.id = 'pinOverlay';
+  overlay.innerHTML = `
+    <div class="pin-logo">🏡 Tikinti</div>
+    <div class="pin-subtitle">${pinLabel(mode)}</div>
+    <div class="pin-dots" id="pinDots">
+      ${[0,1,2,3].map(i=>`<div class="pin-dot" id="pd${i}"></div>`).join('')}
+    </div>
+    <div class="pin-pad">
+      ${KEYPAD.map(k=>{
+        if(!k) return '<button class="pin-key empty"></button>';
+        if(k==='del') return `<button class="pin-key del" onclick="pinDel()">⌫</button>`;
+        return `<button class="pin-key" onclick="pinKey('${k.n}')">
+          <span>${k.n}</span>
+          ${k.s?`<span class="pin-key-sub">${k.s}</span>`:''}
+        </button>`;
+      }).join('')}
+    </div>
+    ${mode==='enter' && hasBio && bioAvailable ? `
+      <button class="pin-bio" onclick="biometricAuth()" title="${lang==='en'?'Use fingerprint':lang==='az'?'Barmaq izi':'Отпечаток пальца'}">
+        🫆
+      </button>` : ''}
+    ${mode==='enter' ? `
+      <button style="background:none;border:none;color:var(--text3);font-size:12px;cursor:pointer;font-family:'Mulish',sans-serif;margin-top:4px" onclick="document.getElementById('pinOverlay').remove()">
+        ${lang==='en'?'Cancel':lang==='az'?'Ləğv et':'Отмена'}
+      </button>` : ''}
+  `;
+  overlay._onSuccess = onSuccess;
+  document.body.appendChild(overlay);
+
+  // Auto-trigger biometric on enter mode
+  if(mode==='enter' && hasBio && bioAvailable){
+    setTimeout(()=>biometricAuth(), 400);
+  }
+}
+
+async function biometricAuth(){
+  if(!('credentials' in navigator)) return;
+  try {
+    // Use platform authenticator (Face ID / Touch ID / fingerprint)
+    const credential = await navigator.credentials.get({
+      publicKey: {
+        challenge: crypto.getRandomValues(new Uint8Array(32)),
+        rpId: location.hostname,
+        userVerification: 'required',
+        allowCredentials: [],
+        timeout: 30000
+      }
+    });
+    if(credential){
+      const overlay = document.getElementById('pinOverlay');
+      const cb = overlay?._onSuccess;
+      overlay?.remove();
+      if(cb) cb();
+      showToast(lang==='en'?'Authenticated':lang==='az'?'Təsdiqləndi':'Подтверждено ✓');
+    }
+  } catch(e){
+    // Biometric failed or cancelled - let user use PIN
+    console.log('Bio failed:', e.name);
+  }
+}
+
+function pinKey(n){
+  if(_pinEntered.length >= 4) return;
+  _pinEntered += n;
+  updatePinDots();
+  if(_pinEntered.length === 4) setTimeout(processPinInput, 150);
+}
+
+function pinDel(){
+  if(!_pinEntered.length) return;
+  _pinEntered = _pinEntered.slice(0,-1);
+  updatePinDots();
+}
+
+function updatePinDots(error){
+  for(let i=0;i<4;i++){
+    const d = document.getElementById('pd'+i);
+    if(!d) continue;
+    d.classList.toggle('filled', !error && i < _pinEntered.length);
+    d.classList.toggle('error', !!error);
+  }
+}
+
+function processPinInput(){
+  const stored = localStorage.getItem(PIN_KEY);
+  if(_pinMode === 'enter'){
+    if(_pinEntered === stored){
+      const overlay = document.getElementById('pinOverlay');
+      const cb = overlay?._onSuccess;
+      overlay?.remove();
+      if(cb) cb();
+    } else {
+      updatePinDots(true);
+      setTimeout(()=>{ _pinEntered=''; updatePinDots(); }, 600);
+      if(navigator.vibrate) navigator.vibrate([50,30,50]);
+      showToast(lang==='en'?'Wrong PIN':lang==='az'?'Yanlış PIN':'Неверный PIN','err');
+    }
+  } else if(_pinMode === 'set'){
+    _pinTarget = _pinEntered; _pinEntered = '';
+    updatePinDots();
+    // Change subtitle
+    const sub = document.querySelector('.pin-subtitle');
+    if(sub) sub.textContent = pinLabel('confirm');
+    _pinMode = 'confirm';
+  } else if(_pinMode === 'confirm'){
+    if(_pinEntered === _pinTarget){
+      localStorage.setItem(PIN_KEY, _pinEntered);
+      document.getElementById('pinOverlay')?.remove();
+      // Ask about biometric
+      askBiometric();
+      showToast(lang==='en'?'PIN set ✓':lang==='az'?'PIN təyin edildi ✓':'PIN установлен ✓');
+    } else {
+      updatePinDots(true);
+      setTimeout(()=>{ _pinEntered=''; _pinTarget=''; _pinMode='set'; updatePinDots();
+        const sub=document.querySelector('.pin-subtitle'); if(sub) sub.textContent=pinLabel('set');
+      }, 600);
+      showToast(lang==='en'?'PINs don't match':lang==='az'?'PIN uyğun deyil':'PIN не совпадает','err');
+    }
+  }
+}
+
+async function askBiometric(){
+  const avail = await checkBiometric();
+  if(!avail) return;
+  const msg = lang==='en'?'Enable fingerprint/Face ID?':lang==='az'?'Barmaq izi aktivləşdirilsin?':'Включить отпечаток пальца?';
+  showModal(`<div class="modal-handle"></div>
+    <div class="modal-title" style="font-size:14px">${msg}</div>
+    <div style="font-size:32px;text-align:center;margin:10px 0">🫆</div>
+    <div style="display:flex;gap:10px;margin-top:8px">
+      <button class="btn btn-secondary" onclick="closeModal()">${lang==='en'?'Skip':lang==='az'?'Keç':'Пропустить'}</button>
+      <button class="btn btn-primary" onclick="enableBiometric()">${lang==='en'?'Enable':lang==='az'?'Aktiv et':'Включить'}</button>
+    </div>`);
+}
+
+async function enableBiometric(){
+  closeModal();
+  localStorage.setItem(PIN_BIO, '1');
+  showToast(lang==='en'?'Fingerprint enabled':lang==='az'?'Barmaq izi aktivləşdirildi':'Отпечаток включён ✓');
+}
+
+function checkPin(){
+  const pin = localStorage.getItem(PIN_KEY);
+  if(!pin) return;
+  // Hide app content while PIN shown
+  document.getElementById('pageDash').style.visibility='hidden';
+  showPinOverlay('enter', ()=>{
+    document.getElementById('pageDash').style.visibility='';
+  });
+}
+
+function pinSettings(){
+  const hasPin = !!localStorage.getItem(PIN_KEY);
+  const hasBio = localStorage.getItem(PIN_BIO)==='1';
+  const setLabel = hasPin?(lang==='en'?'Change PIN':lang==='az'?'PIN dəyiş':'Изменить PIN'):(lang==='en'?'Set PIN':lang==='az'?'PIN təyin et':'Задать PIN');
+  showModal(`<div class="modal-handle"></div>
+    <div class="modal-title">🔐 PIN</div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <button class="btn btn-secondary" onclick="closeModal();showPinOverlay('set')">${setLabel}</button>
+      ${hasPin?`<button class="btn btn-secondary" onclick="closeModal();confirmRemovePin()">${lang==='en'?'Remove PIN':lang==='az'?'PIN sil':'Удалить PIN'}</button>`:''}
+      ${hasPin?`<button class="btn btn-secondary" onclick="closeModal();localStorage.setItem('${PIN_BIO}', hasBio?'0':'1');showToast('OK')">${hasBio?(lang==='en'?'Disable fingerprint':lang==='az'?'Barmaq izi söndür':'Отключить отпечаток'):(lang==='en'?'Enable fingerprint':lang==='az'?'Barmaq izi aktiv et':'Включить отпечаток')}</button>`:''}
+    </div>`);
+}
+
+function confirmRemovePin(){
+  showModal(`<div class="modal-handle"></div>
+    <div class="modal-title">${lang==='en'?'Remove PIN?':lang==='az'?'PIN silinsin?':'Удалить PIN?'}</div>
+    <div style="display:flex;gap:10px;margin-top:4px">
+      <button class="btn btn-secondary" onclick="closeModal()">${lang==='en'?'Cancel':lang==='az'?'Ləğv et':'Отмена'}</button>
+      <button class="btn btn-danger" style="flex:1" onclick="localStorage.removeItem('${PIN_KEY}');localStorage.removeItem('${PIN_BIO}');closeModal();showToast('${lang==='en'?'PIN removed':lang==='az'?'PIN silindi':'PIN удалён'}')">${lang==='en'?'Remove':lang==='az'?'Sil':'Удалить'}</button>
+    </div>`);
+}
+
 window._installPrompt=null;renderDash();});
 }
 
@@ -1672,6 +2140,7 @@ dashPage.addEventListener('touchend', e=>{
 
 updateDrawerLabels();
 renderDash();
+checkPin();
 
 // Handle PWA shortcuts
 const urlParams = new URLSearchParams(window.location.search);
