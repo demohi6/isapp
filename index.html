@@ -556,8 +556,8 @@ function setLang(l) {
   ['langAZ','langRU','langEN'].forEach(id => {
     document.getElementById(id)?.classList.toggle('active', id === 'lang'+l.toUpperCase());
   });
-  renderDash();
   updateDrawerLabels();
+  renderDash();
   if(!document.getElementById('pageDetail').classList.contains('page-hidden-right')) renderDetail();
 }
 
@@ -592,52 +592,62 @@ const fmtShort = n => {
 const STORE_KEY='isapp_v7';
 
 const DEFAULT_OBJECT={
-  id:1, name:'Мой дом', icon:'🏠',
-  totalBudget: 180000,
+  id:1, name_ru:'Мой дом', name_az:'Mənim evim', name_en:'My House',
+  icon:'🏠', totalBudget:180000,
   stages:[
-    {id:1,name:'Фундамент',icon:'⬛',color:'#C9AA7C',items:[
-      {id:1,name:'Земляные работы',qty:1,price:3500,done:false,note:''},
-      {id:2,name:'Арматура и опалубка',qty:1,price:5200,done:false,note:''},
-      {id:3,name:'Бетон',qty:40,price:85,done:false,note:'за м³'},
-      {id:4,name:'Гидроизоляция',qty:1,price:2800,done:false,note:''},
+    {id:1,name_ru:'Фундамент',name_az:'Təməl',name_en:'Foundation',icon:'⬛',color:'#C9AA7C',status:'idle',items:[
+      {id:1,name_ru:'Земляные работы',name_az:'Torpaq işləri',name_en:'Earthwork',qty:1,price:3500,done:false,note:''},
+      {id:2,name_ru:'Арматура и опалубка',name_az:'Armatur və qəlib',name_en:'Rebar & formwork',qty:1,price:5200,done:false,note:''},
+      {id:3,name_ru:'Бетон',name_az:'Beton',name_en:'Concrete',qty:1,price:3400,done:false,note:''},
+      {id:4,name_ru:'Гидроизоляция',name_az:'Hidroizolyasiya',name_en:'Waterproofing',qty:1,price:2800,done:false,note:''}
     ]},
-    {id:2,name:'Коробка дома',icon:'🏗',color:'#7BB8CC',items:[
-      {id:1,name:'Кладка стен (1 этаж)',qty:1,price:12000,done:false,note:''},
-      {id:2,name:'Перекрытие',qty:1,price:8500,done:false,note:''},
-      {id:3,name:'Кладка стен (2 этаж)',qty:1,price:11000,done:false,note:''},
-      {id:4,name:'Фронтоны',qty:1,price:3200,done:false,note:''},
-      {id:5,name:'Стропила',qty:1,price:7500,done:false,note:''},
+    {id:2,name_ru:'Коробка дома',name_az:'Ev gövdəsi',name_en:'Structure',icon:'🏗',color:'#7BB8CC',status:'idle',items:[
+      {id:1,name_ru:'Кладка стен (1 этаж)',name_az:'Kərpic hörgüsü (1-ci mərtəbə)',name_en:'Brickwork (1st floor)',qty:1,price:12000,done:false,note:''},
+      {id:2,name_ru:'Перекрытие',name_az:'Tavan örtüyü',name_en:'Floor slab',qty:1,price:8500,done:false,note:''},
+      {id:3,name_ru:'Кладка стен (2 этаж)',name_az:'Kərpic hörgüsü (2-ci mərtəbə)',name_en:'Brickwork (2nd floor)',qty:1,price:11000,done:false,note:''},
+      {id:4,name_ru:'Фронтоны',name_az:'Frontonlar',name_en:'Gables',qty:1,price:3200,done:false,note:''},
+      {id:5,name_ru:'Стропила',name_az:'Mərtek konstruksiyası',name_en:'Rafters',qty:1,price:7500,done:false,note:''}
     ]},
-    {id:3,name:'Кровля',icon:'🏠',color:'#CC7B7B',items:[
-      {id:1,name:'Утеплитель',qty:120,price:12,done:false,note:'за м²'},
-      {id:2,name:'Кровельный материал',qty:1,price:9500,done:false,note:''},
-      {id:3,name:'Водосточная система',qty:1,price:2400,done:false,note:''},
+    {id:3,name_ru:'Кровля',name_az:'Dam örtüyü',name_en:'Roofing',icon:'🏠',color:'#CC7B7B',status:'idle',items:[
+      {id:1,name_ru:'Утеплитель',name_az:'İstilik izolyasiyası',name_en:'Insulation',qty:1,price:1440,done:false,note:''},
+      {id:2,name_ru:'Кровельный материал',name_az:'Dam örtüyü materialı',name_en:'Roofing material',qty:1,price:9500,done:false,note:''},
+      {id:3,name_ru:'Водосточная система',name_az:'Yağış suyu sistemi',name_en:'Drainage system',qty:1,price:2400,done:false,note:''}
     ]},
-    {id:4,name:'Окна и двери',icon:'🪟',color:'#9E8ED4',items:[
-      {id:1,name:'Окна ПВХ',qty:8,price:950,done:false,note:'за шт'},
-      {id:2,name:'Входная дверь',qty:1,price:2200,done:false,note:''},
-      {id:3,name:'Межкомнатные двери',qty:6,price:480,done:false,note:'за шт'},
-      {id:4,name:'Монтаж',qty:1,price:1200,done:false,note:''},
+    {id:4,name_ru:'Окна и двери',name_az:'Qapı və pəncərələr',name_en:'Windows & Doors',icon:'🪟',color:'#9E8ED4',status:'idle',items:[
+      {id:1,name_ru:'Окна ПВХ',name_az:'PVC pəncərələr',name_en:'PVC windows',qty:1,price:7600,done:false,note:''},
+      {id:2,name_ru:'Входная дверь',name_az:'Giriş qapısı',name_en:'Front door',qty:1,price:2200,done:false,note:''},
+      {id:3,name_ru:'Межкомнатные двери',name_az:'Otaq qapıları',name_en:'Interior doors',qty:1,price:2880,done:false,note:''},
+      {id:4,name_ru:'Монтаж',name_az:'Quraşdırma',name_en:'Installation',qty:1,price:1200,done:false,note:''}
     ]},
-    {id:5,name:'Инженерия',icon:'⚙️',color:'#80C89A',items:[
-      {id:1,name:'Электрика',qty:1,price:8500,done:false,note:''},
-      {id:2,name:'Водоснабжение',qty:1,price:5200,done:false,note:''},
-      {id:3,name:'Канализация',qty:1,price:3800,done:false,note:''},
-      {id:4,name:'Отопление',qty:1,price:9500,done:false,note:''},
+    {id:5,name_ru:'Инженерия',name_az:'Mühəndislik',name_en:'Engineering',icon:'⚙️',color:'#80C89A',status:'idle',items:[
+      {id:1,name_ru:'Электрика',name_az:'Elektrik',name_en:'Electrical',qty:1,price:8500,done:false,note:''},
+      {id:2,name_ru:'Водоснабжение',name_az:'Su təchizatı',name_en:'Water supply',qty:1,price:5200,done:false,note:''},
+      {id:3,name_ru:'Канализация',name_az:'Kanalizasiya',name_en:'Sewage',qty:1,price:3800,done:false,note:''},
+      {id:4,name_ru:'Отопление',name_az:'İstilik sistemi',name_en:'Heating',qty:1,price:9500,done:false,note:''}
     ]},
-    {id:6,name:'Отделка',icon:'🎨',color:'#C8C07E',items:[
-      {id:1,name:'Стяжка полов',qty:120,price:18,done:false,note:'м²'},
-      {id:2,name:'Штукатурка стен',qty:1,price:7200,done:false,note:''},
-      {id:3,name:'Плитка',qty:45,price:35,done:false,note:'м²'},
-      {id:4,name:'Покраска',qty:1,price:4800,done:false,note:''},
-      {id:5,name:'Ламинат / паркет',qty:80,price:28,done:false,note:'м²'},
-    ]},
+    {id:6,name_ru:'Отделка',name_az:'Bitirmə işləri',name_en:'Finishing',icon:'🎨',color:'#C8C07E',status:'idle',items:[
+      {id:1,name_ru:'Стяжка полов',name_az:'Döşəmə stяжkası',name_en:'Floor screed',qty:1,price:2160,done:false,note:''},
+      {id:2,name_ru:'Штукатурка стен',name_az:'Divar suvağı',name_en:'Wall plaster',qty:1,price:7200,done:false,note:''},
+      {id:3,name_ru:'Плитка',name_az:'Kafel',name_en:'Tiles',qty:1,price:1575,done:false,note:''},
+      {id:4,name_ru:'Покраска',name_az:'Rəngkarlıq',name_en:'Painting',qty:1,price:4800,done:false,note:''},
+      {id:5,name_ru:'Ламинат / паркет',name_az:'Laminat / parket',name_en:'Laminate / parquet',qty:1,price:2240,done:false,note:''}
+    ]}
   ]
 };
 
+// Get translated name for stage/item (falls back to name if no translation)
+function tName(obj){
+  if(!obj) return '';
+  const key = 'name_' + lang;
+  return obj[key] || obj.name || obj.name_ru || '';
+}
+
 function loadDB(){
-  try{const d=JSON.parse(localStorage.getItem(STORE_KEY));if(d&&d.objects)return d;}catch{}
-  return{objects:[DEFAULT_OBJECT],activeObjectId:1};
+  try{
+    const d=JSON.parse(localStorage.getItem(STORE_KEY));
+    if(d&&d.objects) return d;
+  }catch{}
+  return{objects:[JSON.parse(JSON.stringify(DEFAULT_OBJECT))],activeObjectId:1};
 }
 function saveDB(){localStorage.setItem(STORE_KEY,JSON.stringify(db));}
 
@@ -688,7 +698,7 @@ function renderDrawer(){
     return `<div class="obj-item ${isActive?'active':''}" onclick="switchObject(${o.id})">
       <div class="obj-icon">${o.icon}</div>
       <div class="obj-info">
-        <div class="obj-name">${o.name}</div>
+        <div class="obj-name">${tName(o)||o.name}</div>
         <div class="obj-meta">${o.stages.length} • ${pct}%</div>
       </div>
       ${isActive?'<div class="obj-active-dot"></div>':''}
@@ -859,7 +869,7 @@ function renderDash(){
   const factOfSmeta=ts>0?Math.min(tf/ts*100,100):0;
   const smetaPct=tb>0?Math.min(ts/tb*100,100):0;
 
-  document.getElementById('headerTitle').innerHTML=`${obj.icon} <span style="color:var(--gold)">${obj.name}</span>`;
+  document.getElementById('headerTitle').innerHTML=`${obj.icon} <span style="color:var(--gold)">${tName(obj)||obj.name}</span>`;
   document.getElementById('headerSub').textContent=`${st.length} ${lang==='en'?'stages':lang==='az'?'mərhələ':'этапов'}`;
 
   const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
@@ -898,7 +908,7 @@ function renderDash(){
       if(s.status==='done') return `<div class="stage-card-collapsed" style="animation-delay:${.12+i*.07}s;border-left:3px solid ${s.color}" onclick="goDetail(${s.id})">
         <div class="scc-check"><svg width="10" height="10" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" fill="none" stroke="#80C89A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
         <div class="scc-icon">${s.icon}</div>
-        <div class="scc-name">${s.name}</div>
+        <div class="scc-name">${tName(s)}</div>
         <div class="scc-sum">${fmtShort(fact)}</div>
         <div style="font-size:11px;color:var(--green);margin-left:2px">✓</div>
       </div>`;
@@ -909,7 +919,7 @@ function renderDash(){
 
           <div class="stage-card-icon">${s.icon}</div>
           <div class="stage-card-info">
-            <div class="stage-card-name">${s.name}</div>
+            <div class="stage-card-name">${tName(s)}</div>
             <div style="display:flex;align-items:center;gap:6px;margin-bottom:${s.contractor||s.startDate||s.endDate?'3':'0'}px">
               <div class="stage-card-meta">${s.items.length>0?`${done}/${s.items.length}`:''}</div>
               ${s.items.length>0?`<div style="flex:1;height:3px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden;max-width:60px">
@@ -957,7 +967,7 @@ function renderDetail(){
     <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px">
       <div style="flex:1;min-width:0">
         <div style="font-size:28px;margin-bottom:5px">${s.icon}</div>
-        <div class="detail-hero-name">${s.name}</div>
+        <div class="detail-hero-name">${tName(s)}</div>
         <div class="detail-hero-sub">${fmt(fact)} ${t('factLabel')} · ${t('smetaLabel')}: ${fmt(smeta)}</div>
       </div>
       <div>${ringHTML(fp,s.color,64)}</div>
@@ -998,7 +1008,7 @@ function renderDetail(){
           ${item.done?'<svg width="12" height="12" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" fill="none" stroke="#0D0F14" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>':''}
         </div>
         <div onclick="editItemPrompt(${s.id},${item.id})" style="min-width:0;flex:1">
-          <div class="item-name ${item.done?'done':''}">${item.name}${item.qty>1?` <span style="color:var(--text3);font-size:11px">×${item.qty}</span>`:''}</div>
+          <div class="item-name ${item.done?'done':''}">${tName(item)}${item.qty>1?` <span style="color:var(--text3);font-size:11px">×${item.qty}</span>`:''}</div>
           ${item.note?`<div style="font-size:11px;color:var(--text3);margin-top:1px">${item.note}</div>`:''}
         </div>
         <div class="item-cost" style="${item.done?'color:'+s.color:''}">${fmtShort(itemTotal(item))}</div>
