@@ -1367,8 +1367,11 @@ function _startDrag(id, startY, isTouch){
         const cont=document.getElementById('dashContent');
         const allCards=[...cont.querySelectorAll('.stage-card[data-sid]')];
         const ordered=stages().map(s=>allCards.find(c=>parseInt(c.dataset.sid)===s.id)).filter(Boolean);
-        // find insertion point - append after last non-card element or just reorder
-        ordered.forEach(c=>cont.appendChild(c));
+        // Find the anchor: element right after the last card
+        const lastCard=allCards[allCards.length-1];
+        const anchor=lastCard?.nextSibling||null;
+        // Re-insert all cards in correct order before anchor
+        ordered.forEach(c=>cont.insertBefore(c,anchor));
         // restore dim on dragged card
         const nc=cont.querySelector(`.stage-card[data-sid="${_drag.id}"]`);
         if(nc){nc.style.cssText='transform:scale(0.95);opacity:0.35';_drag.card=nc;}
