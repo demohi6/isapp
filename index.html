@@ -887,7 +887,7 @@ function renderDash(){
       <div class="bb-val">${tb>0?fmtShort(tb):t('budgetNotSet')}</div>
       <div class="bb-sub" style="margin-bottom:14px">${tb>0?(isOver?`<span style="color:var(--red)">${t('budgetOver')} +${fmtShort(ts-tb)}</span>`:`${t('budgetLeft')}: ${fmtShort(rem)}`):t('setBudget')}</div>
       <div class="bb-label">${t('smeta')}</div>
-      <div style="font-family:'DM Mono',monospace;font-size:20px;font-weight:700;color:var(--gold);margin-bottom:12px">${fmtShort(ts)}</div>
+      <div style="font-family:'DM Mono',monospace;font-size:20px;font-weight:700;color:var(--text);margin-bottom:12px">${fmtShort(ts)}</div>
       <div class="bb-label">${t('fact')}</div>
       <div style="font-family:'DM Mono',monospace;font-size:20px;font-weight:700;color:var(--green);margin-bottom:12px">${fmtShort(tf)}</div>
       <div style="height:6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden;position:relative;margin-bottom:6px">
