@@ -1458,6 +1458,7 @@ function setFilter(f){ detailFilter=f; renderDetail(); }
 // ══════════════════════════
 //  STAGE ACTIONS
 // ══════════════════════════
+function updateStages(fn){
   db.objects=db.objects.map(o=>o.id===db.activeObjectId?{...o,stages:fn(o.stages)}:o);
   saveDB();
 }
