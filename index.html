@@ -537,48 +537,48 @@ const fmtShort = n => {
 // ══════════════════════════
 //  DATA
 // ══════════════════════════
-const STORE_KEY='isapp_v6';
+const STORE_KEY='isapp_v7';
 
 const DEFAULT_OBJECT={
-  id:1, name:'Ev tikintisi', icon:'🏠',
+  id:1, name:'Мой дом', icon:'🏠',
   totalBudget: 180000,
   stages:[
-    {id:1,name:'Təməl',icon:'⬛',color:'#C9AA7C',items:[
-      {id:1,name:'Torpaq işləri',qty:1,price:3500,done:false,note:''},
-      {id:2,name:'Armatur və qəlib',qty:1,price:5200,done:false,note:''},
-      {id:3,name:'Beton',qty:40,price:85,done:false,note:'m³ başına'},
-      {id:4,name:'Hidroizolyasiya',qty:1,price:2800,done:false,note:''},
+    {id:1,name:'Фундамент',icon:'⬛',color:'#C9AA7C',items:[
+      {id:1,name:'Земляные работы',qty:1,price:3500,done:false,note:''},
+      {id:2,name:'Арматура и опалубка',qty:1,price:5200,done:false,note:''},
+      {id:3,name:'Бетон',qty:40,price:85,done:false,note:'за м³'},
+      {id:4,name:'Гидроизоляция',qty:1,price:2800,done:false,note:''},
     ]},
-    {id:2,name:'Ev gövdəsi',icon:'🏗',color:'#7BB8CC',items:[
-      {id:1,name:'Kərpic hörgüsü (1-ci mərtəbə)',qty:1,price:12000,done:false,note:''},
-      {id:2,name:'Tavan örtüyü',qty:1,price:8500,done:false,note:''},
-      {id:3,name:'Kərpic hörgüsü (2-ci mərtəbə)',qty:1,price:11000,done:false,note:''},
-      {id:4,name:'Çərçivələr',qty:1,price:3200,done:false,note:''},
-      {id:5,name:'Mərtek konstruksiyası',qty:1,price:7500,done:false,note:''},
+    {id:2,name:'Коробка дома',icon:'🏗',color:'#7BB8CC',items:[
+      {id:1,name:'Кладка стен (1 этаж)',qty:1,price:12000,done:false,note:''},
+      {id:2,name:'Перекрытие',qty:1,price:8500,done:false,note:''},
+      {id:3,name:'Кладка стен (2 этаж)',qty:1,price:11000,done:false,note:''},
+      {id:4,name:'Фронтоны',qty:1,price:3200,done:false,note:''},
+      {id:5,name:'Стропила',qty:1,price:7500,done:false,note:''},
     ]},
-    {id:3,name:'Dam örtüyü',icon:'🏠',color:'#CC7B7B',items:[
-      {id:1,name:'İstilik izolyasiyası',qty:120,price:12,done:false,note:'m² başına'},
-      {id:2,name:'Dam örtüyü materialı',qty:1,price:9500,done:false,note:''},
-      {id:3,name:'Yağış suyu sistemi',qty:1,price:2400,done:false,note:''},
+    {id:3,name:'Кровля',icon:'🏠',color:'#CC7B7B',items:[
+      {id:1,name:'Утеплитель',qty:120,price:12,done:false,note:'за м²'},
+      {id:2,name:'Кровельный материал',qty:1,price:9500,done:false,note:''},
+      {id:3,name:'Водосточная система',qty:1,price:2400,done:false,note:''},
     ]},
-    {id:4,name:'Qapı və pəncərələr',icon:'🪟',color:'#9E8ED4',items:[
-      {id:1,name:'PVC pəncərələr',qty:8,price:950,done:false,note:'ədəd'},
-      {id:2,name:'Giriş qapısı',qty:1,price:2200,done:false,note:''},
-      {id:3,name:'Otaq qapıları',qty:6,price:480,done:false,note:'ədəd'},
-      {id:4,name:'Quraşdırma',qty:1,price:1200,done:false,note:''},
+    {id:4,name:'Окна и двери',icon:'🪟',color:'#9E8ED4',items:[
+      {id:1,name:'Окна ПВХ',qty:8,price:950,done:false,note:'за шт'},
+      {id:2,name:'Входная дверь',qty:1,price:2200,done:false,note:''},
+      {id:3,name:'Межкомнатные двери',qty:6,price:480,done:false,note:'за шт'},
+      {id:4,name:'Монтаж',qty:1,price:1200,done:false,note:''},
     ]},
-    {id:5,name:'Mühəndislik',icon:'⚙️',color:'#80C89A',items:[
-      {id:1,name:'Elektrik',qty:1,price:8500,done:false,note:''},
-      {id:2,name:'Su təchizatı',qty:1,price:5200,done:false,note:''},
-      {id:3,name:'Kanalizasiya',qty:1,price:3800,done:false,note:''},
-      {id:4,name:'İstilik sistemi',qty:1,price:9500,done:false,note:''},
+    {id:5,name:'Инженерия',icon:'⚙️',color:'#80C89A',items:[
+      {id:1,name:'Электрика',qty:1,price:8500,done:false,note:''},
+      {id:2,name:'Водоснабжение',qty:1,price:5200,done:false,note:''},
+      {id:3,name:'Канализация',qty:1,price:3800,done:false,note:''},
+      {id:4,name:'Отопление',qty:1,price:9500,done:false,note:''},
     ]},
-    {id:6,name:'Bitirmə işləri',icon:'🎨',color:'#C8C07E',items:[
-      {id:1,name:'Döşəmə stяжkası',qty:120,price:18,done:false,note:'m²'},
-      {id:2,name:'Divar suvağı',qty:1,price:7200,done:false,note:''},
-      {id:3,name:'Kafel',qty:45,price:35,done:false,note:'m²'},
-      {id:4,name:'Rəngkarlıq',qty:1,price:4800,done:false,note:''},
-      {id:5,name:'Laminat / parket',qty:80,price:28,done:false,note:'m²'},
+    {id:6,name:'Отделка',icon:'🎨',color:'#C8C07E',items:[
+      {id:1,name:'Стяжка полов',qty:120,price:18,done:false,note:'м²'},
+      {id:2,name:'Штукатурка стен',qty:1,price:7200,done:false,note:''},
+      {id:3,name:'Плитка',qty:45,price:35,done:false,note:'м²'},
+      {id:4,name:'Покраска',qty:1,price:4800,done:false,note:''},
+      {id:5,name:'Ламинат / паркет',qty:80,price:28,done:false,note:'м²'},
     ]},
   ]
 };
