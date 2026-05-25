@@ -247,6 +247,10 @@ input:focus,textarea:focus{border-color:rgba(255,255,255,.3)}
 <div class="toast" id="toast"></div>
 
 <script>
+// DOM refs
+const drawerEl = document.getElementById('drawer');
+const backdropEl = document.getElementById('drawerBackdrop');
+
 // ══════════════════════════
 //  I18N
 // ══════════════════════════
@@ -1218,9 +1222,6 @@ if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catc
 // Swipe right on dashboard → open drawer
 let dashTxStart=0, dashTyStart=0, dashSwDir=null, dashSwiping=false;
 const dashPage = document.getElementById('pageDash');
-const drawerEl = document.getElementById('drawer');
-const backdropEl = document.getElementById('drawerBackdrop');
-
 dashPage.addEventListener('touchstart', e=>{
   if(drawerEl.classList.contains('open')) return;
   dashTxStart=e.touches[0].clientX;
