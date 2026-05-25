@@ -1602,7 +1602,7 @@ function showPinOverlay(mode, onSuccess){
   }
   if(mode === 'enter'){
     const cancelLabel = lang==='en'?'Cancel':lang==='az'?'Ləğv et':'Отмена';
-    html += '<button style="background:none;border:none;color:var(--text3);font-size:12px;cursor:pointer;font-family:Mulish,sans-serif;margin-top:4px" onclick="document.getElementById('pinOverlay').remove()">' + cancelLabel + '</button>';
+    html += '<button style="background:none;border:none;color:var(--text3);font-size:12px;cursor:pointer;font-family:Mulish,sans-serif;margin-top:4px" onclick="document.getElementById(&quot;pinOverlay&quot;).remove()">' + cancelLabel + '</button>';
   }
 
   overlay.innerHTML = html;
@@ -1696,7 +1696,7 @@ function processPinInput(){
       setTimeout(()=>{ _pinEntered=''; _pinTarget=''; _pinMode='set'; updatePinDots();
         const sub=document.querySelector('.pin-subtitle'); if(sub) sub.textContent=pinLabel('set');
       }, 600);
-      showToast(lang==='en'?'PINs don't match':lang==='az'?'PIN uyğun deyil':'PIN не совпадает','err');
+      showToast(lang==='en'?"PINs don't match":lang==='az'?'PIN uyğun deyil':'PIN не совпадает','err');
     }
   }
 }
@@ -1739,23 +1739,28 @@ function pinSettings(){
   const bioVal = hasBio?'0':'1';
   const doneMsg = lang==='en'?'Done':lang==='az'?'Tamam':'Готово';
   let html = '<div class="modal-handle"></div><div class="modal-title">🔐 PIN</div><div style="display:flex;flex-direction:column;gap:10px">';
-  html += '<button class="btn btn-secondary" onclick="closeModal();showPinOverlay('set')">' + setLabel + '</button>';
+  html += '<button class="btn btn-secondary" onclick="closeModal();showPinOverlay(&quot;set&quot;)">' + setLabel + '</button>';
   if(hasPin) html += '<button class="btn btn-secondary" onclick="closeModal();confirmRemovePin()">' + removeLabel + '</button>';
-  if(hasPin) html += '<button class="btn btn-secondary" onclick="localStorage.setItem(''+PIN_BIO+'',''+bioVal+'');closeModal();showToast(''+doneMsg+'')">' + bioLabel + '</button>';
+  if(hasPin){ const bioBtn=document.createElement('button'); bioBtn.className='btn btn-secondary'; bioBtn.textContent=bioLabel; bioBtn.onclick=()=>{localStorage.setItem(PIN_BIO,bioVal);closeModal();showToast(doneMsg);}; document.body._pinBioBtn=bioBtn; html += '<button class="btn btn-secondary" id="pinBioBtn">' + bioLabel + '</button>'; }
   html += '</div>';
   showModal(html);
 }
 
+function doRemovePin(){
+  localStorage.removeItem(PIN_KEY);
+  localStorage.removeItem(PIN_BIO);
+  closeModal();
+  showToast(lang==='en'?'PIN removed':lang==='az'?'PIN silindi':'PIN удалён');
+}
 function confirmRemovePin(){
   const title = lang==='en'?'Remove PIN?':lang==='az'?'PIN silinsin?':'Удалить PIN?';
   const cancel = lang==='en'?'Cancel':lang==='az'?'Ləğv et':'Отмена';
   const remove = lang==='en'?'Remove':lang==='az'?'Sil':'Удалить';
-  const removed = lang==='en'?'PIN removed':lang==='az'?'PIN silindi':'PIN удалён';
   showModal('<div class="modal-handle"></div>'
     +'<div class="modal-title">'+title+'</div>'
     +'<div style="display:flex;gap:10px;margin-top:4px">'
       +'<button class="btn btn-secondary" onclick="closeModal()">'+cancel+'</button>'
-      +'<button class="btn btn-danger" style="flex:1" onclick="localStorage.removeItem(''+PIN_KEY+'');localStorage.removeItem(''+PIN_BIO+'');closeModal();showToast(''+removed+'')">'+remove+'</button>'
+      +'<button class="btn btn-danger" style="flex:1" onclick="doRemovePin()">'+remove+'</button>'
     +'</div>');
 }
 
@@ -2039,7 +2044,7 @@ function processPinInput(){
       setTimeout(()=>{ _pinEntered=''; _pinTarget=''; _pinMode='set'; updatePinDots();
         const sub=document.querySelector('.pin-subtitle'); if(sub) sub.textContent=pinLabel('set');
       }, 600);
-      showToast(lang==='en'?'PINs don't match':lang==='az'?'PIN uyğun deyil':'PIN не совпадает','err');
+      showToast(lang==='en'?"PINs don't match":lang==='az'?'PIN uyğun deyil':'PIN не совпадает','err');
     }
   }
 }
@@ -2082,23 +2087,28 @@ function pinSettings(){
   const bioVal = hasBio?'0':'1';
   const doneMsg = lang==='en'?'Done':lang==='az'?'Tamam':'Готово';
   let html = '<div class="modal-handle"></div><div class="modal-title">🔐 PIN</div><div style="display:flex;flex-direction:column;gap:10px">';
-  html += '<button class="btn btn-secondary" onclick="closeModal();showPinOverlay('set')">' + setLabel + '</button>';
+  html += '<button class="btn btn-secondary" onclick="closeModal();showPinOverlay(&quot;set&quot;)">' + setLabel + '</button>';
   if(hasPin) html += '<button class="btn btn-secondary" onclick="closeModal();confirmRemovePin()">' + removeLabel + '</button>';
-  if(hasPin) html += '<button class="btn btn-secondary" onclick="localStorage.setItem(''+PIN_BIO+'',''+bioVal+'');closeModal();showToast(''+doneMsg+'')">' + bioLabel + '</button>';
+  if(hasPin){ const bioBtn=document.createElement('button'); bioBtn.className='btn btn-secondary'; bioBtn.textContent=bioLabel; bioBtn.onclick=()=>{localStorage.setItem(PIN_BIO,bioVal);closeModal();showToast(doneMsg);}; document.body._pinBioBtn=bioBtn; html += '<button class="btn btn-secondary" id="pinBioBtn">' + bioLabel + '</button>'; }
   html += '</div>';
   showModal(html);
 }
 
+function doRemovePin(){
+  localStorage.removeItem(PIN_KEY);
+  localStorage.removeItem(PIN_BIO);
+  closeModal();
+  showToast(lang==='en'?'PIN removed':lang==='az'?'PIN silindi':'PIN удалён');
+}
 function confirmRemovePin(){
   const title = lang==='en'?'Remove PIN?':lang==='az'?'PIN silinsin?':'Удалить PIN?';
   const cancel = lang==='en'?'Cancel':lang==='az'?'Ləğv et':'Отмена';
   const remove = lang==='en'?'Remove':lang==='az'?'Sil':'Удалить';
-  const removed = lang==='en'?'PIN removed':lang==='az'?'PIN silindi':'PIN удалён';
   showModal('<div class="modal-handle"></div>'
     +'<div class="modal-title">'+title+'</div>'
     +'<div style="display:flex;gap:10px;margin-top:4px">'
       +'<button class="btn btn-secondary" onclick="closeModal()">'+cancel+'</button>'
-      +'<button class="btn btn-danger" style="flex:1" onclick="localStorage.removeItem(''+PIN_KEY+'');localStorage.removeItem(''+PIN_BIO+'');closeModal();showToast(''+removed+'')">'+remove+'</button>'
+      +'<button class="btn btn-danger" style="flex:1" onclick="doRemovePin()">'+remove+'</button>'
     +'</div>');
 }
 
