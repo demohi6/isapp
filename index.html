@@ -227,6 +227,11 @@ input:focus,textarea:focus{border-color:rgba(255,255,255,.3)}
 .drum-date-display:active{transform:scale(.98)}
 .drum-date-display.has-value{color:var(--gold);border-color:rgba(201,170,124,.3);background:rgba(201,170,124,.06)}
 .drum-date-display .cal-icon{font-size:16px;opacity:.5}
+.search-wrap{position:relative;margin-bottom:12px}
+.search-input{background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:12px;padding:10px 12px 10px 36px;color:var(--text);font-family:'Mulish',sans-serif;font-size:14px;width:100%;outline:none;transition:border-color .2s;-webkit-appearance:none}
+.search-input:focus{border-color:rgba(255,255,255,.25)}
+.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;opacity:.4;pointer-events:none}
+.search-clear{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text3);cursor:pointer;font-size:20px;padding:2px 6px}
 .qty-sep{text-align:center;color:var(--text3);font-size:14px;font-weight:600}
 
 .toast{position:fixed;top:calc(var(--top) + 12px);left:50%;transform:translateX(-50%) translateY(-80px);background:var(--bg3);border:1px solid var(--border2);border-radius:12px;padding:10px 18px;font-size:13px;font-weight:600;z-index:300;transition:transform .3s ease;white-space:nowrap;box-shadow:0 8px 32px rgba(0,0,0,.5)}
@@ -1023,7 +1028,10 @@ function renderDetail(){
       <div class="dtb-fact" style="width:${fp}%;background:${s.color}"></div>
     </div>`;
 
+  const searchQ = document.getElementById('itemSearch')?.value.toLowerCase().trim()||'';
   const filtered = s.items.filter(i => {
+    const name = (tName(i)||'').toLowerCase();
+    if(searchQ && !name.includes(searchQ)) return false;
     if(detailFilter==='done') return i.done;
     if(detailFilter==='plan') return !i.done;
     return true;
@@ -1037,6 +1045,11 @@ function renderDetail(){
       <div class="stat-box"><div class="stat-lbl">${t('shareOfSmeta')}</div><div class="stat-val">${shareOfSmeta}%</div></div>
     </div>
 
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" class="search-input" id="itemSearch" placeholder="${lang==='en'?'Search...':lang==='az'?'Axtar...':'Поиск...'}" oninput="renderDetail()"/>
+      <button class="search-clear" onclick="document.getElementById('itemSearch').value='';renderDetail()" style="display:${searchQ?'block':'none'}">×</button>
+    </div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
       <div class="section-title" style="margin:0">${t('positions')}</div>
       <div class="filter-tabs">
