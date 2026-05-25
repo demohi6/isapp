@@ -1,12 +1,28 @@
 {
-  "name": "Строим Дом",
-  "short_name": "Строим 🏡",
-  "description": "Бюджет строительства дома",
+  "name": "Tikinti — Строим Дом",
+  "short_name": "Tikinti",
+  "description": "Бюджет и смета строительства",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#0D0F14",
   "theme_color": "#0D0F14",
   "orientation": "portrait-primary",
+  "shortcuts": [
+    {
+      "name": "Добавить этап",
+      "short_name": "+ Этап",
+      "description": "Быстро добавить новый этап",
+      "url": "./index.html?action=addStage",
+      "icons": [{ "src": "./icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Новый объект",
+      "short_name": "+ Объект",
+      "description": "Создать новый объект",
+      "url": "./index.html?action=addObject",
+      "icons": [{ "src": "./icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ],
   "icons": [
     {
       "src": "./icons/icon-192.png",
