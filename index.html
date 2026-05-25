@@ -227,34 +227,6 @@ input:focus,textarea:focus{border-color:rgba(255,255,255,.3)}
 .drum-date-display:active{transform:scale(.98)}
 .drum-date-display.has-value{color:var(--gold);border-color:rgba(201,170,124,.3);background:rgba(201,170,124,.06)}
 .drum-date-display .cal-icon{font-size:16px;opacity:.5}
-
-/* SEARCH */
-.search-wrap{position:relative;margin-bottom:12px}
-.search-input{background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:12px;padding:10px 12px 10px 36px;color:var(--text);font-family:'Mulish',sans-serif;font-size:14px;width:100%;outline:none;transition:border-color .2s}
-.search-input:focus{border-color:rgba(255,255,255,.25)}
-.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;opacity:.4;pointer-events:none}
-.search-clear{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;padding:2px 6px}
-
-/* CHART */
-.chart-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:14px;animation:fadeUp .4s ease both}
-.chart-title{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px}
-.chart-bars{display:flex;align-items:flex-end;gap:4px;height:80px}
-.chart-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
-.chart-bar-bg{width:100%;background:rgba(255,255,255,.05);border-radius:4px 4px 0 0;position:relative;overflow:hidden}
-.chart-bar-fill{position:absolute;bottom:0;left:0;right:0;border-radius:4px 4px 0 0;transition:height .6s ease}
-.chart-bar-label{font-size:9px;color:var(--text3);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
-
-/* PIN */
-.pin-overlay{position:fixed;inset:0;background:var(--bg);z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px}
-.pin-title{font-family:'Unbounded',sans-serif;font-size:18px;font-weight:700;color:var(--gold)}
-.pin-dots{display:flex;gap:12px}
-.pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid rgba(255,255,255,.3);transition:background .2s,border-color .2s}
-.pin-dot.filled{background:var(--gold);border-color:var(--gold)}
-.pin-pad{display:grid;grid-template-columns:repeat(3,72px);gap:12px}
-.pin-key{width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,.07);border:none;color:var(--text);font-size:22px;font-family:'DM Mono',monospace;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s;-webkit-user-select:none;user-select:none}
-.pin-key:active{background:rgba(255,255,255,.18)}
-.pin-key.del{font-size:18px;color:var(--text3)}
-.pin-key.empty{background:none;cursor:default}
 .qty-sep{text-align:center;color:var(--text3);font-size:14px;font-weight:600}
 
 .toast{position:fixed;top:calc(var(--top) + 12px);left:50%;transform:translateX(-50%) translateY(-80px);background:var(--bg3);border:1px solid var(--border2);border-radius:12px;padding:10px 18px;font-size:13px;font-weight:600;z-index:300;transition:transform .3s ease;white-space:nowrap;box-shadow:0 8px 32px rgba(0,0,0,.5)}
@@ -293,8 +265,6 @@ input:focus,textarea:focus{border-color:rgba(255,255,255,.3)}
       <div id="drawerObjects"></div>
       <button class="drawer-btn drawer-btn-add" id="drawerBtnAdd" onclick="addObjectPrompt()">＋ Yeni obyekt</button>
       <button class="drawer-btn drawer-btn-pdf" onclick="closeDrawer();exportPDF()">📄 PDF export</button>
-      <button class="drawer-btn drawer-btn-pdf" onclick="closeDrawer();exportExcel()" style="margin-top:4px">📊 Excel / CSV</button>
-      <button class="drawer-btn drawer-btn-pdf" onclick="closeDrawer();${localStorage.getItem('tikinti_pin')?'removePin()':'showPinOverlay(\'set\')'}" id="pinBtn" style="margin-top:4px">🔐 PIN</button>
       <button class="drawer-btn drawer-btn-pdf" onclick="closeDrawer();triggerImport()" style="margin-top:4px">📥 <span id="importBtnLabel">Импорт JSON</span></button>
       <input type="file" id="importFile" accept=".json" style="display:none" onchange="handleImport(event)"/>
       <div style="margin-top:16px;padding:0 4px">
@@ -436,8 +406,6 @@ const LANGS = {
     startDate:'Başlama tarixi',
     endDate:'Bitmə tarixi',
     sortStages:'Sıralama',
-    copyItem:'Kopyala',
-    exportExcel:'Excel ixrac',
   },
   ru: {
     appName:'Tikinti',
@@ -530,8 +498,6 @@ const LANGS = {
     startDate:'Дата начала',
     endDate:'Дата окончания',
     sortStages:'Порядок',
-    copyItem:'Копировать',
-    exportExcel:'Экспорт Excel',
   },
   en: {
     appName:'Tikinti',
@@ -624,8 +590,6 @@ const LANGS = {
     startDate:'Start date',
     endDate:'End date',
     sortStages:'Order',
-    copyItem:'Duplicate',
-    exportExcel:'Export Excel',
   }
 };
 
@@ -979,23 +943,6 @@ function renderDash(){
       <div style="font-size:11px;color:var(--text3)">${Math.round(factOfSmeta)}% ${t('pctDone')}</div>
     </div>
 
-    ${ts>0?`<div class="chart-wrap" style="animation-delay:.16s">
-      <div class="chart-title">${lang==='en'?'BUDGET BREAKDOWN':lang==='az'?'BÜDCƏ BÖLGÜSÜ':'РАСПРЕДЕЛЕНИЕ БЮДЖЕТА'}</div>
-      <div class="chart-bars">
-        ${st.map(s=>{
-          const smeta=stageSmeta(s),fact=stageFact(s);
-          const maxSmeta=Math.max(...st.map(x=>stageSmeta(x)),1);
-          const smetaH=Math.round(smeta/maxSmeta*100);
-          const factH=smeta>0?Math.round(fact/smeta*smetaH):0;
-          return '<div class="chart-bar-wrap">'
-            +'<div class="chart-bar-bg" style="height:'+smetaH+'%;background:'+s.color+'22">'
-              +'<div class="chart-bar-fill" style="height:'+factH+'%;background:'+s.color+'"></div>'
-            +'</div>'
-            +'<div class="chart-bar-label" style="color:'+s.color+';font-size:9px">'+tName(s).substring(0,4)+'</div>'
-          +'</div>';
-        }).join('')}
-      </div>
-    </div>`:''}
     <div class="section-divider"></div>
     <div class="section-title">${t('stages')}</div>
 
@@ -1018,10 +965,7 @@ function renderDash(){
 
           <div class="stage-card-icon">${s.icon}</div>
           <div class="stage-card-info">
-            <div style="display:flex;align-items:center;gap:6px">
-              <div class="stage-card-name">${tName(s)}</div>
-              ${s.endDate&&s.status!=='done'&&new Date(s.endDate)<new Date(Date.now()+7*24*3600000)?`<span style="font-size:10px;background:rgba(204,123,123,.2);color:var(--red);border-radius:20px;padding:1px 7px;white-space:nowrap">${new Date(s.endDate)<new Date()?'⚠️':' ⏰'}</span>`:''}
-            </div>
+            <div class="stage-card-name">${tName(s)}</div>
             <div style="display:flex;align-items:center;gap:6px;margin-bottom:${s.contractor||s.startDate||s.endDate?'3':'0'}px">
               <div class="stage-card-meta">${s.items.length>0?`${done}/${s.items.length}`:''}</div>
               ${s.items.length>0?`<div style="flex:1;height:3px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden;max-width:60px">
@@ -1079,11 +1023,7 @@ function renderDetail(){
       <div class="dtb-fact" style="width:${fp}%;background:${s.color}"></div>
     </div>`;
 
-  const searchQ = document.getElementById('itemSearch')?.value.toLowerCase().trim()||'';
-  const detailSearch = searchQ.length > 0;
   const filtered = s.items.filter(i => {
-    const name = tName(i).toLowerCase();
-    if(searchQ && !name.includes(searchQ)) return false;
     if(detailFilter==='done') return i.done;
     if(detailFilter==='plan') return !i.done;
     return true;
@@ -1105,11 +1045,6 @@ function renderDetail(){
         <button class="filter-tab ${detailFilter==='done'?'active':''}" onclick="setFilter('done')">${t('filterDone')}</button>
       </div>
     </div>
-    <div class="search-wrap">
-      <span class="search-icon">🔍</span>
-      <input type="text" class="search-input" id="itemSearch" placeholder="${lang==='en'?'Search...':lang==='az'?'Axtar...':'Поиск...'}" oninput="renderDetail()"/>
-      ${detailSearch?`<button class="search-clear" onclick="document.getElementById('itemSearch').value='';renderDetail()">×</button>`:''}
-    </div>
 
     <div class="items-section">
       ${filtered.length===0?`<div class="empty" style="padding:28px 16px"><div style="font-size:28px;opacity:.3;margin-bottom:8px">📋</div></div>`:''}
@@ -1123,10 +1058,7 @@ function renderDetail(){
           ${item.note?`<div style="font-size:11px;color:var(--text3);margin-top:1px">${item.note}</div>`:''}
         </div>
         <div class="item-cost" style="${item.done?'color:'+s.color:''}">${fmtShort(itemTotal(item))}</div>
-        <div style="display:flex;flex-direction:column;gap:2px">
-          <button class="item-del" onclick="copyItem(${s.id},${item.id})" style="font-size:14px;height:24px">⧉</button>
-          <button class="item-del" onclick="deleteItem(${s.id},${item.id})" style="height:24px">×</button>
-        </div>
+        <button class="item-del" onclick="deleteItem(${s.id},${item.id})">×</button>
       </div>`).join('')}
     </div>
 
@@ -1559,136 +1491,6 @@ function clearDrumDate(field){
   if(dis){dis.textContent='— — ——';dis.classList.remove('has-value');}
 }
 
-// ══════════════════
-//  COPY ITEM
-// ══════════════════
-function copyItem(stageId, itemId){
-  const s=stages().find(st=>st.id===stageId);
-  const item=s?.items.find(i=>i.id===itemId);
-  if(!item)return;
-  const copy={...item,id:newId(),done:false,
-    name_ru:(item.name_ru||item.name||'')+' (копия)',
-    name_az:(item.name_az||item.name||'')+' (kopya)',
-    name_en:(item.name_en||item.name||'')+' (copy)'};
-  updateStages(ss=>ss.map(s=>s.id!==stageId?s:{...s,items:[...s.items,copy]}));
-  renderDetail();showToast('✓ '+tName(copy));
-}
-
-// ══════════════════
-//  EXPORT EXCEL
-// ══════════════════
-function exportExcel(){
-  const obj=curObj(),st=stages();
-  let csv='﻿'; // BOM for Excel UTF-8
-  csv+=`${tName(obj)} — ${lang==='en'?'Budget Report':lang==='az'?'Büdcə Hesabatı':'Бюджет'}
-
-`;
-  csv+=`${lang==='en'?'Stage':lang==='az'?'Mərhələ':'Этап'},${lang==='en'?'Item':lang==='az'?'Mövqe':'Позиция'},${lang==='en'?'Qty':lang==='az'?'Miqdar':'Кол-во'},${lang==='en'?'Price':lang==='az'?'Qiymət':'Цена'},${lang==='en'?'Total':lang==='az'?'Cəmi':'Итого'},${lang==='en'?'Status':lang==='az'?'Status':'Статус'}
-`;
-  st.forEach(s=>{
-    s.items.forEach(i=>{
-      const total=(i.qty||1)*(i.price||i.cost||0);
-      const status=i.done?(lang==='en'?'Done':lang==='az'?'Tamamlandı':'Выполнено'):(lang==='en'?'Plan':lang==='az'?'Plan':'План');
-      csv+=`"${tName(s)}","${tName(i)}",${i.qty||1},${i.price||i.cost||0},${total},"${status}"
-`;
-    });
-    const smeta=stageSmeta(s),fact=stageFact(s);
-    csv+=`"${tName(s)} — ${lang==='en'?'TOTAL':lang==='az'?'CƏMİ':'ИТОГО'}",,,,${smeta},"${fact}/${smeta}"
-
-`;
-  });
-  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  a.href=url;a.download=`tikinti-${new Date().toISOString().split('T')[0]}.csv`;
-  a.click();URL.revokeObjectURL(url);
-  showToast(lang==='en'?'Excel saved':lang==='az'?'Excel yükləndi':'Excel сохранён');
-}
-
-// ══════════════════
-//  PIN CODE
-// ══════════════════
-let _pinMode=null,_pinEntered='',_pinTarget='';
-const PIN_KEY='tikinti_pin';
-
-function checkPin(){
-  const pin=localStorage.getItem(PIN_KEY);
-  if(!pin)return; // no pin set
-  showPinOverlay('enter');
-}
-
-function showPinOverlay(mode){
-  _pinMode=mode;_pinEntered='';
-  const title=mode==='enter'?(lang==='en'?'Enter PIN':lang==='az'?'PIN daxil edin':'Введите PIN')
-    :mode==='set'?(lang==='en'?'Set PIN':lang==='az'?'PIN təyin edin':'Задайте PIN')
-    :(lang==='en'?'Confirm PIN':lang==='az'?'PIN təsdiqləyin':'Подтвердите PIN');
-  
-  const overlay=document.createElement('div');
-  overlay.className='pin-overlay';overlay.id='pinOverlay';
-  overlay.innerHTML=`
-    <div class="pin-title">🏡 Tikinti</div>
-    <div style="font-size:14px;color:var(--text2)">${title}</div>
-    <div class="pin-dots" id="pinDots">
-      ${[0,1,2,3].map(i=>'<div class="pin-dot" id="pd'+i+'"></div>').join('')}
-    </div>
-    <div class="pin-pad">
-      ${[1,2,3,4,5,6,7,8,9].map(n=>`<button class="pin-key" onclick="pinKey('${n}')">${n}</button>`).join('')}
-      <button class="pin-key empty"></button>
-      <button class="pin-key" onclick="pinKey('0')">0</button>
-      <button class="pin-key del" onclick="pinDel()">⌫</button>
-    </div>
-    ${mode==='enter'?`<button style="background:none;border:none;color:var(--text3);font-size:12px;cursor:pointer;font-family:'Mulish',sans-serif" onclick="document.getElementById('pinOverlay').remove()">
-      ${lang==='en'?'Cancel':lang==='az'?'Ləğv et':'Отмена'}
-    </button>`:''}
-  `;
-  document.body.appendChild(overlay);
-}
-
-function pinKey(n){
-  if(_pinEntered.length>=4)return;
-  _pinEntered+=n;
-  for(let i=0;i<4;i++){
-    const d=document.getElementById('pd'+i);
-    if(d)d.classList.toggle('filled',i<_pinEntered.length);
-  }
-  if(_pinEntered.length===4){
-    setTimeout(()=>{
-      if(_pinMode==='enter'){
-        if(_pinEntered===localStorage.getItem(PIN_KEY)){
-          document.getElementById('pinOverlay')?.remove();
-        } else {
-          _pinEntered='';
-          [0,1,2,3].forEach(i=>document.getElementById('pd'+i)?.classList.remove('filled'));
-          showToast(lang==='en'?'Wrong PIN':lang==='az'?'Yanlış PIN':'Неверный PIN','err');
-        }
-      } else if(_pinMode==='set'){
-        _pinTarget=_pinEntered;_pinEntered='';
-        document.getElementById('pinOverlay')?.remove();
-        showPinOverlay('confirm');
-      } else if(_pinMode==='confirm'){
-        if(_pinEntered===_pinTarget){
-          localStorage.setItem(PIN_KEY,_pinEntered);
-          document.getElementById('pinOverlay')?.remove();
-          showToast(lang==='en'?'PIN set':lang==='az'?'PIN təyin edildi':'PIN установлен');
-        } else {
-          _pinEntered='';_pinTarget='';
-          [0,1,2,3].forEach(i=>document.getElementById('pd'+i)?.classList.remove('filled'));
-          showToast(lang==='en'?'PINs don't match':lang==='az'?'PIN uyğun deyil':'PIN не совпадает','err');
-        }
-      }
-    },150);
-  }
-}
-function pinDel(){
-  if(_pinEntered.length===0)return;
-  _pinEntered=_pinEntered.slice(0,-1);
-  [0,1,2,3].forEach(i=>document.getElementById('pd'+i)?.classList.toggle('filled',i<_pinEntered.length));
-}
-function removePin(){
-  localStorage.removeItem(PIN_KEY);
-  showToast(lang==='en'?'PIN removed':lang==='az'?'PIN silindi':'PIN удалён');
-}
-
 window._installPrompt=null;
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();window._installPrompt=e;renderDash();});
 function installApp(){
@@ -1798,136 +1600,6 @@ function clearDrumDate(field){
   if(dis){dis.textContent='— — ——';dis.classList.remove('has-value');}
 }
 
-// ══════════════════
-//  COPY ITEM
-// ══════════════════
-function copyItem(stageId, itemId){
-  const s=stages().find(st=>st.id===stageId);
-  const item=s?.items.find(i=>i.id===itemId);
-  if(!item)return;
-  const copy={...item,id:newId(),done:false,
-    name_ru:(item.name_ru||item.name||'')+' (копия)',
-    name_az:(item.name_az||item.name||'')+' (kopya)',
-    name_en:(item.name_en||item.name||'')+' (copy)'};
-  updateStages(ss=>ss.map(s=>s.id!==stageId?s:{...s,items:[...s.items,copy]}));
-  renderDetail();showToast('✓ '+tName(copy));
-}
-
-// ══════════════════
-//  EXPORT EXCEL
-// ══════════════════
-function exportExcel(){
-  const obj=curObj(),st=stages();
-  let csv='﻿'; // BOM for Excel UTF-8
-  csv+=`${tName(obj)} — ${lang==='en'?'Budget Report':lang==='az'?'Büdcə Hesabatı':'Бюджет'}
-
-`;
-  csv+=`${lang==='en'?'Stage':lang==='az'?'Mərhələ':'Этап'},${lang==='en'?'Item':lang==='az'?'Mövqe':'Позиция'},${lang==='en'?'Qty':lang==='az'?'Miqdar':'Кол-во'},${lang==='en'?'Price':lang==='az'?'Qiymət':'Цена'},${lang==='en'?'Total':lang==='az'?'Cəmi':'Итого'},${lang==='en'?'Status':lang==='az'?'Status':'Статус'}
-`;
-  st.forEach(s=>{
-    s.items.forEach(i=>{
-      const total=(i.qty||1)*(i.price||i.cost||0);
-      const status=i.done?(lang==='en'?'Done':lang==='az'?'Tamamlandı':'Выполнено'):(lang==='en'?'Plan':lang==='az'?'Plan':'План');
-      csv+=`"${tName(s)}","${tName(i)}",${i.qty||1},${i.price||i.cost||0},${total},"${status}"
-`;
-    });
-    const smeta=stageSmeta(s),fact=stageFact(s);
-    csv+=`"${tName(s)} — ${lang==='en'?'TOTAL':lang==='az'?'CƏMİ':'ИТОГО'}",,,,${smeta},"${fact}/${smeta}"
-
-`;
-  });
-  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  a.href=url;a.download=`tikinti-${new Date().toISOString().split('T')[0]}.csv`;
-  a.click();URL.revokeObjectURL(url);
-  showToast(lang==='en'?'Excel saved':lang==='az'?'Excel yükləndi':'Excel сохранён');
-}
-
-// ══════════════════
-//  PIN CODE
-// ══════════════════
-let _pinMode=null,_pinEntered='',_pinTarget='';
-const PIN_KEY='tikinti_pin';
-
-function checkPin(){
-  const pin=localStorage.getItem(PIN_KEY);
-  if(!pin)return; // no pin set
-  showPinOverlay('enter');
-}
-
-function showPinOverlay(mode){
-  _pinMode=mode;_pinEntered='';
-  const title=mode==='enter'?(lang==='en'?'Enter PIN':lang==='az'?'PIN daxil edin':'Введите PIN')
-    :mode==='set'?(lang==='en'?'Set PIN':lang==='az'?'PIN təyin edin':'Задайте PIN')
-    :(lang==='en'?'Confirm PIN':lang==='az'?'PIN təsdiqləyin':'Подтвердите PIN');
-  
-  const overlay=document.createElement('div');
-  overlay.className='pin-overlay';overlay.id='pinOverlay';
-  overlay.innerHTML=`
-    <div class="pin-title">🏡 Tikinti</div>
-    <div style="font-size:14px;color:var(--text2)">${title}</div>
-    <div class="pin-dots" id="pinDots">
-      ${[0,1,2,3].map(i=>'<div class="pin-dot" id="pd'+i+'"></div>').join('')}
-    </div>
-    <div class="pin-pad">
-      ${[1,2,3,4,5,6,7,8,9].map(n=>`<button class="pin-key" onclick="pinKey('${n}')">${n}</button>`).join('')}
-      <button class="pin-key empty"></button>
-      <button class="pin-key" onclick="pinKey('0')">0</button>
-      <button class="pin-key del" onclick="pinDel()">⌫</button>
-    </div>
-    ${mode==='enter'?`<button style="background:none;border:none;color:var(--text3);font-size:12px;cursor:pointer;font-family:'Mulish',sans-serif" onclick="document.getElementById('pinOverlay').remove()">
-      ${lang==='en'?'Cancel':lang==='az'?'Ləğv et':'Отмена'}
-    </button>`:''}
-  `;
-  document.body.appendChild(overlay);
-}
-
-function pinKey(n){
-  if(_pinEntered.length>=4)return;
-  _pinEntered+=n;
-  for(let i=0;i<4;i++){
-    const d=document.getElementById('pd'+i);
-    if(d)d.classList.toggle('filled',i<_pinEntered.length);
-  }
-  if(_pinEntered.length===4){
-    setTimeout(()=>{
-      if(_pinMode==='enter'){
-        if(_pinEntered===localStorage.getItem(PIN_KEY)){
-          document.getElementById('pinOverlay')?.remove();
-        } else {
-          _pinEntered='';
-          [0,1,2,3].forEach(i=>document.getElementById('pd'+i)?.classList.remove('filled'));
-          showToast(lang==='en'?'Wrong PIN':lang==='az'?'Yanlış PIN':'Неверный PIN','err');
-        }
-      } else if(_pinMode==='set'){
-        _pinTarget=_pinEntered;_pinEntered='';
-        document.getElementById('pinOverlay')?.remove();
-        showPinOverlay('confirm');
-      } else if(_pinMode==='confirm'){
-        if(_pinEntered===_pinTarget){
-          localStorage.setItem(PIN_KEY,_pinEntered);
-          document.getElementById('pinOverlay')?.remove();
-          showToast(lang==='en'?'PIN set':lang==='az'?'PIN təyin edildi':'PIN установлен');
-        } else {
-          _pinEntered='';_pinTarget='';
-          [0,1,2,3].forEach(i=>document.getElementById('pd'+i)?.classList.remove('filled'));
-          showToast(lang==='en'?'PINs don't match':lang==='az'?'PIN uyğun deyil':'PIN не совпадает','err');
-        }
-      }
-    },150);
-  }
-}
-function pinDel(){
-  if(_pinEntered.length===0)return;
-  _pinEntered=_pinEntered.slice(0,-1);
-  [0,1,2,3].forEach(i=>document.getElementById('pd'+i)?.classList.toggle('filled',i<_pinEntered.length));
-}
-function removePin(){
-  localStorage.removeItem(PIN_KEY);
-  showToast(lang==='en'?'PIN removed':lang==='az'?'PIN silindi':'PIN удалён');
-}
-
 window._installPrompt=null;renderDash();});
 }
 
@@ -1987,7 +1659,6 @@ dashPage.addEventListener('touchend', e=>{
 
 updateDrawerLabels();
 renderDash();
-checkPin();
 
 // Handle PWA shortcuts
 const urlParams = new URLSearchParams(window.location.search);
