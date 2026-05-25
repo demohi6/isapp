@@ -529,8 +529,7 @@ const fmt = n => {
 };
 const fmtShort = n => {
   const abs=Math.abs(n),s=n<0?'−':'';
-  if(abs>=1e6) return s+(abs/1e6).toFixed(1).replace('.0','')+' mln ₼';
-  if(abs>=1e3) return s+(abs/1e3).toFixed(0)+' min ₼';
+  if(abs>=1e6) return s+(abs/1e6).toFixed(1).replace('.0','')+' млн ₼';
   return fmt(n);
 };
 
