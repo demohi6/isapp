@@ -1727,22 +1727,29 @@ function pinSettings(){
   const hasPin = !!localStorage.getItem(PIN_KEY);
   const hasBio = localStorage.getItem(PIN_BIO)==='1';
   const setLabel = hasPin?(lang==='en'?'Change PIN':lang==='az'?'PIN dəyiş':'Изменить PIN'):(lang==='en'?'Set PIN':lang==='az'?'PIN təyin et':'Задать PIN');
-  showModal(`<div class="modal-handle"></div>
-    <div class="modal-title">🔐 PIN</div>
-    <div style="display:flex;flex-direction:column;gap:10px">
-      <button class="btn btn-secondary" onclick="closeModal();showPinOverlay('set')">${setLabel}</button>
-      ${hasPin?`<button class="btn btn-secondary" onclick="closeModal();confirmRemovePin()">${lang==='en'?'Remove PIN':lang==='az'?'PIN sil':'Удалить PIN'}</button>`:''}
-      ${hasPin?`<button class="btn btn-secondary" onclick="closeModal();localStorage.setItem('${PIN_BIO}', hasBio?'0':'1');showToast('OK')">${hasBio?(lang==='en'?'Disable fingerprint':lang==='az'?'Barmaq izi söndür':'Отключить отпечаток'):(lang==='en'?'Enable fingerprint':lang==='az'?'Barmaq izi aktiv et':'Включить отпечаток')}</button>`:''}
-    </div>`);
+  const removeLabel = lang==='en'?'Remove PIN':lang==='az'?'PIN sil':'Удалить PIN';
+  const bioLabel = hasBio?(lang==='en'?'Disable fingerprint':lang==='az'?'Barmaq izi söndür':'Отключить отпечаток'):(lang==='en'?'Enable fingerprint':lang==='az'?'Barmaq izi aktiv et':'Включить отпечаток');
+  const bioVal = hasBio?'0':'1';
+  const doneMsg = lang==='en'?'Done':lang==='az'?'Tamam':'Готово';
+  let html = '<div class="modal-handle"></div><div class="modal-title">🔐 PIN</div><div style="display:flex;flex-direction:column;gap:10px">';
+  html += '<button class="btn btn-secondary" onclick="closeModal();showPinOverlay('set')">' + setLabel + '</button>';
+  if(hasPin) html += '<button class="btn btn-secondary" onclick="closeModal();confirmRemovePin()">' + removeLabel + '</button>';
+  if(hasPin) html += '<button class="btn btn-secondary" onclick="localStorage.setItem(''+PIN_BIO+'',''+bioVal+'');closeModal();showToast(''+doneMsg+'')">' + bioLabel + '</button>';
+  html += '</div>';
+  showModal(html);
 }
 
 function confirmRemovePin(){
-  showModal(`<div class="modal-handle"></div>
-    <div class="modal-title">${lang==='en'?'Remove PIN?':lang==='az'?'PIN silinsin?':'Удалить PIN?'}</div>
-    <div style="display:flex;gap:10px;margin-top:4px">
-      <button class="btn btn-secondary" onclick="closeModal()">${lang==='en'?'Cancel':lang==='az'?'Ləğv et':'Отмена'}</button>
-      <button class="btn btn-danger" style="flex:1" onclick="localStorage.removeItem('${PIN_KEY}');localStorage.removeItem('${PIN_BIO}');closeModal();showToast('${lang==='en'?'PIN removed':lang==='az'?'PIN silindi':'PIN удалён'}')">${lang==='en'?'Remove':lang==='az'?'Sil':'Удалить'}</button>
-    </div>`);
+  const title = lang==='en'?'Remove PIN?':lang==='az'?'PIN silinsin?':'Удалить PIN?';
+  const cancel = lang==='en'?'Cancel':lang==='az'?'Ləğv et':'Отмена';
+  const remove = lang==='en'?'Remove':lang==='az'?'Sil':'Удалить';
+  const removed = lang==='en'?'PIN removed':lang==='az'?'PIN silindi':'PIN удалён';
+  showModal('<div class="modal-handle"></div>'
+    +'<div class="modal-title">'+title+'</div>'
+    +'<div style="display:flex;gap:10px;margin-top:4px">'
+      +'<button class="btn btn-secondary" onclick="closeModal()">'+cancel+'</button>'
+      +'<button class="btn btn-danger" style="flex:1" onclick="localStorage.removeItem(''+PIN_KEY+'');localStorage.removeItem(''+PIN_BIO+'');closeModal();showToast(''+removed+'')">'+remove+'</button>'
+    +'</div>');
 }
 
 window._installPrompt=null;
@@ -2063,22 +2070,29 @@ function pinSettings(){
   const hasPin = !!localStorage.getItem(PIN_KEY);
   const hasBio = localStorage.getItem(PIN_BIO)==='1';
   const setLabel = hasPin?(lang==='en'?'Change PIN':lang==='az'?'PIN dəyiş':'Изменить PIN'):(lang==='en'?'Set PIN':lang==='az'?'PIN təyin et':'Задать PIN');
-  showModal(`<div class="modal-handle"></div>
-    <div class="modal-title">🔐 PIN</div>
-    <div style="display:flex;flex-direction:column;gap:10px">
-      <button class="btn btn-secondary" onclick="closeModal();showPinOverlay('set')">${setLabel}</button>
-      ${hasPin?`<button class="btn btn-secondary" onclick="closeModal();confirmRemovePin()">${lang==='en'?'Remove PIN':lang==='az'?'PIN sil':'Удалить PIN'}</button>`:''}
-      ${hasPin?`<button class="btn btn-secondary" onclick="closeModal();localStorage.setItem('${PIN_BIO}', hasBio?'0':'1');showToast('OK')">${hasBio?(lang==='en'?'Disable fingerprint':lang==='az'?'Barmaq izi söndür':'Отключить отпечаток'):(lang==='en'?'Enable fingerprint':lang==='az'?'Barmaq izi aktiv et':'Включить отпечаток')}</button>`:''}
-    </div>`);
+  const removeLabel = lang==='en'?'Remove PIN':lang==='az'?'PIN sil':'Удалить PIN';
+  const bioLabel = hasBio?(lang==='en'?'Disable fingerprint':lang==='az'?'Barmaq izi söndür':'Отключить отпечаток'):(lang==='en'?'Enable fingerprint':lang==='az'?'Barmaq izi aktiv et':'Включить отпечаток');
+  const bioVal = hasBio?'0':'1';
+  const doneMsg = lang==='en'?'Done':lang==='az'?'Tamam':'Готово';
+  let html = '<div class="modal-handle"></div><div class="modal-title">🔐 PIN</div><div style="display:flex;flex-direction:column;gap:10px">';
+  html += '<button class="btn btn-secondary" onclick="closeModal();showPinOverlay('set')">' + setLabel + '</button>';
+  if(hasPin) html += '<button class="btn btn-secondary" onclick="closeModal();confirmRemovePin()">' + removeLabel + '</button>';
+  if(hasPin) html += '<button class="btn btn-secondary" onclick="localStorage.setItem(''+PIN_BIO+'',''+bioVal+'');closeModal();showToast(''+doneMsg+'')">' + bioLabel + '</button>';
+  html += '</div>';
+  showModal(html);
 }
 
 function confirmRemovePin(){
-  showModal(`<div class="modal-handle"></div>
-    <div class="modal-title">${lang==='en'?'Remove PIN?':lang==='az'?'PIN silinsin?':'Удалить PIN?'}</div>
-    <div style="display:flex;gap:10px;margin-top:4px">
-      <button class="btn btn-secondary" onclick="closeModal()">${lang==='en'?'Cancel':lang==='az'?'Ləğv et':'Отмена'}</button>
-      <button class="btn btn-danger" style="flex:1" onclick="localStorage.removeItem('${PIN_KEY}');localStorage.removeItem('${PIN_BIO}');closeModal();showToast('${lang==='en'?'PIN removed':lang==='az'?'PIN silindi':'PIN удалён'}')">${lang==='en'?'Remove':lang==='az'?'Sil':'Удалить'}</button>
-    </div>`);
+  const title = lang==='en'?'Remove PIN?':lang==='az'?'PIN silinsin?':'Удалить PIN?';
+  const cancel = lang==='en'?'Cancel':lang==='az'?'Ləğv et':'Отмена';
+  const remove = lang==='en'?'Remove':lang==='az'?'Sil':'Удалить';
+  const removed = lang==='en'?'PIN removed':lang==='az'?'PIN silindi':'PIN удалён';
+  showModal('<div class="modal-handle"></div>'
+    +'<div class="modal-title">'+title+'</div>'
+    +'<div style="display:flex;gap:10px;margin-top:4px">'
+      +'<button class="btn btn-secondary" onclick="closeModal()">'+cancel+'</button>'
+      +'<button class="btn btn-danger" style="flex:1" onclick="localStorage.removeItem(''+PIN_KEY+'');localStorage.removeItem(''+PIN_BIO+'');closeModal();showToast(''+removed+'')">'+remove+'</button>'
+    +'</div>');
 }
 
 window._installPrompt=null;renderDash();});
