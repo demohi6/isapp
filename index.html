@@ -1168,30 +1168,60 @@ function editItemPrompt(stageId,itemId){
   const s=stages().find(st=>st.id===stageId);
   const item=s?.items.find(i=>i.id===itemId);
   if(!item)return;
-  showModal(`<div class="modal-handle"></div>
-    <div class="modal-title">${t('editPos')}</div>
-    <div class="form-group"><label class="form-label">${t('posName')}</label>
-      <input type="text" id="eiName" value="${item.name}"/></div>
-    <div class="form-group"><label class="form-label">${t('qty')} × ${t('price')}</label>
-      <div class="qty-price-row">
-        <input type="number" id="eiQty" value="${item.qty||1}"/>
-        <div class="qty-sep">×</div>
-        <input type="number" id="eiPrice" value="${item.price||item.cost||0}"/>
-      </div></div>
-    <div class="form-group"><label class="form-label">${t('note')}</label>
-      <input type="text" id="eiNote" value="${item.note||''}"/></div>
-    <div style="display:flex;gap:10px;margin-top:4px">
-      <button class="btn btn-secondary" onclick="closeModal()">${t('cancel')}</button>
-      <button class="btn btn-primary" onclick="saveItemEdit(${stageId},${itemId})">${t('save')}</button>
-    </div>`);
+  window._editItemId={stageId,itemId};
+  const startDisp=item.startDate?'📅 '+item.startDate.split('-').reverse().join('.'):'📅 '+t('startDate');
+  const endDisp=item.endDate?'🏁 '+item.endDate.split('-').reverse().join('.'):'🏁 '+t('endDate');
+  const sHas=item.startDate?'has-value':'';
+  const eHas=item.endDate?'has-value':'';
+
+  let html='<div class="modal-handle"></div>'
+    +'<div class="modal-title">'+t('editPos')+'</div>'
+    +'<div class="form-group"><label class="form-label">'+t('posName')+'</label>'
+      +'<input type="text" id="eiName" value="'+tName(item).replace(/"/g,'&quot;')+'"/></div>'
+    +'<div class="form-group"><label class="form-label">'+t('qty')+' × '+t('price')+'</label>'
+      +'<div class="qty-price-row">'
+        +'<input type="number" id="eiQty" value="'+(item.qty||1)+'"/>'
+        +'<div class="qty-sep">×</div>'
+        +'<input type="number" id="eiPrice" value="'+(item.price||item.cost||0)+'"/>'
+      +'</div></div>'
+    +'<div class="form-group"><label class="form-label">'+t('contractor')+'</label>'
+      +'<input type="text" id="eiContractor" placeholder="'+t('contractorPh')+'" value="'+(item.contractor||'').replace(/"/g,'&quot;')+'"/></div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">'
+      +'<div><label class="form-label" style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:6px">'+t('startDate')+'</label>'
+        +'<div class="drum-date-display '+sHas+'" id="eiStartDisplay" style="padding:8px 10px;font-size:12px">'+startDisp+'</div>'
+        +'<input type="hidden" id="eiStartDate" value="'+(item.startDate||'')+'"/>'
+      +'</div>'
+      +'<div><label class="form-label" style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:6px">'+t('endDate')+'</label>'
+        +'<div class="drum-date-display '+eHas+'" id="eiEndDisplay" style="padding:8px 10px;font-size:12px">'+endDisp+'</div>'
+        +'<input type="hidden" id="eiEndDate" value="'+(item.endDate||'')+'"/>'
+      +'</div>'
+    +'</div>'
+    +'<div class="form-group"><label class="form-label">'+t('note')+'</label>'
+      +'<input type="text" id="eiNote" value="'+(item.note||'').replace(/"/g,'&quot;')+'"/></div>'
+    +'<div style="display:flex;gap:10px;margin-top:4px">'
+      +'<button class="btn btn-secondary" onclick="closeModal()">'+t('cancel')+'</button>'
+      +'<button class="btn btn-primary" onclick="saveItemEdit('+stageId+','+itemId+')">'+t('save')+'</button>'
+    +'</div>';
+  showModal(html);
+  // Attach onclick after modal is rendered
+  setTimeout(()=>{
+    const sd=document.getElementById('eiStartDisplay');
+    if(sd) sd.onclick=()=>openDrumPicker('eiStart', document.getElementById('eiStartDate')?.value||'');
+    const ed=document.getElementById('eiEndDisplay');
+    if(ed) ed.onclick=()=>openDrumPicker('eiEnd', document.getElementById('eiEndDate')?.value||'');
+  },50);
 }
+
 function saveItemEdit(stageId,itemId){
   const name=document.getElementById('eiName')?.value.trim();
   const qty=parseInt(document.getElementById('eiQty')?.value)||1;
   const price=parseFloat(document.getElementById('eiPrice')?.value)||0;
   const note=document.getElementById('eiNote')?.value.trim()||'';
+  const contractor=document.getElementById('eiContractor')?.value.trim()||'';
+  const startDate=document.getElementById('eiStartDate')?.value||'';
+  const endDate=document.getElementById('eiEndDate')?.value||'';
   if(!name){showToast(t('enterName'),'err');return;}
-  updateStages(ss=>ss.map(s=>s.id!==stageId?s:{...s,items:s.items.map(i=>i.id===itemId?{...i,name,qty,price,note}:i)}));
+  updateStages(ss=>ss.map(s=>s.id!==stageId?s:{...s,items:s.items.map(i=>i.id===itemId?{...i,name,qty,price,note,contractor,startDate,endDate}:i)}));
   closeModal();renderDetail();showToast(t('objUpdated'));
 }
 
@@ -1515,6 +1545,8 @@ function confirmDrumDate(){
   else if(f==='end'){hidId='sEndDate';disId='sEndDateDisplay';}
   else if(f==='newStart'){hidId='newItemStart';disId='newItemStartDisplay';}
   else if(f==='newEnd'){hidId='newItemEnd';disId='newItemEndDisplay';}
+  else if(f==='eiStart'){hidId='eiStartDate';disId='eiStartDisplay';}
+  else if(f==='eiEnd'){hidId='eiEndDate';disId='eiEndDisplay';}
   const hid=document.getElementById(hidId);
   const dis=document.getElementById(disId);
   if(hid)hid.value=val;
@@ -1875,6 +1907,8 @@ function confirmDrumDate(){
   else if(f==='end'){hidId='sEndDate';disId='sEndDateDisplay';}
   else if(f==='newStart'){hidId='newItemStart';disId='newItemStartDisplay';}
   else if(f==='newEnd'){hidId='newItemEnd';disId='newItemEndDisplay';}
+  else if(f==='eiStart'){hidId='eiStartDate';disId='eiStartDisplay';}
+  else if(f==='eiEnd'){hidId='eiEndDate';disId='eiEndDisplay';}
   const hid=document.getElementById(hidId);
   const dis=document.getElementById(disId);
   if(hid)hid.value=val;
