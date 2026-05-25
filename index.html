@@ -514,20 +514,23 @@ function renderDash(){
 
     <!-- Бюджет объекта -->
     <div class="budget-banner" style="animation-delay:.04s">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px">
-        <div>
-          <div class="bb-label">Общий бюджет объекта</div>
-          <div class="bb-val">${tb>0?fmtShort(tb):'Не задан'}</div>
-          <div class="bb-sub">${tb>0?(isOver?`<span style="color:var(--red)">⚠️ Смета превышает на ${fmtShort(ts-tb)}</span>`:`Остаток: ${fmtShort(rem)}`):'Нажмите ✏️ чтобы задать'}</div>
+      <div style="margin-bottom:14px">
+        <div class="bb-label">Общий бюджет объекта</div>
+        <div class="bb-val">${tb>0?fmtShort(tb):'Не задан'}</div>
+        <div class="bb-sub">${tb>0?(isOver?`<span style="color:var(--red)">⚠️ Смета превышает на ${fmtShort(ts-tb)}</span>`:`Остаток: ${fmtShort(rem)}`):'Задайте бюджет в меню ☰'}</div>
+      </div>
+      <div style="margin-bottom:6px">
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px">
+          <span>Смета vs Факт</span>
+          <span style="font-family:'DM Mono',monospace;color:var(--green)">${Math.round(factOfSmeta)}% выполнено</span>
         </div>
-        <button class="bb-edit" onclick="editBudget()" title="Изменить бюджет">✏️</button>
+        <div style="height:8px;background:rgba(255,255,255,.08);border-radius:4px;overflow:hidden;position:relative">
+          <div style="position:absolute;top:0;left:0;height:100%;width:100%;background:rgba(201,170,124,.3);border-radius:4px"></div>
+          <div style="position:absolute;top:0;left:0;height:100%;width:${ts>0?Math.min(tf/ts*100,100):0}%;background:var(--green);border-radius:4px;transition:width .7s ease"></div>
+        </div>
       </div>
-      <div style="height:8px;background:rgba(255,255,255,.07);border-radius:4px;overflow:hidden;position:relative;margin-bottom:8px">
-        <div style="position:absolute;top:0;left:0;height:100%;width:${Math.min(smetaPct,100)}%;background:var(--gold);border-radius:4px;opacity:.45"></div>
-        <div style="position:absolute;top:0;left:0;height:100%;width:${Math.min(factPct,100)}%;background:var(--green);border-radius:4px"></div>
-      </div>
-      <div style="display:flex;gap:16px;flex-wrap:wrap">
-        <div class="hl-item"><div class="hl-dot" style="background:var(--gold);opacity:.8"></div>Смета: ${fmtShort(ts)}</div>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:8px">
+        <div class="hl-item"><div class="hl-dot" style="background:rgba(201,170,124,.6)"></div>Смета: ${fmtShort(ts)}</div>
         <div class="hl-item"><div class="hl-dot" style="background:var(--green)"></div>Факт: ${fmtShort(tf)}</div>
       </div>
     </div>
