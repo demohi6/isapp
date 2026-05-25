@@ -207,6 +207,8 @@ input:focus,textarea:focus{border-color:rgba(255,255,255,.3)}
       <div id="drawerObjects"></div>
       <button class="drawer-btn drawer-btn-add" id="drawerBtnAdd" onclick="addObjectPrompt()">＋ Yeni obyekt</button>
       <button class="drawer-btn drawer-btn-pdf" onclick="closeDrawer();exportPDF()">📄 PDF export</button>
+      <button class="drawer-btn drawer-btn-pdf" onclick="closeDrawer();triggerImport()" style="margin-top:4px">📥 <span id="importBtnLabel">Импорт JSON</span></button>
+      <input type="file" id="importFile" accept=".json" style="display:none" onchange="handleImport(event)"/>
       <div style="margin-top:16px;padding:0 4px">
         <div class="drawer-section-label" id="dlLang">DİL / ЯЗЫК / LANGUAGE</div>
         <div class="lang-switch">
@@ -335,6 +337,17 @@ const LANGS = {
     install:'Əsas ekrana əlavə et',
     installHint:'Safari → Paylaş → "Ana Ekrana Əlavə Et"',
     installBtn:'Quraşdır',
+    importJson:'JSON idxal',
+    importSuccess:'Məlumatlar idxal edildi',
+    importError:'Yanlış fayl formatı',
+    statusIdle:'Başlanmayıb',
+    statusActive:'Davam edir',
+    statusDone:'Tamamlandı',
+    contractor:'Podratçı',
+    contractorPh:'Məs: Bəhruz, "Tikinti MMC"',
+    startDate:'Başlama tarixi',
+    endDate:'Bitmə tarixi',
+    sortStages:'Sıralama',
   },
   ru: {
     appName:'Tikinti',
@@ -416,6 +429,17 @@ const LANGS = {
     install:'Установить на рабочий стол',
     installHint:'Safari → Поделиться → «На экран "Домой"»',
     installBtn:'Установить',
+    importJson:'Импорт JSON',
+    importSuccess:'Данные импортированы',
+    importError:'Неверный формат файла',
+    statusIdle:'Не начат',
+    statusActive:'В процессе',
+    statusDone:'Завершён',
+    contractor:'Подрядчик',
+    contractorPh:'Напр: Иван, "СтройГрупп"',
+    startDate:'Дата начала',
+    endDate:'Дата окончания',
+    sortStages:'Порядок',
   },
   en: {
     appName:'Tikinti',
@@ -497,6 +521,17 @@ const LANGS = {
     install:'Add to home screen',
     installHint:'Safari → Share → "Add to Home Screen"',
     installBtn:'Install',
+    importJson:'Import JSON',
+    importSuccess:'Data imported',
+    importError:'Invalid file format',
+    statusIdle:'Not started',
+    statusActive:'In progress',
+    statusDone:'Completed',
+    contractor:'Contractor',
+    contractorPh:'E.g.: John, "BuildCo"',
+    startDate:'Start date',
+    endDate:'End date',
+    sortStages:'Order',
   }
 };
 
@@ -516,6 +551,8 @@ function setLang(l) {
 
 function updateDrawerLabels() {
   document.getElementById('drawerSub').textContent = t('myObjects');
+  const importLbl=document.getElementById('importBtnLabel');
+  if(importLbl) importLbl.textContent = t('importJson');
   document.getElementById('dlObjects').textContent = t('objects');
   document.getElementById('drawerBtnAdd').innerHTML = t('newObject');
   document.getElementById('drawerFooterText').textContent = t('dataStored');
@@ -842,15 +879,26 @@ function renderDash(){
       const fp=smeta>0?Math.min(fact/smeta*100,100):0;
       const done=s.items.filter(i=>i.done).length;
       const over=fact>smeta&&smeta>0;
-      return `<div class="stage-card" style="animation-delay:${.12+i*.07}s" onclick="goDetail(${s.id})">
+      return `<div class="stage-card" style="animation-delay:${.12+i*.07}s" data-sid="${s.id}"
+        draggable="true"
+        ondragstart="onDragStart(event,${s.id})"
+        ondragover="onDragOver(event,${s.id})"
+        ondrop="onDrop(event,${s.id})"
+        onclick="goDetail(${s.id})">
         <div class="stage-card-accent" style="background:linear-gradient(90deg,${s.color},transparent)"></div>
         <div class="stage-card-body">
+          <div class="drag-handle" ontouchstart="onTouchDragStart(event,${s.id})" ontouchmove="onTouchDragMove(event)" ontouchend="onTouchDragEnd()" onclick="event.stopPropagation()">⠿</div>
           <div class="stage-card-icon">${s.icon}</div>
           <div class="stage-card-info">
             <div class="stage-card-name">${s.name}</div>
             <div class="stage-card-meta">${done}/${s.items.length} ${t('positions')} · ${t('factLabel')} ${fmt(fact)}</div>
+            ${s.contractor?`<div class="contractor-tag">👤 ${s.contractor}</div>`:''}
+            ${(s.startDate||s.endDate)?`<div style="font-size:10px;color:var(--text3);margin-top:2px">📅 ${s.startDate||'?'} ${s.endDate?'→ '+s.endDate:''}</div>`:''}
           </div>
-          <div>${ringHTML(fp,s.color,54)}</div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+            ${ringHTML(fp,s.color,48)}
+            <span class="stage-status ${s.status==='done'?'status-done':s.status==='active'?'status-active':'status-idle'}">${s.status==='done'?'✓':s.status==='active'?'▶':'○'}</span>
+          </div>
         </div>
         <div class="stage-card-bar-track">
           <div class="scb-smeta" style="width:100%;background:${s.color}"></div>
@@ -1036,6 +1084,18 @@ function showStageModal(existing){
       <div class="icon-grid">${ICONS.map(ic=>`<div class="icon-opt ${ic===data.icon?'sel':''}" onclick="selIcon('${ic}')">${ic}</div>`).join('')}</div></div>
     <div class="form-group"><label class="form-label">${t('stageColor')}</label>
       <div class="color-grid">${COLORS.map(c=>`<div class="color-opt ${c===data.color?'sel':''}" style="background:${c}" onclick="selColor('${c}')"></div>`).join('')}</div></div>
+    <div class="form-group"><label class="form-label">${t('statusIdle')} / ${t('statusActive')} / ${t('statusDone')}</label>
+      <div style="display:flex;gap:6px">
+        ${['idle','active','done'].map(s=>`<div onclick="window._sfd.status='${s}';document.querySelectorAll('.status-sel').forEach(e=>e.classList.remove('sel-active'));this.classList.add('sel-active')" class="status-sel icon-opt ${(data.status||'idle')===s?'sel':''}" style="flex:1;font-size:12px;font-weight:600;width:auto;padding:8px 4px">${s==='idle'?t('statusIdle'):s==='active'?t('statusActive'):t('statusDone')}</div>`).join('')}
+      </div></div>
+    <div class="form-group"><label class="form-label">${t('contractor')}</label>
+      <input type="text" id="sContractor" placeholder="${t('contractorPh')}" value="${data.contractor||''}"/></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
+      <div><label class="form-label">${t('startDate')}</label>
+        <input type="date" id="sStartDate" value="${data.startDate||''}" style="color-scheme:dark"/></div>
+      <div><label class="form-label">${t('endDate')}</label>
+        <input type="date" id="sEndDate" value="${data.endDate||''}" style="color-scheme:dark"/></div>
+    </div>
     <p style="font-size:12px;color:var(--text3);margin-bottom:16px;line-height:1.5">${t('stageHint')}</p>
     <div style="display:flex;gap:10px">
       <button class="btn btn-secondary" onclick="closeModal()">${t('cancel')}</button>
@@ -1048,12 +1108,16 @@ function saveStage(editId){
   const name=document.getElementById('sName')?.value.trim();
   const icon=window._sfd?.icon||'🏠',color=window._sfd?.color||'#7BB8CC';
   if(!name){showToast(t('enterName'),'err');return;}
+  const contractor=document.getElementById('sContractor')?.value.trim()||'';
+  const startDate=document.getElementById('sStartDate')?.value||'';
+  const endDate=document.getElementById('sEndDate')?.value||'';
+  const status=window._sfd?.status||'idle';
   if(editId){
     const id=parseInt(editId);
-    updateStages(ss=>ss.map(s=>s.id===id?{...s,name,icon,color}:s));
+    updateStages(ss=>ss.map(s=>s.id===id?{...s,name,icon,color,contractor,startDate,endDate,status}:s));
     showToast(t('stageUpdated'));
   } else {
-    updateStages(ss=>[...ss,{id:newId(),name,icon,color,items:[]}]);
+    updateStages(ss=>[...ss,{id:newId(),name,icon,color,contractor,startDate,endDate,status,items:[]}]);
     showToast(t('stageAdded'));
   }
   closeModal();
@@ -1206,6 +1270,83 @@ function exportPDF(){
 }
 
 // ══════════════════════════
+//  IMPORT / EXPORT
+// ══════════════════════════
+function triggerImport(){
+  document.getElementById('importFile').click();
+}
+function handleImport(e){
+  const file=e.target.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      const data=JSON.parse(ev.target.result);
+      // Support both full DB and single object array
+      if(data.objects && data.activeObjectId){
+        db=data; saveDB(); renderDash(); showToast(t('importSuccess'));
+      } else if(Array.isArray(data)){
+        // Legacy: array of stages
+        const id=newId();
+        db.objects.push({id,name:'Импорт',icon:'📥',totalBudget:0,stages:data});
+        db.activeObjectId=id; saveDB(); renderDash(); showToast(t('importSuccess'));
+      } else { showToast(t('importError'),'err'); }
+    }catch{ showToast(t('importError'),'err'); }
+  };
+  reader.readAsText(file);
+  e.target.value='';
+}
+
+// ══════════════════════════
+//  DRAG TO SORT STAGES
+// ══════════════════════════
+let dragSrcId=null;
+function onDragStart(e,id){ dragSrcId=id; e.dataTransfer.effectAllowed='move'; }
+function onDragOver(e,id){ e.preventDefault(); }
+function onDrop(e,id){
+  e.preventDefault();
+  if(dragSrcId===null||dragSrcId===id)return;
+  updateStages(ss=>{
+    const from=ss.findIndex(s=>s.id===dragSrcId);
+    const to=ss.findIndex(s=>s.id===id);
+    if(from<0||to<0)return ss;
+    const arr=[...ss];
+    const [item]=arr.splice(from,1);
+    arr.splice(to,0,item);
+    return arr;
+  });
+  dragSrcId=null; renderDash();
+}
+
+// Touch drag-to-sort
+let touchDragId=null, touchDragEl=null, touchDragClone=null;
+function onTouchDragStart(e,id){
+  touchDragId=id;
+  touchDragEl=e.currentTarget.closest('.stage-card');
+  if(navigator.vibrate)navigator.vibrate(30);
+}
+function onTouchDragMove(e){
+  if(!touchDragId)return;
+  const touch=e.touches[0];
+  const el=document.elementFromPoint(touch.clientX,touch.clientY);
+  const card=el?.closest('.stage-card[data-sid]');
+  if(card){
+    const overId=parseInt(card.dataset.sid);
+    if(overId!==touchDragId){
+      updateStages(ss=>{
+        const from=ss.findIndex(s=>s.id===touchDragId);
+        const to=ss.findIndex(s=>s.id===overId);
+        if(from<0||to<0)return ss;
+        const arr=[...ss]; const [item]=arr.splice(from,1); arr.splice(to,0,item);
+        return arr;
+      });
+      renderDash();
+    }
+  }
+}
+function onTouchDragEnd(){ touchDragId=null; }
+
+// ══════════════════════════
 //  INSTALL
 // ══════════════════════════
 window._installPrompt=null;
@@ -1272,6 +1413,12 @@ dashPage.addEventListener('touchend', e=>{
 
 updateDrawerLabels();
 renderDash();
+
+// Handle PWA shortcuts
+const urlParams = new URLSearchParams(window.location.search);
+const action = urlParams.get('action');
+if(action === 'addStage') setTimeout(()=>showStageModal(null), 400);
+if(action === 'addObject') setTimeout(()=>addObjectPrompt(), 400);
 </script>
 </body>
 </html>
