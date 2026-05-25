@@ -880,11 +880,12 @@ function renderDash(){
       const done=s.items.filter(i=>i.done).length;
       const over=fact>smeta&&smeta>0;
       return `<div class="stage-card" style="animation-delay:${.12+i*.07}s" data-sid="${s.id}"
-        draggable="true"
-        ondragstart="onDragStart(event,${s.id})"
-        ondragover="onDragOver(event,${s.id})"
-        ondrop="onDrop(event,${s.id})"
-        onclick="goDetail(${s.id})">
+        onclick="sortCardClick(event,${s.id})"
+        onmousedown="sortPressStart(event,${s.id})"
+        ontouchstart="sortPressStart(event,${s.id})"
+        onmouseup="sortPressCancel()"
+        ontouchend="sortPressCancel()"
+        ontouchmove="sortPressCancel()">
         <div class="stage-card-accent" style="background:linear-gradient(90deg,${s.color},transparent)"></div>
         <div class="stage-card-body">
           <div class="drag-handle" ontouchstart="onTouchDragStart(event,${s.id})" ontouchmove="onTouchDragMove(event)" ontouchend="onTouchDragEnd()" onclick="event.stopPropagation()">⠿</div>
@@ -1305,51 +1306,92 @@ function handleImport(e){
 // ══════════════════════════
 //  DRAG TO SORT STAGES
 // ══════════════════════════
-let dragSrcId=null;
-function onDragStart(e,id){ dragSrcId=id; e.dataTransfer.effectAllowed='move'; }
-function onDragOver(e,id){ e.preventDefault(); }
-function onDrop(e,id){
-  e.preventDefault();
-  if(dragSrcId===null||dragSrcId===id)return;
-  updateStages(ss=>{
-    const from=ss.findIndex(s=>s.id===dragSrcId);
-    const to=ss.findIndex(s=>s.id===id);
-    if(from<0||to<0)return ss;
-    const arr=[...ss];
-    const [item]=arr.splice(from,1);
-    arr.splice(to,0,item);
-    return arr;
-  });
-  dragSrcId=null; renderDash();
+let _pt=null,_drag=null;
+
+function sortPressStart(e,id){
+  if(e.type==='touchstart'&&e.touches.length>1)return;
+  clearTimeout(_pt);
+  _pt=setTimeout(()=>{ _pt=null; _startDrag(id,e); },420);
+}
+function sortPressCancel(){ clearTimeout(_pt); _pt=null; }
+function sortCardClick(e,id){
+  sortPressCancel();
+  if(_drag){e.preventDefault();e.stopPropagation();return;}
+  goDetail(id);
 }
 
-// Touch drag-to-sort
-let touchDragId=null, touchDragEl=null, touchDragClone=null;
-function onTouchDragStart(e,id){
-  touchDragId=id;
-  touchDragEl=e.currentTarget.closest('.stage-card');
-  if(navigator.vibrate)navigator.vibrate(30);
-}
-function onTouchDragMove(e){
-  if(!touchDragId)return;
-  const touch=e.touches[0];
-  const el=document.elementFromPoint(touch.clientX,touch.clientY);
-  const card=el?.closest('.stage-card[data-sid]');
-  if(card){
-    const overId=parseInt(card.dataset.sid);
-    if(overId!==touchDragId){
-      updateStages(ss=>{
-        const from=ss.findIndex(s=>s.id===touchDragId);
-        const to=ss.findIndex(s=>s.id===overId);
-        if(from<0||to<0)return ss;
-        const arr=[...ss]; const [item]=arr.splice(from,1); arr.splice(to,0,item);
-        return arr;
-      });
-      renderDash();
+function _startDrag(id,triggerEvent){
+  const card=document.querySelector(`.stage-card[data-sid="${id}"]`);
+  if(!card)return;
+  if(navigator.vibrate)navigator.vibrate(40);
+  _drag={id};
+  const rect=card.getBoundingClientRect();
+  const isTouch=triggerEvent.type==='touchstart';
+  const startY=isTouch?triggerEvent.touches[0].clientY:triggerEvent.clientY;
+
+  // Shrink original
+  card.style.cssText='transform:scale(0.95);opacity:0.35;transition:transform .15s,opacity .15s';
+
+  // Floating clone
+  const clone=card.cloneNode(true);
+  clone.style.cssText=`position:fixed;left:${rect.left}px;top:${rect.top}px;width:${rect.width}px;
+    z-index:999;pointer-events:none;transform:scale(1.02);
+    box-shadow:0 24px 64px rgba(0,0,0,.75);border-radius:18px;
+    border:1px solid rgba(201,170,124,.4);opacity:.96;transition:none`;
+  document.body.appendChild(clone);
+  _drag.clone=clone; _drag.card=card;
+  _drag.startY=startY; _drag.cloneTop=rect.top;
+
+  const onMove=ev=>{
+    if(!_drag)return;
+    const cy=ev.type.startsWith('touch')?ev.touches[0].clientY:ev.clientY;
+    _drag.clone.style.top=(_drag.cloneTop+(cy-_drag.startY))+'px';
+    // hit-test
+    _drag.clone.style.visibility='hidden';
+    const ex=ev.type.startsWith('touch')?ev.touches[0].clientX:ev.clientX;
+    const el=document.elementFromPoint(ex,cy);
+    _drag.clone.style.visibility='';
+    const over=el?.closest('.stage-card[data-sid]');
+    if(over){
+      const oid=parseInt(over.dataset.sid);
+      if(oid!==_drag.id){
+        updateStages(ss=>{
+          const fi=ss.findIndex(s=>s.id===_drag.id),ti=ss.findIndex(s=>s.id===oid);
+          if(fi<0||ti<0)return ss;
+          const a=[...ss];const[it]=a.splice(fi,1);a.splice(ti,0,it);return a;
+        });
+        // update cards in DOM only
+        const st=stages();
+        const cont=document.getElementById('dashContent');
+        const oldCards=[...cont.querySelectorAll('.stage-card')];
+        const newOrder=st.map(s=>oldCards.find(c=>parseInt(c.dataset.sid)===s.id)).filter(Boolean);
+        newOrder.forEach(c=>cont.appendChild(c));
+        // re-apply dim to dragged card
+        const nc=cont.querySelector(`.stage-card[data-sid="${_drag.id}"]`);
+        if(nc){nc.style.cssText='transform:scale(0.95);opacity:0.35';_drag.card=nc;}
+      }
     }
-  }
+  };
+
+  const onEnd=()=>{
+    if(!_drag)return;
+    _drag.clone.style.transition='opacity .15s';
+    _drag.clone.style.opacity='0';
+    setTimeout(()=>_drag?.clone.remove(),150);
+    if(_drag.card){_drag.card.style.cssText='';}
+    _drag=null;
+    saveDB();renderDash();
+    document.removeEventListener('mousemove',onMove);
+    document.removeEventListener('mouseup',onEnd);
+    document.removeEventListener('touchmove',onMove);
+    document.removeEventListener('touchend',onEnd);
+  };
+
+  document.addEventListener('mousemove',onMove);
+  document.addEventListener('mouseup',onEnd);
+  document.addEventListener('touchmove',onMove,{passive:true});
+  document.addEventListener('touchend',onEnd,{passive:true});
 }
-function onTouchDragEnd(){ touchDragId=null; }
 
 // ══════════════════════════
 //  INSTALL
