@@ -1353,7 +1353,6 @@ function _startDrag(id, startY, isTouch){
       const oid=parseInt(over.dataset.sid);
       if(oid!==_drag.id && oid!==_drag.lastOverId){
         _drag.lastOverId=oid;
-        // swap in data only
         updateStages(ss=>{
           const fi=ss.findIndex(s=>s.id===_drag.id);
           const ti=ss.findIndex(s=>s.id===oid);
@@ -1363,17 +1362,10 @@ function _startDrag(id, startY, isTouch){
           a.splice(ti,0,it);
           return a;
         });
-        // reorder DOM cards only (no re-render)
-        const cont=document.getElementById('dashContent');
-        const allCards=[...cont.querySelectorAll('.stage-card[data-sid]')];
-        const ordered=stages().map(s=>allCards.find(c=>parseInt(c.dataset.sid)===s.id)).filter(Boolean);
-        // Find the anchor: element right after the last card
-        const lastCard=allCards[allCards.length-1];
-        const anchor=lastCard?.nextSibling||null;
-        // Re-insert all cards in correct order before anchor
-        ordered.forEach(c=>cont.insertBefore(c,anchor));
-        // restore dim on dragged card
-        const nc=cont.querySelector(`.stage-card[data-sid="${_drag.id}"]`);
+        // Full re-render — safe, no DOM duplication
+        renderDash();
+        // Re-apply dim to dragged card after render
+        const nc=document.querySelector(`.stage-card[data-sid="${_drag.id}"]`);
         if(nc){nc.style.cssText='transform:scale(0.95);opacity:0.35';_drag.card=nc;}
       }
     }
