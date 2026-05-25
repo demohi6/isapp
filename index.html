@@ -848,7 +848,11 @@ function ringHTML(pct,color,size){
 //  DASHBOARD
 // ══════════════════════════
 function renderDash(){
-  const obj=curObj(), st=stages();
+  const obj=curObj();
+  const st=[...stages()].sort((a,b)=>{
+    const o={idle:0,active:1,done:2};
+    return (o[a.status||'idle']||0)-(o[b.status||'idle']||0);
+  });
   const tb=totalBudget(), ts=totalSmeta(), tf=totalFact();
   const rem=tb-ts, isOver=ts>tb&&tb>0;
   const factOfSmeta=ts>0?Math.min(tf/ts*100,100):0;
@@ -898,13 +902,7 @@ function renderDash(){
         <div style="font-size:11px;color:var(--green);margin-left:2px">✓</div>
       </div>`;
 
-      return `<div class="stage-card" style="animation-delay:${.12+i*.07}s" data-sid="${s.id}"
-        onclick="sortCardClick(event,${s.id})"
-        onmousedown="sortPressStart(event,${s.id})"
-        ontouchstart="sortPressStart(event,${s.id})"
-        onmouseup="sortPressCancel()"
-        ontouchend="sortPressCancel()"
-        ontouchmove="sortPressCancel()">
+      return `<div class="stage-card" style="animation-delay:${.12+i*.07}s" onclick="goDetail(${s.id})">
         <div class="stage-card-accent" style="background:linear-gradient(90deg,${s.color},transparent)"></div>
         <div class="stage-card-body">
           <div class="drag-handle" ontouchstart="onTouchDragStart(event,${s.id})" ontouchmove="onTouchDragMove(event)" ontouchend="onTouchDragEnd()" onclick="event.stopPropagation()">⠿</div>
@@ -920,10 +918,7 @@ function renderDash(){
             ${s.contractor?`<div style="font-size:11px;color:var(--text2);margin-top:4px">👤 ${s.contractor}</div>`:''}
             ${(s.startDate||s.endDate)?`<div style="font-size:11px;color:var(--text2);margin-top:2px">📅 ${s.startDate||'?'}${s.endDate?' → '+s.endDate:''}</div>`:''}
           </div>
-          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
-            ${ringHTML(fp,s.color,48)}
-            <span class="stage-status ${s.status==='done'?'status-done':s.status==='active'?'status-active':'status-idle'}">${s.status==='done'?'✓':s.status==='active'?'▶':'○'}</span>
-          </div>
+          <div>${ringHTML(fp,s.color,54)}</div>
         </div>
         <div class="stage-card-bar-track">
           <div class="scb-smeta" style="width:100%;background:${s.color}"></div>
@@ -1326,92 +1321,7 @@ function handleImport(e){
   e.target.value='';
 }
 
-// ══════════════════════════
-//  DRAG TO SORT STAGES
-// ══════════════════════════
-let _pt=null, _drag=null;
 
-function sortPressStart(e,id){
-  if(e.type==='touchstart'&&e.touches.length>1)return;
-  clearTimeout(_pt);
-  const startY=e.type==='touchstart'?e.touches[0].clientY:e.clientY;
-  _pt=setTimeout(()=>{ _pt=null; _startDrag(id,startY); },420);
-}
-function sortPressCancel(){ clearTimeout(_pt); _pt=null; }
-function sortCardClick(e,id){
-  sortPressCancel();
-  if(_drag){e.preventDefault();e.stopPropagation();return;}
-  goDetail(id);
-}
-
-function _startDrag(id, startY){
-  const card=document.querySelector(`.stage-card[data-sid="${id}"]`);
-  if(!card)return;
-  if(navigator.vibrate)navigator.vibrate(40);
-
-  const rect=card.getBoundingClientRect();
-  card.style.cssText='transform:scale(0.95);opacity:0.3;transition:transform .15s,opacity .15s';
-
-  const clone=card.cloneNode(true);
-  clone.style.cssText=`position:fixed;left:${rect.left}px;top:${rect.top}px;width:${rect.width}px;
-    z-index:999;pointer-events:none;transform:scale(1.02);opacity:.96;transition:none;
-    box-shadow:0 24px 64px rgba(0,0,0,.75);border-radius:18px;border:1px solid rgba(201,170,124,.5)`;
-  document.body.appendChild(clone);
-
-  _drag = { id, clone, card, startY, cloneTop:rect.top };
-
-  const onMove=ev=>{
-    if(!_drag)return;
-    const cy=ev.type.startsWith('touch')?ev.touches[0].clientY:ev.clientY;
-    // Just move the clone visually — no data change during move
-    _drag.clone.style.top=(_drag.cloneTop+(cy-_drag.startY))+'px';
-  };
-
-  const onEnd=ev=>{
-    if(!_drag)return;
-    const cy=ev.type.startsWith('touch')?ev.changedTouches[0].clientY:ev.clientY;
-    const cx=ev.type.startsWith('touch')?ev.changedTouches[0].clientX:ev.clientX;
-
-    // Find target card at drop position
-    _drag.clone.style.visibility='hidden';
-    const el=document.elementFromPoint(cx,cy);
-    _drag.clone.style.visibility='';
-    const over=el?.closest('.stage-card[data-sid]');
-    const oid=over?parseInt(over.dataset.sid):null;
-
-    if(oid && oid!==_drag.id){
-      updateStages(ss=>{
-        const fi=ss.findIndex(s=>s.id===_drag.id);
-        const ti=ss.findIndex(s=>s.id===oid);
-        if(fi<0||ti<0)return ss;
-        const a=[...ss];
-        const[it]=a.splice(fi,1);
-        a.splice(ti,0,it);
-        return a;
-      });
-      saveDB();
-    }
-
-    _drag.clone.remove();
-    _drag.card.style.cssText='';
-    _drag=null;
-    renderDash();
-
-    document.removeEventListener('mousemove',onMove);
-    document.removeEventListener('mouseup',onEnd);
-    document.removeEventListener('touchmove',onMove);
-    document.removeEventListener('touchend',onEnd);
-  };
-
-  document.addEventListener('mousemove',onMove);
-  document.addEventListener('mouseup',onEnd);
-  document.addEventListener('touchmove',onMove,{passive:true});
-  document.addEventListener('touchend',onEnd,{passive:true});
-}
-
-// ══════════════════════════
-//  INSTALL
-// ══════════════════════════
 window._installPrompt=null;
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();window._installPrompt=e;renderDash();});
 function installApp(){
