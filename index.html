@@ -273,7 +273,7 @@ input:focus,textarea:focus{border-color:rgba(255,255,255,.3)}
       <div class="drawer-section-label" id="dlObjects">OBYEKTLƏRİM</div>
       <div id="drawerObjects"></div>
       <button class="drawer-btn drawer-btn-add" id="drawerBtnAdd" onclick="addObjectPrompt()">＋ Yeni obyekt</button>
-      <button class="drawer-btn drawer-btn-pdf" onclick="closeDrawer();exportPDF()">📄 PDF export</button>
+      <button class="drawer-btn drawer-btn-pdf" id="drawerBtnPdf" onclick="closeDrawer();exportPDF()">📄 PDF export</button>
       <button class="drawer-btn drawer-btn-pdf" onclick="closeDrawer();triggerImport()" style="margin-top:4px">📥 <span id="importBtnLabel">Импорт JSON</span></button>
       <input type="file" id="importFile" accept=".json" style="display:none" onchange="handleImport(event)"/>
       <div style="margin-top:16px;padding:0 4px">
@@ -662,6 +662,10 @@ function updateDrawerLabels() {
   document.getElementById('dlObjects').textContent = t('objects');
   document.getElementById('drawerBtnAdd').innerHTML = t('newObject');
   document.getElementById('drawerFooterText').textContent = t('dataStored');
+  const pdfBtn=document.getElementById('drawerBtnPdf');
+  if(pdfBtn) pdfBtn.innerHTML = t('pdfExport');
+  const dlLang=document.getElementById('dlLang');
+  if(dlLang) dlLang.textContent = lang==='en'?'LANGUAGE':lang==='az'?'DİL':'ЯЗЫК';
   ['langAZ','langRU','langEN'].forEach(id => {
     document.getElementById(id)?.classList.toggle('active', id === 'lang'+lang.toUpperCase());
   });
@@ -1071,7 +1075,7 @@ function renderDrawer(){
       <div class="obj-icon">${o.icon}</div>
       <div class="obj-info">
         <div class="obj-name">${tName(o)||o.name}</div>
-        <div class="obj-meta">${o.stages.length} • ${pct}%</div>
+        <div class="obj-meta">${lang==='en'?'stages':lang==='az'?'mərhələ':'эт.'}: ${o.stages.length} · ${pct}%</div>
       </div>
       ${isActive?'<div class="obj-active-dot"></div>':''}
       <button onclick="event.stopPropagation();editObjectPrompt(${o.id})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:15px;padding:4px;flex-shrink:0">✏️</button>
@@ -1164,7 +1168,6 @@ function goBack(){
   document.getElementById('pageDash').classList.remove('page-hidden-left');
   document.getElementById('pageDetail').classList.add('page-hidden-right');
   renderDash();
-
 }
 // Swipe back on detail page
 let txS=0,tyS=0,swD=null;
@@ -2296,8 +2299,7 @@ function confirmRemovePin(){
   const title = lang==='en'?'Remove PIN?':lang==='az'?'PIN silinsin?':'Удалить PIN?';
   const cancel = lang==='en'?'Cancel':lang==='az'?'Ləğv et':'Отмена';
   const remove = lang==='en'?'Remove':lang==='az'?'Sil':'Удалить';
-  const drumShowFn = (field==='eiStart'||field==='eiEnd')?showDrumOverlay:showModal;
-  drumShowFn('<div class="modal-handle"></div>'
+  showModal('<div class="modal-handle"></div>'
     +'<div class="modal-title">'+title+'</div>'
     +'<div style="display:flex;gap:10px;margin-top:4px">'
       +'<button class="btn btn-secondary" onclick="closeModal()">'+cancel+'</button>'
