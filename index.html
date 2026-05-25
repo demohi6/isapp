@@ -45,6 +45,8 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Mulish
 .obj-meta{font-size:10px;color:var(--text3);font-family:'DM Mono',monospace}
 .obj-active-dot{width:7px;height:7px;border-radius:50%;background:var(--gold);flex-shrink:0}
 .drawer-add-btn{margin:8px 10px 0;padding:11px;border-radius:12px;background:rgba(201,170,124,.08);border:1.5px dashed rgba(201,170,124,.25);color:var(--gold);font-size:13px;font-weight:600;font-family:'Mulish',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;width:calc(100% - 20px)}
+.drawer-pdf-btn{margin:6px 10px 0;padding:10px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid var(--border);color:var(--text2);font-size:13px;font-weight:600;font-family:'Mulish',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;width:calc(100% - 20px);transition:background .15s}
+.drawer-pdf-btn:active{background:rgba(255,255,255,.08)}
 .drawer-footer{padding:14px 16px calc(14px + var(--safe));border-top:1px solid var(--border);flex-shrink:0;font-size:11px;color:var(--text3);line-height:1.6}
 
 /* PAGES */
@@ -57,7 +59,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Mulish
 .header{padding:calc(var(--top) + 14px) 16px 12px;background:var(--bg);position:sticky;top:0;z-index:10}
 .header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:var(--border)}
 .header-row{display:flex;align-items:center;gap:10px}
-.burger{width:38px;height:38px;border-radius:10px;background:rgba(255,255,255,.06);border:1px solid var(--border);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4.5px;flex-shrink:0}
+.burger{width:38px;height:38px;border-radius:10px;background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4.5px;flex-shrink:0}
 .burger-line{width:16px;height:1.5px;background:var(--text2);border-radius:1px}
 .header-title{flex:1;min-width:0}
 .logo{font-family:'Unbounded',sans-serif;font-size:15px;font-weight:700;letter-spacing:-.4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -81,7 +83,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Mulish
 .bb-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px}
 .bb-val{font-family:'DM Mono',monospace;font-size:24px;font-weight:700;color:var(--gold)}
 .bb-sub{font-size:11px;color:var(--text3);margin-top:3px}
-.bb-edit{background:rgba(201,170,124,.12);border:1px solid rgba(201,170,124,.25);color:var(--gold);border-radius:10px;padding:8px 14px;font-size:12px;font-weight:600;font-family:'Mulish',sans-serif;cursor:pointer;white-space:nowrap;flex-shrink:0}
+.bb-edit{background:rgba(201,170,124,.12);border:1px solid rgba(201,170,124,.2);color:var(--gold);border-radius:10px;padding:9px 11px;font-size:16px;cursor:pointer;flex-shrink:0;line-height:1}
 
 /* SUMMARY STRIP */
 .summary-strip{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
@@ -167,7 +169,7 @@ input:focus{border-color:rgba(255,255,255,.3)}
 .btn-secondary{background:rgba(255,255,255,.07);color:var(--text2);flex:1}
 .btn-danger{background:rgba(204,123,123,.15);color:var(--red)}
 .btn-sm{padding:8px 12px;font-size:13px;border-radius:10px}
-.btn-icon{padding:9px;border-radius:10px;background:rgba(255,255,255,.06);border:1px solid var(--border)}
+.btn-icon{padding:9px;border-radius:10px;background:none;border:none}
 
 .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(8px);z-index:200;display:flex;align-items:flex-end;justify-content:center;animation:fadeIn .2s ease}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
@@ -209,6 +211,7 @@ input:focus{border-color:rgba(255,255,255,.3)}
       <div class="drawer-section-label">Объекты</div>
       <div id="drawerObjects"></div>
       <button class="drawer-add-btn" onclick="addObjectPrompt()">＋ Новый объект</button>
+      <button class="drawer-pdf-btn" onclick="closeDrawer();exportPDF()">📄 Экспорт PDF</button>
     </div>
     <div class="drawer-footer">💾 Данные хранятся на этом устройстве</div>
   </div>
@@ -224,8 +227,7 @@ input:focus{border-color:rgba(255,255,255,.3)}
           <div class="logo-sub" id="headerSub"></div>
         </div>
         <div class="header-actions">
-          <button class="btn btn-icon" id="btnPdf" style="font-size:15px">📄</button>
-          <button class="btn btn-icon" id="btnAdd" style="font-size:17px">＋</button>
+          <button class="btn btn-icon" id="btnAdd" style="font-size:22px;color:var(--gold)">＋</button>
         </div>
       </div>
     </div>
@@ -510,44 +512,39 @@ function renderDash(){
         ${isIOS?'Safari → Поделиться → «На экран "Домой"»':'<button class="btn btn-sm" style="background:rgba(201,170,124,.2);color:#C9AA7C;border:1px solid rgba(201,170,124,.3);margin-top:6px" onclick="installApp()">Установить</button>'}
       </div></div>`:''}
 
-    <!-- Общий бюджет объекта -->
-    <div class="budget-banner">
-      <div class="bb-left">
-        <div class="bb-label">Общий бюджет объекта</div>
-        <div class="bb-val">${tb>0?fmtShort(tb):'Не задан'}</div>
-        <div class="bb-sub">${tb>0?(isOver?`<span style="color:var(--red)">⚠️ Смета превышает на ${fmtShort(ts-tb)}</span>`:`Остаток: ${fmtShort(rem)}`):'Нажмите чтобы задать бюджет'}</div>
+    <!-- Единый блок бюджета -->
+    <div class="budget-banner" style="animation-delay:.04s">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px">
+        <div>
+          <div class="bb-label">Общий бюджет</div>
+          <div class="bb-val">${tb>0?fmtShort(tb):'Не задан'}</div>
+          <div class="bb-sub">${tb>0?(isOver?`<span style="color:var(--red)">⚠️ Смета превышает на ${fmtShort(ts-tb)}</span>`:`Остаток бюджета: ${fmtShort(rem)}`):'Нажмите ✏️ чтобы задать'}</div>
+        </div>
+        <button class="bb-edit" onclick="editBudget()" title="Изменить бюджет">✏️</button>
       </div>
-      <button class="bb-edit" onclick="editBudget()">✏️ Изменить</button>
-    </div>
-
-    <!-- Сводка -->
-    <div class="summary-strip">
-      <div class="sum-card" style="animation-delay:.04s">
-        <div class="sum-label">Смета (план)</div>
-        <div class="sum-val c-gold">${fmtShort(ts)}</div>
-        <div class="sum-sub">все позиции</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+        <div>
+          <div class="bb-label">Смета</div>
+          <div style="font-family:'DM Mono',monospace;font-size:17px;font-weight:600;color:var(--gold)">${fmtShort(ts)}</div>
+          <div class="bb-sub">все позиции</div>
+        </div>
+        <div>
+          <div class="bb-label">Потрачено</div>
+          <div style="font-family:'DM Mono',monospace;font-size:17px;font-weight:600;color:var(--green)">${fmtShort(tf)}</div>
+          <div class="bb-sub">${Math.round(factOfSmeta)}% от сметы</div>
+        </div>
       </div>
-      <div class="sum-card" style="animation-delay:.08s">
-        <div class="sum-label">Потрачено (факт)</div>
-        <div class="sum-val c-green">${fmtShort(tf)}</div>
-        <div class="sum-sub">${Math.round(factOfSmeta)}% от сметы</div>
+      <div style="margin-bottom:8px">
+        <div style="height:8px;background:rgba(255,255,255,.07);border-radius:4px;overflow:hidden;position:relative">
+          <div style="position:absolute;top:0;left:0;height:100%;width:${smetaPct}%;background:var(--gold);border-radius:4px;opacity:.5;transition:width .7s ease"></div>
+          <div style="position:absolute;top:0;left:0;height:100%;width:${factPct}%;background:var(--green);border-radius:4px;transition:width .7s ease"></div>
+        </div>
       </div>
-    </div>
-
-    <!-- Визуальный баланс -->
-    <div class="health-wrap" style="animation-delay:.12s">
-      <div class="health-row">
-        <span>Бюджет vs Смета vs Факт</span>
-        ${isOver?`<span class="over-badge">⚠️ Перерасход сметы</span>`:`<span style="font-family:'DM Mono',monospace;color:var(--gold)">${Math.round(smetaPct)}% бюджета</span>`}
-      </div>
-      <div class="health-track">
-        <div class="health-bar-smeta" style="width:${smetaPct}%;background:var(--gold)"></div>
-        <div class="health-bar-fact" style="width:${factPct}%;background:var(--green)"></div>
-      </div>
-      <div class="health-legend">
-        <div class="hl-item"><div class="hl-dot" style="background:var(--gold)"></div>Смета ${fmtShort(ts)}</div>
-        <div class="hl-item"><div class="hl-dot" style="background:var(--green)"></div>Факт ${fmtShort(tf)}</div>
-        ${tb>0?`<div class="hl-item"><div class="hl-dot" style="background:rgba(255,255,255,.15)"></div>Бюджет ${fmtShort(tb)}</div>`:''}
+      <div style="display:flex;gap:14px;flex-wrap:wrap">
+        <div class="hl-item"><div class="hl-dot" style="background:var(--gold);opacity:.8"></div>Смета</div>
+        <div class="hl-item"><div class="hl-dot" style="background:var(--green)"></div>Факт</div>
+        ${tb>0?`<div class="hl-item"><div class="hl-dot" style="background:rgba(255,255,255,.2)"></div>Бюджет ${fmtShort(tb)}</div>`:''}
+        ${isOver?`<div class="hl-item" style="color:var(--red)">⚠️ Превышение</div>`:`<div class="hl-item" style="color:var(--green)">✓ Вписываемся</div>`}
       </div>
     </div>
 
@@ -913,7 +910,6 @@ function installApp(){
 }
 
 document.getElementById('btnAdd').onclick=()=>showStageModal(null);
-document.getElementById('btnPdf').onclick=exportPDF;
 if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
 renderDash();
 </script>
