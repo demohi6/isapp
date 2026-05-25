@@ -167,7 +167,7 @@ input:focus,textarea:focus{border-color:rgba(255,255,255,.3)}
 
 .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(8px);z-index:200;display:flex;align-items:flex-end;justify-content:center;animation:fadeIn .2s ease}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-.modal{background:var(--bg2);border:1px solid var(--border);border-radius:24px 24px 0 0;width:100%;max-width:600px;padding:24px 20px calc(24px + var(--safe));max-height:92vh;overflow-y:auto;animation:slideUp .28s cubic-bezier(.4,0,.2,1)}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:24px 24px 0 0;width:100%;max-width:600px;padding:20px 20px calc(20px + var(--safe));max-height:85vh;overflow-y:auto;animation:slideUp .28s cubic-bezier(.4,0,.2,1)}
 @keyframes slideUp{from{transform:translateY(60px);opacity:0}to{transform:translateY(0);opacity:1}}
 .modal-handle{width:40px;height:4px;background:rgba(255,255,255,.15);border-radius:2px;margin:0 auto 20px}
 .modal-title{font-family:'Unbounded',sans-serif;font-size:16px;font-weight:600;margin-bottom:20px}
@@ -188,14 +188,14 @@ input:focus,textarea:focus{border-color:rgba(255,255,255,.3)}
 .drum-col{display:flex;flex-direction:column;align-items:center;flex:1}
 .drum-col-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-bottom:8px}
 .drum-wrap{
-  position:relative;height:200px;width:100%;overflow:hidden;
+  position:relative;height:160px;width:100%;overflow:hidden;
   background:none;cursor:pointer;
 }
 .drum-wrap::before,.drum-wrap::after{
-  content:'';position:absolute;left:0;right:0;height:70px;z-index:2;pointer-events:none;
+  content:'';position:absolute;left:0;right:0;height:50px;z-index:2;pointer-events:none;
 }
-.drum-wrap::before{top:0;background:linear-gradient(to bottom,var(--bg2) 20%,transparent 100%)}
-.drum-wrap::after{bottom:0;background:linear-gradient(to top,var(--bg2) 20%,transparent 100%)}
+.drum-wrap::before{top:0;background:linear-gradient(to bottom,var(--bg2) 30%,transparent 100%)}
+.drum-wrap::after{bottom:0;background:linear-gradient(to top,var(--bg2) 30%,transparent 100%)}
 .drum-selector{
   position:absolute;top:50%;left:0;right:0;height:40px;
   transform:translateY(-50%);
@@ -203,7 +203,7 @@ input:focus,textarea:focus{border-color:rgba(255,255,255,.3)}
   border-top:1px solid rgba(201,170,124,.5);
   border-bottom:1px solid rgba(201,170,124,.5);
 }
-.drum-divider{width:1px;background:rgba(255,255,255,.08);height:200px;flex-shrink:0}
+.drum-divider{width:1px;background:rgba(255,255,255,.08);height:160px;flex-shrink:0;align-self:flex-end}
 .drum-list{
   position:absolute;width:100%;
   will-change:transform;
@@ -1405,7 +1405,7 @@ function openDrumPicker(field, currentVal){
   }
   const days=Array.from({length:31},(_,i)=>String(i+1).padStart(2,'0'));
   const months=getMonths();
-  const years=Array.from({length:11},(_,i)=>String(now.getFullYear()-2+i));
+  const years=Array.from({length:8},(_,i)=>String(now.getFullYear()+i));
   const clearLabel=lang==='en'?'Clear':lang==='az'?'Sil':'Очистить';
 
   const dayLabel=lang==='en'?'Day':lang==='az'?'Gün':'День';
@@ -1514,7 +1514,7 @@ function openDrumPicker(field, currentVal){
   }
   const days=Array.from({length:31},(_,i)=>String(i+1).padStart(2,'0'));
   const months=getMonths();
-  const years=Array.from({length:11},(_,i)=>String(now.getFullYear()-2+i));
+  const years=Array.from({length:8},(_,i)=>String(now.getFullYear()+i));
   const clearLabel=lang==='en'?'Clear':lang==='az'?'Sil':'Очистить';
 
   const dayLabel=lang==='en'?'Day':lang==='az'?'Gün':'День';
