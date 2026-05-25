@@ -1568,45 +1568,52 @@ async function tryBiometric(){
 
 function showPinOverlay(mode, onSuccess){
   _pinMode = mode; _pinEntered = ''; _pinTarget = '';
-  
+
   const hasBio = localStorage.getItem(PIN_BIO) === '1';
   const bioAvailable = 'PublicKeyCredential' in window;
 
   const overlay = document.createElement('div');
   overlay.className = 'pin-overlay'; overlay.id = 'pinOverlay';
-  overlay.innerHTML = `
-    <div class="pin-logo">🏡 Tikinti</div>
-    <div class="pin-subtitle">${pinLabel(mode)}</div>
-    <div class="pin-dots" id="pinDots">
-      ${[0,1,2,3].map(i=>`<div class="pin-dot" id="pd${i}"></div>`).join('')}
-    </div>
-    <div class="pin-pad">
-      ${KEYPAD.map(k=>{
-        if(!k) return '<button class="pin-key empty"></button>';
-        if(k==='del') return `<button class="pin-key del" onclick="pinDel()">⌫</button>`;
-        return `<button class="pin-key" onclick="pinKey('${k.n}')">
-          <span>${k.n}</span>
-          ${k.s?`<span class="pin-key-sub">${k.s}</span>`:''}
-        </button>`;
-      }).join('')}
-    </div>
-    ${mode==='enter' && hasBio && bioAvailable ? `
-      <button class="pin-bio" onclick="biometricAuth()" title="${lang==='en'?'Use fingerprint':lang==='az'?'Barmaq izi':'Отпечаток пальца'}">
-        🫆
-      </button>` : ''}
-    ${mode==='enter' ? `
-      <button style="background:none;border:none;color:var(--text3);font-size:12px;cursor:pointer;font-family:'Mulish',sans-serif;margin-top:4px" onclick="document.getElementById('pinOverlay').remove()">
-        ${lang==='en'?'Cancel':lang==='az'?'Ləğv et':'Отмена'}
-      </button>` : ''}
-  `;
+
+  // Build keypad HTML
+  let padHTML = '';
+  KEYPAD.forEach(k => {
+    if(!k){ padHTML += '<button class="pin-key empty"></button>'; return; }
+    if(k==='del'){ padHTML += '<button class="pin-key del" onclick="pinDel()">⌫</button>'; return; }
+    padHTML += '<button class="pin-key" onclick="pinKey(\'' + k.n + '\')">'
+      + '<span>' + k.n + '</span>'
+      + (k.s ? '<span class="pin-key-sub">' + k.s + '</span>' : '')
+      + '</button>';
+  });
+
+  let html = '<div class="pin-logo">🏡 Tikinti</div>'
+    + '<div class="pin-subtitle">' + pinLabel(mode) + '</div>'
+    + '<div class="pin-dots" id="pinDots">'
+    + '<div class="pin-dot" id="pd0"></div>'
+    + '<div class="pin-dot" id="pd1"></div>'
+    + '<div class="pin-dot" id="pd2"></div>'
+    + '<div class="pin-dot" id="pd3"></div>'
+    + '</div>'
+    + '<div class="pin-pad">' + padHTML + '</div>';
+
+  if(mode === 'enter' && hasBio && bioAvailable){
+    const bioTitle = lang==='en'?'Use fingerprint':lang==='az'?'Barmaq izi':'Отпечаток пальца';
+    html += '<button class="pin-bio" onclick="biometricAuth()" title="' + bioTitle + '">🫆</button>';
+  }
+  if(mode === 'enter'){
+    const cancelLabel = lang==='en'?'Cancel':lang==='az'?'Ləğv et':'Отмена';
+    html += '<button style="background:none;border:none;color:var(--text3);font-size:12px;cursor:pointer;font-family:Mulish,sans-serif;margin-top:4px" onclick="document.getElementById('pinOverlay').remove()">' + cancelLabel + '</button>';
+  }
+
+  overlay.innerHTML = html;
   overlay._onSuccess = onSuccess;
   document.body.appendChild(overlay);
 
-  // Auto-trigger biometric on enter mode
-  if(mode==='enter' && hasBio && bioAvailable){
-    setTimeout(()=>biometricAuth(), 400);
+  if(mode === 'enter' && hasBio && bioAvailable){
+    setTimeout(() => biometricAuth(), 400);
   }
 }
+
 
 async function biometricAuth(){
   if(!('credentials' in navigator)) return;
