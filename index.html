@@ -1465,7 +1465,7 @@ function openDrumPicker(field, currentVal){
   const yrLabel=lang==='en'?'Year':lang==='az'?'İl':'Год';
   const drumShowFn = (field==='eiStart'||field==='eiEnd')?showDrumOverlay:showModal;
   drumShowFn('<div class="modal-handle"></div>'
-    +'<div class="modal-title">'+(field==='start'?t('startDate'):t('endDate'))+'</div>'
+    +'<div class="modal-title">'+(field==='start'||field==='eiStart'?t('startDate'):t('endDate'))+'</div>'
     +'<div class="drum-picker">'
       +'<div class="drum-col"><div class="drum-col-label">'+dayLabel+'</div>'+buildDrum('day',days,_drum.day-1)+'</div>'
       +'<div class="drum-divider"></div>'
@@ -1557,6 +1557,8 @@ function clearDrumDate(field){
   const dis=document.getElementById(disId);
   if(hid)hid.value='';
   if(dis){dis.textContent=emptyText;dis.classList.remove('has-value');}
+  // Close whichever overlay is open
+  if(field==='eiStart'||field==='eiEnd'){closeDrumOverlay();}else{closeModal();}
 }
 
 // Item date picker helpers - called from edit modal
@@ -1597,7 +1599,7 @@ function openDrumPicker(field, currentVal){
   const yrLabel=lang==='en'?'Year':lang==='az'?'İl':'Год';
   const drumShowFn = (field==='eiStart'||field==='eiEnd')?showDrumOverlay:showModal;
   drumShowFn('<div class="modal-handle"></div>'
-    +'<div class="modal-title">'+(field==='start'?t('startDate'):t('endDate'))+'</div>'
+    +'<div class="modal-title">'+(field==='start'||field==='eiStart'?t('startDate'):t('endDate'))+'</div>'
     +'<div class="drum-picker">'
       +'<div class="drum-col"><div class="drum-col-label">'+dayLabel+'</div>'+buildDrum('day',days,_drum.day-1)+'</div>'
       +'<div class="drum-divider"></div>'
@@ -1689,6 +1691,8 @@ function clearDrumDate(field){
   const dis=document.getElementById(disId);
   if(hid)hid.value='';
   if(dis){dis.textContent=emptyText;dis.classList.remove('has-value');}
+  // Close whichever overlay is open
+  if(field==='eiStart'||field==='eiEnd'){closeDrumOverlay();}else{closeModal();}
 }
 
 // ══════════════════════════
