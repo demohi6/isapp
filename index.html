@@ -496,7 +496,7 @@ const LANGS = {
   }
 };
 
-let lang = localStorage.getItem('isapp_lang') || 'az';
+let lang = localStorage.getItem('isapp_lang') || 'ru';
 const t = k => LANGS[lang][k] || LANGS['ru'][k] || k;
 
 function setLang(l) {
