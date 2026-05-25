@@ -512,39 +512,37 @@ function renderDash(){
         ${isIOS?'Safari → Поделиться → «На экран "Домой"»':'<button class="btn btn-sm" style="background:rgba(201,170,124,.2);color:#C9AA7C;border:1px solid rgba(201,170,124,.3);margin-top:6px" onclick="installApp()">Установить</button>'}
       </div></div>`:''}
 
-    <!-- Единый блок бюджета -->
+    <!-- Бюджет объекта -->
     <div class="budget-banner" style="animation-delay:.04s">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px">
         <div>
-          <div class="bb-label">Общий бюджет</div>
+          <div class="bb-label">Общий бюджет объекта</div>
           <div class="bb-val">${tb>0?fmtShort(tb):'Не задан'}</div>
-          <div class="bb-sub">${tb>0?(isOver?`<span style="color:var(--red)">⚠️ Смета превышает на ${fmtShort(ts-tb)}</span>`:`Остаток бюджета: ${fmtShort(rem)}`):'Нажмите ✏️ чтобы задать'}</div>
+          <div class="bb-sub">${tb>0?(isOver?`<span style="color:var(--red)">⚠️ Смета превышает на ${fmtShort(ts-tb)}</span>`:`Остаток: ${fmtShort(rem)}`):'Нажмите ✏️ чтобы задать'}</div>
         </div>
         <button class="bb-edit" onclick="editBudget()" title="Изменить бюджет">✏️</button>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
-        <div>
-          <div class="bb-label">Смета</div>
-          <div style="font-family:'DM Mono',monospace;font-size:17px;font-weight:600;color:var(--gold)">${fmtShort(ts)}</div>
-          <div class="bb-sub">все позиции</div>
-        </div>
-        <div>
-          <div class="bb-label">Потрачено</div>
-          <div style="font-family:'DM Mono',monospace;font-size:17px;font-weight:600;color:var(--green)">${fmtShort(tf)}</div>
-          <div class="bb-sub">${Math.round(factOfSmeta)}% от сметы</div>
-        </div>
+      <div style="height:8px;background:rgba(255,255,255,.07);border-radius:4px;overflow:hidden;position:relative;margin-bottom:8px">
+        <div style="position:absolute;top:0;left:0;height:100%;width:${Math.min(smetaPct,100)}%;background:var(--gold);border-radius:4px;opacity:.45"></div>
+        <div style="position:absolute;top:0;left:0;height:100%;width:${Math.min(factPct,100)}%;background:var(--green);border-radius:4px"></div>
       </div>
-      <div style="margin-bottom:8px">
-        <div style="height:8px;background:rgba(255,255,255,.07);border-radius:4px;overflow:hidden;position:relative">
-          <div style="position:absolute;top:0;left:0;height:100%;width:${smetaPct}%;background:var(--gold);border-radius:4px;opacity:.5;transition:width .7s ease"></div>
-          <div style="position:absolute;top:0;left:0;height:100%;width:${factPct}%;background:var(--green);border-radius:4px;transition:width .7s ease"></div>
-        </div>
+      <div style="display:flex;gap:16px;flex-wrap:wrap">
+        <div class="hl-item"><div class="hl-dot" style="background:var(--gold);opacity:.8"></div>Смета: ${fmtShort(ts)}</div>
+        <div class="hl-item"><div class="hl-dot" style="background:var(--green)"></div>Факт: ${fmtShort(tf)}</div>
       </div>
-      <div style="display:flex;gap:14px;flex-wrap:wrap">
-        <div class="hl-item"><div class="hl-dot" style="background:var(--gold);opacity:.8"></div>Смета</div>
-        <div class="hl-item"><div class="hl-dot" style="background:var(--green)"></div>Факт</div>
-        ${tb>0?`<div class="hl-item"><div class="hl-dot" style="background:rgba(255,255,255,.2)"></div>Бюджет ${fmtShort(tb)}</div>`:''}
-        ${isOver?`<div class="hl-item" style="color:var(--red)">⚠️ Превышение</div>`:`<div class="hl-item" style="color:var(--green)">✓ Вписываемся</div>`}
+    </div>
+
+    <!-- Сводка -->
+    <div class="summary-strip">
+      <div class="sum-card" style="animation-delay:.06s">
+        <div class="sum-label">Смета (план)</div>
+        <div class="sum-val c-gold">${fmtShort(ts)}</div>
+        <div class="sum-sub">все позиции</div>
+      </div>
+      <div class="sum-card" style="animation-delay:.1s">
+        <div class="sum-label">Потрачено (факт)</div>
+        <div class="sum-val c-green">${fmtShort(tf)}</div>
+        <div class="sum-sub">${Math.round(factOfSmeta)}% от сметы</div>
       </div>
     </div>
 
